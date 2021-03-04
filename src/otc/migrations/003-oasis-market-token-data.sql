@@ -1,0 +1,26 @@
+INSERT INTO oasis.token(key, symbol, decimals, chain, name)
+VALUES
+(E'0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',E'WETH',18,E'mainnet',E'WETH'),
+(E'0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359',E'DAI',18,E'mainnet',E'DAI'),
+(E'0x59adcf176ed2f6788a41b8ea4c4904518e62b6a4',E'SAI',18,E'mainnet',E'SAI'),
+(E'0x168296bb09e24a88805cb9c33356536b980d3fc5',E'RHOC',18,E'mainnet',E'RHOC'),
+(E'0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2',E'MKR',18,E'mainnet',E'MKR'),
+(E'0xe0b7927c4af23765cb51314a0e0521a9645f0e2a',E'DGD',18,E'mainnet',E'GDG'),
+(E'0xbeb9ef514a379b997e0798fdcc901ee474b6d9a1',E'MLN',18,E'mainnet',E'MLN');
+
+INSERT INTO oasis.market(id, base, quote)
+VALUES
+(E'DGDWETH',E'DGD',E'WETH'),
+(E'WETHDGD',E'DGD',E'WETH'),
+(E'MKRDAI',E'MKR',E'DAI'),
+(E'MKRWETH',E'MKR',E'WETH'),
+(E'DAIMKR',E'MKR',E'DAI'),
+(E'WETHMKR',E'MKR',E'WETH'),
+(E'WETHMLN',E'MLN',E'WETH'),
+(E'MLNWETH',E'MLN',E'WETH'),
+(E'WETHRHOC',E'RHOC',E'WETH'),
+(E'RHOCWETH',E'RHOC',E'WETH'),
+(E'DAISAI',E'SAI',E'DAI'),
+(E'SAIDAI',E'SAI',E'DAI'),
+(E'WETHDAI',E'WETH',E'DAI'),
+(E'DAIWETH',E'WETH',E'DAI');

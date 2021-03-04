@@ -1,0 +1,24 @@
+query priceChart(
+  $timeUnit: String!
+  $tzOffset: IntervalInput!
+  $baseGem: String!
+  $quoteGem: String!
+  $dateFrom: Datetime!
+) {
+  tradesAggregated(
+    timeUnit: $timeUnit
+    tzOffset: $tzOffset
+    dateArg: $dateFrom
+    baseGemArg: $baseGem
+    quoteGemArg: $quoteGem
+  ) {
+    nodes {
+      date
+      open
+      close
+      min
+      max
+      volumeBase
+    }
+  }
+}

@@ -1,0 +1,28 @@
+query allTradesCurrent(
+  $baseGem: String
+  $quoteGem: String
+  $timestampFrom: Datetime
+  $timestampTo: Datetime
+  $limit: Int
+) {
+  allOasisTradeGuis(
+    filter: {
+      and: [{ baseGem: { equalTo: $baseGem } }, { quoteGem: { equalTo: $quoteGem } }]
+      timestamp: { greaterThan: $timestampFrom, lessThan: $timestampTo }
+    }
+    orderBy: [TIMESTAMP_DESC, LOG_INDEX_DESC]
+    first: $limit
+  ) {
+    nodes {
+      offerId
+      maker
+      baseAmt
+      quoteAmt
+      price
+      type
+      timestamp
+      tx
+      logIndex
+    }
+  }
+}
