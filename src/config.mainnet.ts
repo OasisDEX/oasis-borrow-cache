@@ -7,7 +7,7 @@ import { lowercaseValues, Addresses, makeToken } from './addresses-utils';
 import { loadTokens } from './otc/transformers/tokens';
 import { UserProvidedSpockConfig } from '@oasisdex/spock-etl/dist/services/config';
 import { values } from 'lodash';
-import { cdpTransformer } from './borrow/transformers/CdpTransformer';
+import { cdpTransformer, cdpTransformerNote, makeCDPNoteDependencies, vatUrnTransformerNote } from './borrow/transformers/CdpTransformer';
 import {
   mcdTransformerCat,
   mcdTransformerFlip,
@@ -17,6 +17,8 @@ import { trackAllNewlyCreatedProxies } from './borrow/transformers/dsProxyFactor
 import { proxyActionsTransformer } from './multiply/transformers/OasisMultiplyProxyActionsTransformer';
 import { makeOtcMidpointPriceTransformer } from './otc/transformers/OtcMidpointPriceTransformer';
 import { makeMidpointOfferExtractors } from './otc/extractors/midpointOfferExtractor';
+import { managerFrobTransformer, vatFrobTransformer } from './borrow/transformers/frobTransformer';
+import { normalizeAddressDefinition } from './utils';
 
 // NOTE: first address on this list will be picked up by REST API
 const oasisContracts = [
@@ -45,6 +47,11 @@ const cat2 = {
   address: '0xa5679C04fc3d9d8b0AaB1F0ab83555b301cA70Ea',
   startingBlock: startingBlockMultiplyTradingLiq1_2,
 };
+
+const vat = {
+  address: '0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b',
+  startingBlock: 8928152
+}
 
 const flippers = {
   WETH: {
@@ -288,10 +295,15 @@ export const config: UserProvidedSpockConfig = {
   extractors: [
     ...makeRawLogExtractors(proxyFactory),
     ...makeRawLogExtractors(cdpManagers),
+    ...makeRawLogExtractors([vat]),
   ],
   transformers: [
     ...trackAllNewlyCreatedProxies(proxyFactory),
     ...cdpTransformer(cdpManagers),
+    ...cdpTransformerNote(cdpManagers),
+    ...managerFrobTransformer(cdpManagers),
+    vatFrobTransformer(vat),
+    vatUrnTransformerNote(vat, makeCDPNoteDependencies(cdpManagers)),
   ],
   migrations: {
 
