@@ -35,15 +35,15 @@ const handle = async (
     log_index: log.log_index,
     tx_id: log.tx_id,
     block_id: log.block_id,
-    timestamp: timestamp.timestamp,
+    created_at: timestamp.timestamp,
   };
 
   await services.tx.none(
     `INSERT INTO borrow.cdp(
-       creator, owner, address, cdp_id, log_index, tx_id, block_id, timestamp
+       creator, owner, address, cdp_id, log_index, tx_id, block_id, created_at
      ) VALUES (
        \${creator}, \${owner}, \${address}, \${cdp_id}, \${log_index},
-       \${tx_id}, \${block_id}, \${timestamp}
+       \${tx_id}, \${block_id}, \${created_at}
      );`,
     values,
   );
@@ -86,20 +86,20 @@ const noteHandlers = {
       },
     );
   },
-  async 'hope(address)'(
-    services: LocalServices,
-    { note, log }: FullNoteEventInfo,
-  ) {
-    debugger
-    await services.tx.oneOrNone(
-      `UPDATE borrow.cdp SET urn = \${urn} WHERE block_id = \${block_id}`,
-      {
-        urn: note.caller,
-        // log_index: log.log_index - 1,
-        block_id: log.block_id
-      },
-    );
-  },
+  // async 'hope(address)'(
+  //   services: LocalServices,
+  //   { note, log }: FullNoteEventInfo,
+  // ) {
+  //   debugger
+  //   // await services.tx.oneOrNone(
+  //   //   `UPDATE borrow.cdp SET urn = \${urn} WHERE block_id = \${block_id}`,
+  //   //   {
+  //   //     urn: note.caller,
+  //   //     // log_index: log.log_index - 1,
+  //   //     block_id: log.block_id
+  //   //   },
+  //   // );
+  // },
 }
 
 export const cdpTransformerNote: (
@@ -123,7 +123,7 @@ export const cdpTransformerNote: (
 export const makeCDPNoteDependencies = (addresses: (string | SimpleProcessorDefinition)[]) => {
   return addresses
     .map(normalizeAddressDefinition)
-    .map(deps => `cdpTransformerNote-${deps.address}`)
+    .map(deps => `cdpTransformer-${deps.address}`)
 }
 
 export const vatUrnTransformerNote: (

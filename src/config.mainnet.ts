@@ -17,7 +17,7 @@ import { trackAllNewlyCreatedProxies } from './borrow/transformers/dsProxyFactor
 import { proxyActionsTransformer } from './multiply/transformers/OasisMultiplyProxyActionsTransformer';
 import { makeOtcMidpointPriceTransformer } from './otc/transformers/OtcMidpointPriceTransformer';
 import { makeMidpointOfferExtractors } from './otc/extractors/midpointOfferExtractor';
-import { managerFrobTransformer, vatFrobTransformer } from './borrow/transformers/frobTransformer';
+import { makeManagerFrobDependencies, managerFrobTransformer, vatFrobTransformer } from './borrow/transformers/frobTransformer';
 import { normalizeAddressDefinition } from './utils';
 
 // NOTE: first address on this list will be picked up by REST API
@@ -301,9 +301,9 @@ export const config: UserProvidedSpockConfig = {
     ...trackAllNewlyCreatedProxies(proxyFactory),
     ...cdpTransformer(cdpManagers),
     ...cdpTransformerNote(cdpManagers),
-    ...managerFrobTransformer(cdpManagers),
-    vatFrobTransformer(vat),
+    ...managerFrobTransformer(cdpManagers, makeManagerFrobDependencies([vat])),
     vatUrnTransformerNote(vat, makeCDPNoteDependencies(cdpManagers)),
+    vatFrobTransformer(vat),
   ],
   migrations: {
 

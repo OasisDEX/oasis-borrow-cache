@@ -1,6 +1,6 @@
-CREATE SCHEMA frob;
+CREATE SCHEMA vat;
 
-CREATE TABLE frob.vat (
+CREATE TABLE vat.frob (
     id         serial primary key,
     dart       decimal(78,18) not null,
     dink       decimal(78,18) not null,
@@ -13,5 +13,6 @@ CREATE TABLE frob.vat (
     log_index  integer not null,
     tx_id      integer not null REFERENCES vulcan2x.transaction(id) ON DELETE CASCADE,
     block_id   integer not null REFERENCES vulcan2x.block(id) ON DELETE CASCADE,
+    timestamp  timestamptz not null,
     unique (log_index, tx_id)
 );
