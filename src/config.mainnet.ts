@@ -19,6 +19,7 @@ import { makeOtcMidpointPriceTransformer } from './otc/transformers/OtcMidpointP
 import { makeMidpointOfferExtractors } from './otc/extractors/midpointOfferExtractor';
 import { makeManagerFrobDependencies, managerFrobTransformer, vatFrobTransformer } from './borrow/transformers/frobTransformer';
 import { normalizeAddressDefinition } from './utils';
+import { daiJoinTransformer } from './borrow/transformers/daiJoinTransformer';
 
 // NOTE: first address on this list will be picked up by REST API
 const oasisContracts = [
@@ -51,6 +52,11 @@ const cat2 = {
 const vat = {
   address: '0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b',
   startingBlock: 8928152
+}
+
+const daiJoin = {
+  address: '0x9759A6Ac90977b93B58547b4A71c78317f391A28',
+  startingBlock: 8928130,
 }
 
 const flippers = {
@@ -293,16 +299,16 @@ const addresses: Addresses = {
 export const config: UserProvidedSpockConfig = {
   startingBlock: 11822992,
   extractors: [
-    ...makeRawLogExtractors(proxyFactory),
     ...makeRawLogExtractors(cdpManagers),
+    ...makeRawLogExtractors([daiJoin]),
     ...makeRawLogExtractors([vat]),
   ],
   transformers: [
-    ...trackAllNewlyCreatedProxies(proxyFactory),
     ...cdpTransformer(cdpManagers),
     ...cdpTransformerNote(cdpManagers),
     ...managerFrobTransformer(cdpManagers, makeManagerFrobDependencies([vat])),
     vatUrnTransformerNote(vat, makeCDPNoteDependencies(cdpManagers)),
+    daiJoinTransformer(daiJoin),
     vatFrobTransformer(vat),
   ],
   migrations: {

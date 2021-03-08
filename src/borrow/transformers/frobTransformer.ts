@@ -19,7 +19,7 @@ const cdpManagerAbi = require('../../../abis/dss-cdp-manager.json');
 - `dart`: change in debt.
 */
 
-const noteHandlers = {
+const vatNoteHandlers = {
     async 'frob(bytes32,address,address,address,int256,int256)'(
         services: LocalServices,
         { note, log }: FullNoteEventInfo,
@@ -69,6 +69,25 @@ const noteHandlers = {
     }
 }
 
+
+const mcdNoteHandlers = {
+    async 'frob(uint256,int256,int256)'(
+        services: LocalServices,
+        { note, log }: FullNoteEventInfo,
+    ) {
+        const values = {
+            cdp_id: note.params.cdp.toString(),
+            log_index: log.log_index - 1, // NOT SURE IF IT IS CORRECT
+            tx_id: log.tx_id,
+            block_id: log.block_id,
+        }
+        debugger
+        services.tx.none(`
+            UPDATE vat.frob SET cdp_id=\${cdp_id} WHERE log_index = \${log_index} AND block_id = \${block_id};
+        `, values)
+    }
+}
+
 export const managerFrobTransformer: (
     addresses: (string | SimpleProcessorDefinition)[],
     transformerDependencies: string[]
@@ -82,7 +101,7 @@ export const managerFrobTransformer: (
             startingBlock: deps.startingBlock,
             transformerDependencies: [...transformerDependencies],
             transform: async (services, logs) => {
-                await handleDsNoteEvents(services, cdpManagerAbi, flatten(logs), noteHandlers, 2);
+                await handleDsNoteEvents(services, cdpManagerAbi, flatten(logs), mcdNoteHandlers, 2);
             },
         };
     });
@@ -105,7 +124,7 @@ export const vatFrobTransformer: (
         dependencies: [getExtractorName(deps.address)],
         startingBlock: deps.startingBlock,
         transform: async (services, logs) => {
-            await handleDsNoteEvents(services, vatAbi, flatten(logs), noteHandlers, 2);
+            await handleDsNoteEvents(services, vatAbi, flatten(logs), vatNoteHandlers, 2);
         },
     };
 }
