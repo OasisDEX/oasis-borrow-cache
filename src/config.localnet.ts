@@ -1,21 +1,10 @@
 import { makeRawLogExtractors } from '@oasisdex/spock-utils/dist//extractors//rawEventDataExtractor';
 import { makeRawEventBasedOnTopicExtractor } from '@oasisdex/spock-utils/dist/extractors/rawEventBasedOnTopicExtractor';
-import { otcTransformerMarket } from './otc/transformers/OtcTransformerMarket';
-import { cdpTransformer } from './multiply/transformers/CdpTransformer';
-import {
-  mcdTransformerFlipDsNote,
-  mcdTransformerCat,
-  mcdTransformerFlip,
-} from './multiply/transformers/McdTransformer';
-import { proxyActionsTransformer } from './multiply/transformers/OasisMultiplyProxyActionsTransformer';
+
 import { join } from 'path';
 import { values } from 'lodash';
-import { trackAllNewlyCreatedProxies } from './multiply/transformers/dsProxyFactoryTransformer';
 import { Addresses, makeToken, lowercaseValues } from './addresses-utils';
-import { loadTokens } from './otc/transformers/tokens';
 import { UserProvidedSpockConfig } from '@oasisdex/spock-etl/dist/services/config';
-import { makeMidpointOfferExtractors } from './otc/extractors/midpointOfferExtractor';
-import { makeOtcMidpointPriceTransformer } from './otc/transformers/OtcMidpointPriceTransformer';
 
 const oasisContracts = ['0x177b74CB6679C145Bb428Cc3E16F4a3d3ED905a3'];
 const cat = '0x4a81317A82Fc95f5180B827Ed3EBAe838Ad6BD1B';
@@ -105,33 +94,10 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors(proxyFactory),
     ...makeRawLogExtractors(cdpManager),
     ...makeRawEventBasedOnTopicExtractor(proxyActionsAbis),
-    ...makeMidpointOfferExtractors(addresses.contracts.makerOtc, [
-      addresses.tokens['DAI'].key,
-      addresses.tokens['WETH'].key,
-    ]),
   ],
   transformers: [
-    otcTransformerMarket(oasisContracts),
-
-    ...cdpTransformer(cdpManager),
-    ...mcdTransformerCat(cdpManager, [cat]),
-    ...mcdTransformerFlip(values(flippers).map(flip => ({ flip, cat }))),
-    ...mcdTransformerFlipDsNote(values(flippers)),
-
-    ...trackAllNewlyCreatedProxies(proxyFactory),
-    proxyActionsTransformer(
-      proxyFactory,
-      proxyActionsAbis.map(a => a.name),
-    ),
-    makeOtcMidpointPriceTransformer(addresses.contracts.makerOtc, [
-      addresses.tokens['DAI'].key,
-      addresses.tokens['WETH'].key,
-    ]),
   ],
-  migrations: {
-    otc: join(__dirname, './otc/migrations'),
-    multiply: join(__dirname, './multiply/migrations'),
-  },
+  migrations: {},
   api: {
     whitelisting: {
       enabled: false,
@@ -142,5 +108,5 @@ export const config: UserProvidedSpockConfig = {
     },
   },
   addresses,
-  onStart: loadTokens,
+  onStart: () => { },
 };

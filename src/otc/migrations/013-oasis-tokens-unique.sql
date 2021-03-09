@@ -1,1 +1,0 @@
-ALTER TABLE oasis.token ADD CONSTRAINT unique_address_chain UNIQUE (key,chain);

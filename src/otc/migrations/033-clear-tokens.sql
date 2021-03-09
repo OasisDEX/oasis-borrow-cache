@@ -1,5 +1,0 @@
-TRUNCATE TABLE oasis.token;
-
-ALTER TABLE oasis.token
-  DROP COLUMN name CASCADE,
-  DROP COLUMN chain CASCADE;

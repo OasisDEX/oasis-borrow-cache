@@ -1,1 +1,0 @@
-DROP TABLE rest_api.pair;
