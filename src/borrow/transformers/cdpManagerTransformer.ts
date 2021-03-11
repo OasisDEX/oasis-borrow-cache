@@ -11,6 +11,8 @@ import {
 import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
 import { normalizeAddressDefinition } from 'cache/src/utils';
+import { Provider } from 'ethers/providers';
+import { debug } from 'console';
 
 const cdpManagerAbi = require('../../../abis/dss-cdp-manager.json');
 
@@ -19,7 +21,7 @@ const handleNewCdp = async (
   params: Dictionary<any>,
   log: PersistedLog,
   services: LocalServices,
-  dependencies: { getUrnForCdp: (id: string) => Promise<string> }
+  dependencies: { getUrnForCdp: (provider: Provider, id: string) => Promise<string> }
 ) => {
   const timestamp = await services.tx.oneOrNone(
     `SELECT timestamp FROM vulcan2x.block WHERE id = \${block_id}`,
@@ -27,7 +29,7 @@ const handleNewCdp = async (
       block_id: log.block_id,
     },
   );
-  const urn = await dependencies.getUrnForCdp(params.cdp.toString())
+  const urn = await dependencies.getUrnForCdp((services as any).provider as Provider, params.cdp.toString())
 
   const values = {
     creator: params.usr.toLowerCase(),
@@ -41,8 +43,40 @@ const handleNewCdp = async (
     created_at: timestamp.timestamp,
   };
 
+  const eventValues = {
+    kind: 'OPEN',
+    urn,
+    vault_creator: params.usr.toLowerCase(),
+    timestamp: timestamp.timestamp,
+    log_index: log.log_index,
+    tx_id: log.tx_id,
+    block_id: log.block_id,
+    cdp_id: params.cdp.toString(),
+  }
 
-  await services.tx.none(
+  services.tx.none(`
+    INSERT INTO vault.events(
+      kind,
+      urn,
+      vault_creator,
+      timestamp,
+      log_index,
+      tx_id, 
+      block_id,
+      cdp_id
+    ) VALUES (
+      \${kind}, 
+      \${urn}, 
+      \${vault_creator}, 
+      \${timestamp}, 
+      \${log_index},
+      \${tx_id}, 
+      \${block_id},
+      \${cdp_id}
+    )
+  `, eventValues)
+
+  services.tx.none(
     `INSERT INTO manager.cdp(
        creator, owner, address, cdp_id, urn, log_index, tx_id, block_id, created_at
      ) VALUES (
@@ -53,7 +87,7 @@ const handleNewCdp = async (
   );
 };
 
-const handlers = (dependencies: { getUrnForCdp: (id: string) => Promise<string> }) => ({
+const handlers = (dependencies: { getUrnForCdp: (provider: Provider, id: string) => Promise<string> }) => ({
   async NewCdp(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
     await handleNewCdp('NewCdp', event.params, log, services, dependencies);
   },
@@ -64,12 +98,11 @@ export const openCdpTransformer: (
 ) => BlockTransformer[] = addresses => {
 
   return addresses.map(_deps => {
-    const provider = ethers.getDefaultProvider()
     const deps = normalizeAddressDefinition(_deps);
 
-    const contract = new ethers.Contract(deps.address, cdpManagerAbi, provider)
 
-    const getUrnForCdp = async (id: string) => {
+    const getUrnForCdp = async (provider: Provider, id: string) => {
+      const contract = new ethers.Contract(deps.address, cdpManagerAbi, provider)
       return contract.urns(id)
     }
 
@@ -125,46 +158,64 @@ export const managerFrobTransformer: (
   });
 }
 
-const cdpManagerGiveNoteHandlers = {
+const cdpManagerGiveNoteHandlers = (migrationAddress: string) => ({
   async 'give(uint256,address)'(
     services: LocalServices,
     { note, log }: FullNoteEventInfo,
   ) {
 
-    debugger
+    const cdp = await services.tx.oneOrNone(`
+      SELECT * FROM manager.cdp WHERE cdp_id = \${cdp_id}
+    `, { cdp_id: note.params.cdp.toString() })
+
+    const timestamp = await services.tx.oneOrNone(
+      `SELECT timestamp FROM vulcan2x.block WHERE id = \${block_id}`,
+      {
+        block_id: log.block_id,
+      },
+    );
+
     const values = {
+      kind: note.params.dst.toLowerCase() === migrationAddress.toLowerCase() ? 'MIGRATE' : "TRANSFER",
       cdp_id: note.params.cdp.toString(),
-      src: note.caller,
-      dst: note.params.dst,
+      transfer_from: note.caller,
+      transfer_to: note.params.dst,
+      urn: cdp.urn,
+      timestamp: timestamp.timestamp,
 
       log_index: log.log_index,
       tx_id: log.tx_id,
       block_id: log.block_id,
     }
 
+
     services.tx.none(
-      `INSERT INTO manager.give(
-        cdp_id, src, dst, log_index, tx_id, block_id
+      `INSERT INTO vault.events(
+        kind, transfer_from, transfer_to, cdp_id, urn, timestamp,
+        log_index, tx_id, block_id
       ) VALUES (
-        \${cdp_id}, \${src}, \${dst}, \${log_index},
-        \${tx_id}, \${block_id}
+        \${kind}, \${transfer_from}, \${transfer_to}, \${transfer_from}, \${urn}, \${timestamp},
+        \${log_index}, \${tx_id}, \${block_id}
       );`,
-      values)
+      values
+    )
   }
-}
+})
 
 export const managerGiveTransformer: (
-  addresses: (string | SimpleProcessorDefinition)[]
-) => BlockTransformer[] = (addresses) => {
+  addresses: (string | SimpleProcessorDefinition)[],
+  migrationAddress: string,
+) => BlockTransformer[] = (addresses, migrationAddress) => {
   return addresses.map(_deps => {
     const deps = normalizeAddressDefinition(_deps);
 
     return {
       name: `managerGiveNoteTransformer-${deps.address}`,
       dependencies: [getExtractorName(deps.address)],
+      transformerDependencies: [`openCdpTransformer-${deps.address}`],
       startingBlock: deps.startingBlock,
       transform: async (services, logs) => {
-        await handleDsNoteEvents(services, cdpManagerAbi, flatten(logs), cdpManagerGiveNoteHandlers, 2);
+        await handleDsNoteEvents(services, cdpManagerAbi, flatten(logs), cdpManagerGiveNoteHandlers(migrationAddress), 2);
       },
     };
   });

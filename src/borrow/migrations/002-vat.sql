@@ -13,7 +13,7 @@ CREATE TABLE vat.frob (
     tx_id      integer not null REFERENCES vulcan2x.transaction(id) ON DELETE CASCADE,
     block_id   integer not null REFERENCES vulcan2x.block(id) ON DELETE CASCADE,
     timestamp  timestamptz not null,
-    unique (log_index, tx_id)
+    unique (tx_id, log_index)
 );
 
 CREATE TABLE vat.fold (
@@ -25,5 +25,6 @@ CREATE TABLE vat.fold (
     log_index  integer not null,
     tx_id      integer not null REFERENCES vulcan2x.transaction(id) ON DELETE CASCADE,
     block_id   integer not null REFERENCES vulcan2x.block(id) ON DELETE CASCADE,
-    unique (log_index, tx_id)
+    timestamp  timestamptz not null,
+    unique (tx_id, log_index)
 )

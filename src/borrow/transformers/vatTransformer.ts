@@ -12,7 +12,6 @@ import { normalizeAddressDefinition } from 'cache/src/utils';
 import { BigNumber } from 'bignumber.js';
 
 const vatAbi = require('../../../abis/vat.json');
-const cdpManagerAbi = require('../../../abis/dss-cdp-manager.json');
 
 
 /*
@@ -25,23 +24,34 @@ const vatNoteHandlers = {
         services: LocalServices,
         { note, log }: FullNoteEventInfo,
     ) {
+        const timestamp = await services.tx.oneOrNone(
+            `SELECT timestamp FROM vulcan2x.block WHERE id = \${block_id}`,
+            {
+                block_id: log.block_id,
+            },
+        );
+
         const values = {
             u: note.params.u,
             i: parseBytes32String(note.params.i),
             rate: note.params.rate.toString(),
 
+            timestamp: timestamp.timestamp,
             log_index: log.log_index,
             tx_id: log.tx_id,
             block_id: log.block_id,
         }
-        services.tx.none(`
-            INSERT INTO vat.fold(
-                i, rate, u, log_index, tx_id, block_id
-            ) VALUES (
-                \${i}, \${rate}, \${u}, \${log_index},
-                \${tx_id}, \${block_id}
-            );`,
+
+
+        await services.tx.none(`
+                INSERT INTO vat.fold(
+                    i, rate, u, log_index, tx_id, block_id, timestamp
+                ) VALUES (
+                    \${i}, \${rate}, \${u}, \${log_index},
+                    \${tx_id}, \${block_id}, \${timestamp}
+                );`,
             values)
+
     },
     async 'frob(bytes32,address,address,address,int256,int256)'(
         services: LocalServices,
@@ -77,11 +87,7 @@ const vatNoteHandlers = {
     }
 }
 
-export const getVatTransformerName = (address: string) => {
-    return `vatTransformer-${address}`
-}
-
-export const vatFrobTransformer: (
+export const vatTransformer: (
     addresses: (string | SimpleProcessorDefinition),
 ) => BlockTransformer = (addresses) => {
     const deps = normalizeAddressDefinition(addresses);
@@ -107,8 +113,12 @@ export const vatCombineTransformer: (
         dependencies: [getExtractorName(deps.address)],
         transformerDependencies: [`vatTransformer-${deps.address}`],
         startingBlock: deps.startingBlock,
-        transform: async (services, logs) => {
-            const blocks = Array.from(new Set(flatten(logs).map(log => log.block_id)))
+        transform: async (services, _logs) => {
+            const logs = flatten(_logs)
+            if (logs.length === 0) {
+                return;
+            }
+            const blocks = Array.from(new Set(logs.map(log => log.block_id)))
 
             const frobs = await services.tx.multi(`
             select 
@@ -138,37 +148,45 @@ export const vatCombineTransformer: (
                         !dink.isZero() && `${dink.gt(0) ? 'WITHDRAW' : 'DEPOSIT'}`,
                         !dart.isZero() && `${dart.gt(0) ? 'GENERATE' : 'PAYBACK'}`
                     ].filter(x => !!x).join('-'),
-                    collateral_amount: dink,
-                    dai_amount: dart.times(new BigNumber(frob.rate)),
+                    collateral_amount: dink.toString(),
+                    dai_amount: dart.times(new BigNumber(frob.rate)).toString(),
                     urn: frob.u,
                     timestamp: frob.timestamp,
                     tx_id: frob.tx_id,
                     block_id: frob.block_id,
                     log_index: frob.log_index,
-                    //dodac v, w
+                    v_gem: frob.v,
+                    w_dai: frob.w,
                 }
 
-
                 return e
-            })
+            }).filter(e => e !== undefined)
 
-            //
+            if (events.length === 0) {
+                return;
+            }
+
+            const cs = new services.pg.helpers.ColumnSet([
+                "kind",
+                "collateral_amount",
+                "dai_amount",
+                "urn",
+                "timestamp",
+                "tx_id",
+                "block_id",
+                "log_index",
+                "v_gem",
+                "w_dai",
+            ], {
+                table: {
+                    table: 'events',
+                    schema: 'vault',
+                }
+            });
 
 
-            const cs = new services.pg.helpers.ColumnSet([])
-
-
-            debugger
-
-            services.tx.none(`
-                INSERT INTO vault.events(
-                    this:name
-                )
-            `)
-
-
-
-            await handleDsNoteEvents(services, vatAbi, flatten(logs), vatNoteHandlers, 2);
+            const query = services.pg.helpers.insert(events, cs)
+            await services.tx.none(query)
         },
     };
 }
