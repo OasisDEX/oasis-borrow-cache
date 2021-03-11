@@ -2,9 +2,9 @@ import { makeRawLogExtractors } from '@oasisdex/spock-utils/dist//extractors//ra
 import { join } from 'path';
 
 import { UserProvidedSpockConfig } from '@oasisdex/spock-etl/dist/services/config';
-import { cdpTransformer, cdpTransformerNote, makeCDPNoteDependencies, vatUrnTransformerNote } from './borrow/transformers/CdpTransformer';
+import { managerFrobTransformer, managerGiveTransformer, openCdpTransformer } from './borrow/transformers/cdpManagerTransformer';
 
-import { makeManagerFrobDependencies, managerFrobTransformer, vatFrobTransformer } from './borrow/transformers/frobTransformer';
+import { vatCombineTransformer, vatFrobTransformer } from './borrow/transformers/vatTransformer';
 
 import { daiJoinTransformer } from './borrow/transformers/daiJoinTransformer';
 
@@ -35,12 +35,12 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors([vat]),
   ],
   transformers: [
-    ...cdpTransformer(cdpManagers),
-    ...cdpTransformerNote(cdpManagers),
-    ...managerFrobTransformer(cdpManagers, makeManagerFrobDependencies([vat])),
-    vatUrnTransformerNote(vat, makeCDPNoteDependencies(cdpManagers)),
+    ...openCdpTransformer(cdpManagers),
+    ...managerFrobTransformer(cdpManagers),
+    ...managerGiveTransformer(cdpManagers),
     daiJoinTransformer(daiJoin),
     vatFrobTransformer(vat),
+    vatCombineTransformer(vat),
   ],
   migrations: {
 

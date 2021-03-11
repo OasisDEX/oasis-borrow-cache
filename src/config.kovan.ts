@@ -1,21 +1,9 @@
-import { makeRawLogExtractors } from '@oasisdex/spock-utils/dist//extractors//rawEventDataExtractor';
-import { makeRawEventBasedOnTopicExtractor } from '@oasisdex/spock-utils/dist/extractors/rawEventBasedOnTopicExtractor';
-import { otcTransformerMarket } from './otc/transformers/OtcTransformerMarket';
-import { proxyActionsTransformer } from './multiply/transformers/OasisMultiplyProxyActionsTransformer';
+
 import { join } from 'path';
 import { values } from 'lodash';
-import {
-  mcdTransformerCat,
-  mcdTransformerFlip,
-  mcdTransformerFlipDsNote,
-} from './multiply/transformers/McdTransformer';
+
 import { Addresses, makeToken, lowercaseValues } from './addresses-utils';
-import { loadTokens } from './otc/transformers/tokens';
-import { cdpTransformer } from './multiply/transformers/CdpTransformer';
-import { trackAllNewlyCreatedProxies } from './multiply/transformers/dsProxyFactoryTransformer';
-import { UserProvidedSpockConfig } from '@oasisdex/spock-etl/dist/services/config';
-import { makeMidpointOfferExtractors } from './otc/extractors/midpointOfferExtractor';
-import { makeOtcMidpointPriceTransformer } from './otc/transformers/OtcMidpointPriceTransformer';
+
 
 const startingBlockMultiplyTrading = 18419868;
 const startingBlockMultiplyTradingLiq1_2 = 20465209;
@@ -239,64 +227,6 @@ const addresses: Addresses = {
   },
 };
 
-export const config: UserProvidedSpockConfig = {
-  startingBlock: 16530576,
-  extractors: [
-    ...makeRawLogExtractors(oasisContracts),
-    ...makeRawLogExtractors(mcdContracts),
-    ...makeRawLogExtractors(mcdContracts2),
-    ...makeRawEventBasedOnTopicExtractor(proxyActionsAbis),
-    ...makeRawLogExtractors(proxyFactory),
-    ...makeRawLogExtractors(cdpManagers),
-    ...makeMidpointOfferExtractors(
-      addresses.contracts.makerOtc,
-      [addresses.tokens['DAI'].key, addresses.tokens['WETH'].key],
-      startingBlockMultiplyTrading,
-    ),
-  ],
-  transformers: [
-    otcTransformerMarket(oasisContracts.map(e => e.address)),
+export const config = {
 
-    ...cdpTransformer(cdpManagers),
-    ...mcdTransformerCat(
-      cdpManagers.map(e => e.address),
-      [cat, cat2],
-    ),
-    ...mcdTransformerFlip(values(flippers).map(flip => ({ flip: flip, cat: cat.address }))),
-    ...mcdTransformerFlipDsNote(values(flippers)),
-    ...mcdTransformerFlip(values(flippers2).map(flip => ({ flip: flip, cat: cat2.address }))),
-    ...mcdTransformerFlipDsNote(values(flippers2)),
-
-    ...trackAllNewlyCreatedProxies(proxyFactory),
-    proxyActionsTransformer(
-      proxyFactory.map(pf => pf.address),
-      proxyActionsAbis.map(a => a.name),
-      startingBlockMultiplyTrading,
-    ),
-
-    makeOtcMidpointPriceTransformer(
-      addresses.contracts.makerOtc,
-      [addresses.tokens['DAI'].key, addresses.tokens['WETH'].key],
-      startingBlockMultiplyTrading,
-    ),
-  ],
-  migrations: {
-    otc: join(__dirname, './otc/migrations'),
-    multiply: join(__dirname, './multiply/migrations'),
-  },
-  extractorWorker: {
-    batch: 400,
-    reorgBuffer: 0, // we don't care about reorgs on kovan
-  },
-  api: {
-    whitelisting: {
-      enabled: false,
-      whitelistedQueriesDir: './queries',
-    },
-    responseCaching: {
-      enabled: false,
-    },
-  },
-  addresses,
-  onStart: loadTokens,
 };

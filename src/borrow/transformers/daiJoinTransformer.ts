@@ -41,7 +41,6 @@ const noteHandlers = {
              );`,
             values,
         );
-        debugger
     },
     async 'exit(address,uint256)'(
         services: LocalServices,
@@ -72,8 +71,6 @@ const noteHandlers = {
              );`,
             values,
         );
-
-        debugger
     }
 }
 
