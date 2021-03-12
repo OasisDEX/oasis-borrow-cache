@@ -1,10 +1,9 @@
 import { SimpleProcessorDefinition } from '@oasisdex/spock-utils/dist/extractors/rawEventDataExtractor';
-import { isString } from 'util';
 
 export function normalizeAddressDefinition(
   def: string | SimpleProcessorDefinition,
 ): SimpleProcessorDefinition {
-  if (isString(def)) {
+  if (typeof def === 'string') {
     return {
       address: def,
       startingBlock: undefined,

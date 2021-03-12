@@ -8,7 +8,7 @@ import {
 } from '@oasisdex/spock-utils/dist/extractors/rawEventDataExtractor';
 import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
-import { normalizeAddressDefinition } from 'cache/src/utils';
+import { normalizeAddressDefinition } from '../../utils';
 import { BigNumber } from 'bignumber.js';
 
 const vatAbi = require('../../../abis/vat.json');
@@ -19,7 +19,15 @@ const vatAbi = require('../../../abis/vat.json');
 - `dart`: change in debt.
 */
 
+const wad = new BigNumber(10).pow(18)
+const ray = new BigNumber(10).pow(27)
+const rad = new BigNumber(10).pow(45)
+
+
 const vatNoteHandlers = {
+    async 'hope'() {
+
+    },
     async 'fold(bytes32,address,int256)'(
         services: LocalServices,
         { note, log }: FullNoteEventInfo,
@@ -57,33 +65,39 @@ const vatNoteHandlers = {
         services: LocalServices,
         { note, log }: FullNoteEventInfo,
     ) {
-        const timestamp = await services.tx.oneOrNone(
-            `SELECT timestamp FROM vulcan2x.block WHERE id = \${block_id}`,
-            {
-                block_id: log.block_id,
-            },
-        );
+        try {
 
-        const values = {
-            dink: note.params.dink.toString(),
-            dart: note.params.dart.toString(),
-            ilk: parseBytes32String(note.params.i),
-            u: note.params.u,
-            v: note.params.v,
-            w: note.params.w,
-            timestamp: timestamp.timestamp,
-            log_index: log.log_index,
-            tx_id: log.tx_id,
-            block_id: log.block_id,
-        }
-        services.tx.none(`
+
+            const timestamp = await services.tx.oneOrNone(
+                `SELECT timestamp FROM vulcan2x.block WHERE id = \${block_id}`,
+                {
+                    block_id: log.block_id,
+                },
+            );
+
+            const values = {
+                dink: note.params.dink.toString(),
+                dart: note.params.dart.toString(),
+                ilk: parseBytes32String(note.params.i),
+                u: note.params.u,
+                v: note.params.v,
+                w: note.params.w,
+                timestamp: timestamp.timestamp,
+                log_index: log.log_index,
+                tx_id: log.tx_id,
+                block_id: log.block_id,
+            }
+            services.tx.none(`
             INSERT INTO vat.frob(
                 dart, dink, ilk, u, v, w, timestamp, log_index, tx_id, block_id
             ) VALUES (
                 \${dart}, \${dink}, \${ilk}, \${u}, \${v}, \${w}, \${timestamp}, \${log_index},
                 \${tx_id}, \${block_id}
             );`,
-            values)
+                values)
+        } catch (e) {
+            debugger
+        }
     }
 }
 
@@ -123,7 +137,7 @@ export const vatCombineTransformer: (
             const frobs = await services.tx.multi(`
             select 
                 frob.*, (
-                    select sum(rate) 
+                    select COALESCE(sum(rate), 0)
                     from vat.fold 
                     where 
                         i = frob.ilk and (
@@ -136,8 +150,9 @@ export const vatCombineTransformer: (
             `, [blocks])
 
             const events = flatten(frobs).map((frob) => {
-                const dink = new BigNumber(frob.dink)
-                const dart = new BigNumber(frob.dart)
+                const dink = new BigNumber(frob.dink).div(wad)
+                const dart = new BigNumber(frob.dart).div(wad)
+                const rate = (new BigNumber(ray).plus(new BigNumber(frob.rate))).div(ray)
 
                 if (frob.rate === null) {
                     console.log("RATE SHOULD NOT BE NULL")
@@ -145,11 +160,12 @@ export const vatCombineTransformer: (
                 }
                 const e = {
                     kind: [
-                        !dink.isZero() && `${dink.gt(0) ? 'WITHDRAW' : 'DEPOSIT'}`,
+                        !dink.isZero() && `${dink.gt(0) ? 'DEPOSIT' : 'WITHDRAW'}`,
                         !dart.isZero() && `${dart.gt(0) ? 'GENERATE' : 'PAYBACK'}`
                     ].filter(x => !!x).join('-'),
+                    rate: rate.toString(),
                     collateral_amount: dink.toString(),
-                    dai_amount: dart.times(new BigNumber(frob.rate)).toString(),
+                    dai_amount: dart.times(rate).toString(),
                     urn: frob.u,
                     timestamp: frob.timestamp,
                     tx_id: frob.tx_id,
@@ -177,6 +193,7 @@ export const vatCombineTransformer: (
                 "log_index",
                 "v_gem",
                 "w_dai",
+                "rate",
             ], {
                 table: {
                     table: 'events',

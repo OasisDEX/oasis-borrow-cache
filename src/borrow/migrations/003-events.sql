@@ -5,6 +5,7 @@ CREATE TABLE vault.events (
     kind                    character varying(20) not null,
     collateral_amount       decimal(78,18),
     dai_amount              decimal(78,18),
+    rate                    decimal(78,18),
     vault_creator           character varying(66),
     depositor               character varying(66),
     urn                     character varying(66) not null,
@@ -24,6 +25,6 @@ CREATE TABLE vault.events (
 CREATE INDEX vault_urn ON vault.events(urn);
 
 CREATE VIEW api.vault_events AS (
-    SELECT e.*, t.hash FROM vault.events e, vulcan2x.transaction t WHERE e.tx_id = t.id
+    SELECT e.*, t.hash, COALESCE(m.cdp_id, null) as vault_id FROM vault.events e, vulcan2x.transaction t, manager.cdp m WHERE e.tx_id = t.id AND e.urn = m.urn AND NOT e.kind = ''
     ORDER BY timestamp ASC, block_id ASC, log_index ASC
 ) 

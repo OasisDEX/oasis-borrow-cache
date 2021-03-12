@@ -10,9 +10,8 @@ import {
 } from '@oasisdex/spock-utils/dist/extractors/rawEventDataExtractor';
 import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
-import { normalizeAddressDefinition } from 'cache/src/utils';
+import { normalizeAddressDefinition } from '../../utils';
 import { Provider } from 'ethers/providers';
-import { debug } from 'console';
 
 const cdpManagerAbi = require('../../../abis/dss-cdp-manager.json');
 
@@ -29,32 +28,34 @@ const handleNewCdp = async (
       block_id: log.block_id,
     },
   );
-  const urn = await dependencies.getUrnForCdp((services as any).provider as Provider, params.cdp.toString())
 
-  const values = {
-    creator: params.usr.toLowerCase(),
-    owner: params.own.toLowerCase(),
-    address: log.address,
-    cdp_id: params.cdp.toString(),
-    urn,
-    log_index: log.log_index,
-    tx_id: log.tx_id,
-    block_id: log.block_id,
-    created_at: timestamp.timestamp,
-  };
+  try {
+    const urn = await dependencies.getUrnForCdp((services as any).provider as Provider, params.cdp.toString())
 
-  const eventValues = {
-    kind: 'OPEN',
-    urn,
-    vault_creator: params.usr.toLowerCase(),
-    timestamp: timestamp.timestamp,
-    log_index: log.log_index,
-    tx_id: log.tx_id,
-    block_id: log.block_id,
-    cdp_id: params.cdp.toString(),
-  }
+    const values = {
+      creator: params.usr.toLowerCase(),
+      owner: params.own.toLowerCase(),
+      address: log.address,
+      cdp_id: params.cdp.toString(),
+      urn: urn.toLowerCase(),
+      log_index: log.log_index,
+      tx_id: log.tx_id,
+      block_id: log.block_id,
+      created_at: timestamp.timestamp,
+    };
 
-  services.tx.none(`
+    const eventValues = {
+      kind: 'OPEN',
+      urn: urn.toLowerCase(),
+      vault_creator: params.usr.toLowerCase(),
+      timestamp: timestamp.timestamp,
+      log_index: log.log_index,
+      tx_id: log.tx_id,
+      block_id: log.block_id,
+      cdp_id: params.cdp.toString(),
+    }
+
+    services.tx.none(`
     INSERT INTO vault.events(
       kind,
       urn,
@@ -76,16 +77,19 @@ const handleNewCdp = async (
     )
   `, eventValues)
 
-  services.tx.none(
-    `INSERT INTO manager.cdp(
+    services.tx.none(
+      `INSERT INTO manager.cdp(
        creator, owner, address, cdp_id, urn, log_index, tx_id, block_id, created_at
      ) VALUES (
        \${creator}, \${owner}, \${address}, \${cdp_id}, \${urn}, \${log_index},
        \${tx_id}, \${block_id}, \${created_at}
      );`,
-    values,
-  );
-};
+      values,
+    );
+  } catch (e) {
+    console.log('unknown cdp')
+  };
+}
 
 const handlers = (dependencies: { getUrnForCdp: (provider: Provider, id: string) => Promise<string> }) => ({
   async NewCdp(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
@@ -117,47 +121,6 @@ export const openCdpTransformer: (
   });
 };
 
-const cdpManagerFrobNoteHandlers = {
-  async 'frob(uint256,int256,int256)'(
-    services: LocalServices,
-    { note, log }: FullNoteEventInfo,
-  ) {
-    const values = {
-      cdp_id: note.params.cdp.toString(),
-      dink: note.params.dink.toString(),
-      dart: note.params.dart.toString(),
-      log_index: log.log_index,
-      tx_id: log.tx_id,
-      block_id: log.block_id,
-    }
-    services.tx.none(
-      `INSERT INTO manager.frob(
-        cdp_id, dink, dart, log_index, tx_id, block_id
-      ) VALUES (
-        \${cdp_id}, \${dink}, \${dart}, \${log_index},
-        \${tx_id}, \${block_id}
-      );`,
-      values)
-  }
-}
-
-export const managerFrobTransformer: (
-  addresses: (string | SimpleProcessorDefinition)[]
-) => BlockTransformer[] = (addresses) => {
-  return addresses.map(_deps => {
-    const deps = normalizeAddressDefinition(_deps);
-
-    return {
-      name: `managerFrobNoteTransformer-${deps.address}`,
-      dependencies: [getExtractorName(deps.address)],
-      startingBlock: deps.startingBlock,
-      transform: async (services, logs) => {
-        await handleDsNoteEvents(services, cdpManagerAbi, flatten(logs), cdpManagerFrobNoteHandlers, 2);
-      },
-    };
-  });
-}
-
 const cdpManagerGiveNoteHandlers = (migrationAddress: string) => ({
   async 'give(uint256,address)'(
     services: LocalServices,
@@ -175,9 +138,13 @@ const cdpManagerGiveNoteHandlers = (migrationAddress: string) => ({
       },
     );
 
+    if (note.params.caller.toLowerCase() === migrationAddress.toLowerCase()) {
+      debugger
+    }
+
     const values = {
-      kind: note.params.dst.toLowerCase() === migrationAddress.toLowerCase() ? 'MIGRATE' : "TRANSFER",
-      cdp_id: note.params.cdp.toString(),
+      kind: note.params.caller.toLowerCase() === migrationAddress.toLowerCase() ? 'MIGRATE' : "TRANSFER",
+      cdp_id: cdp.cdp_id,
       transfer_from: note.caller,
       transfer_to: note.params.dst,
       urn: cdp.urn,
@@ -187,6 +154,8 @@ const cdpManagerGiveNoteHandlers = (migrationAddress: string) => ({
       tx_id: log.tx_id,
       block_id: log.block_id,
     }
+
+    debugger
 
 
     services.tx.none(

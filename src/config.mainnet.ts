@@ -2,24 +2,16 @@ import { makeRawLogExtractors } from '@oasisdex/spock-utils/dist//extractors//ra
 import { join } from 'path';
 
 import { UserProvidedSpockConfig } from '@oasisdex/spock-etl/dist/services/config';
-import { managerFrobTransformer, managerGiveTransformer, openCdpTransformer } from './borrow/transformers/cdpManagerTransformer';
+import { managerGiveTransformer, openCdpTransformer } from './borrow/transformers/cdpManagerTransformer';
 
 import { vatCombineTransformer, vatTransformer } from './borrow/transformers/vatTransformer';
 
-import { daiJoinTransformer } from './borrow/transformers/daiJoinTransformer';
-
-const migrationAddress = '0xc73e0383F3Aff3215E6f04B0331D58CeCf0Ab849'
+const migrationAddress = '0xc73e0383f3aff3215e6f04b0331d58cecf0ab849'
 
 const vat = {
   address: '0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b',
   startingBlock: 8928152
 }
-
-const daiJoin = {
-  address: '0x9759A6Ac90977b93B58547b4A71c78317f391A28',
-  startingBlock: 8928130,
-}
-
 
 const cdpManagers = [
   {
@@ -32,14 +24,11 @@ export const config: UserProvidedSpockConfig = {
   startingBlock: 8928152,
   extractors: [
     ...makeRawLogExtractors(cdpManagers),
-    ...makeRawLogExtractors([daiJoin]),
     ...makeRawLogExtractors([vat]),
   ],
   transformers: [
     ...openCdpTransformer(cdpManagers),
-    ...managerFrobTransformer(cdpManagers),
     ...managerGiveTransformer(cdpManagers, migrationAddress),
-    daiJoinTransformer(daiJoin),
     vatTransformer(vat),
     vatCombineTransformer(vat),
   ],

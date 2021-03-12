@@ -16,7 +16,6 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "composite": true,
-    "baseUrl": ".",
     "tsBuildInfoFile": ".build-cache/cache.tsbuildinfo",
     "outDir": "./lib",
     "rootDir": "./src"
