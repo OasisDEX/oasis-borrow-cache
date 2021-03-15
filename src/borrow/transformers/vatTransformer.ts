@@ -40,7 +40,7 @@ const vatNoteHandlers = {
         );
 
         const values = {
-            u: note.params.u,
+            u: note.params.u.toLowerCase(),
             i: parseBytes32String(note.params.i),
             rate: note.params.rate.toString(),
 
@@ -66,22 +66,19 @@ const vatNoteHandlers = {
         { note, log }: FullNoteEventInfo,
     ) {
         try {
-
-
             const timestamp = await services.tx.oneOrNone(
                 `SELECT timestamp FROM vulcan2x.block WHERE id = \${block_id}`,
                 {
                     block_id: log.block_id,
                 },
             );
-
             const values = {
                 dink: note.params.dink.toString(),
                 dart: note.params.dart.toString(),
                 ilk: parseBytes32String(note.params.i),
-                u: note.params.u,
-                v: note.params.v,
-                w: note.params.w,
+                u: note.params.u.toLowerCase(),
+                v: note.params.v.toLowerCase(),
+                w: note.params.w.toLowerCase(),
                 timestamp: timestamp.timestamp,
                 log_index: log.log_index,
                 tx_id: log.tx_id,
