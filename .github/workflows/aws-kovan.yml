@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - mater
+      - master
 
 name: Deploy to Amazon ECS
 
