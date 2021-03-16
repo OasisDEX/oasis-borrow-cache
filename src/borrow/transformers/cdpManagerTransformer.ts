@@ -16,7 +16,6 @@ import { Provider } from 'ethers/providers';
 const cdpManagerAbi = require('../../../abis/dss-cdp-manager.json');
 
 const handleNewCdp = async (
-  _type: string,
   params: Dictionary<any>,
   log: PersistedLog,
   services: LocalServices,
@@ -93,7 +92,7 @@ const handleNewCdp = async (
 
 const handlers = (dependencies: { getUrnForCdp: (provider: Provider, id: string) => Promise<string> }) => ({
   async NewCdp(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
-    await handleNewCdp('NewCdp', event.params, log, services, dependencies);
+    await handleNewCdp(event.params, log, services, dependencies);
   },
 });
 
@@ -138,15 +137,11 @@ const cdpManagerGiveNoteHandlers = (migrationAddress: string) => ({
       },
     );
 
-    if (note.params.caller.toLowerCase() === migrationAddress.toLowerCase()) {
-      debugger
-    }
-
     const values = {
-      kind: note.params.caller.toLowerCase() === migrationAddress.toLowerCase() ? 'MIGRATE' : "TRANSFER",
+      kind: note.caller.toLowerCase() === migrationAddress.toLowerCase() ? 'MIGRATE' : "TRANSFER",
       cdp_id: cdp.cdp_id,
-      transfer_from: note.caller,
-      transfer_to: note.params.dst,
+      transfer_from: note.caller.toLowerCase(),
+      transfer_to: note.params.dst.toLowerCase(),
       urn: cdp.urn,
       timestamp: timestamp.timestamp,
 
@@ -154,9 +149,6 @@ const cdpManagerGiveNoteHandlers = (migrationAddress: string) => ({
       tx_id: log.tx_id,
       block_id: log.block_id,
     }
-
-    debugger
-
 
     services.tx.none(
       `INSERT INTO vault.events(
