@@ -1,4 +1,4 @@
-import { flatten } from 'lodash';
+import { flatten, memoize } from 'lodash';
 import { Dictionary } from 'ts-essentials'
 
 import { handleEvents, FullEventInfo } from '@oasisdex/spock-utils/dist/transformers/common';
@@ -7,29 +7,48 @@ import {
     PersistedLog,
     SimpleProcessorDefinition,
 } from '@oasisdex/spock-utils/dist/extractors/rawEventDataExtractor';
-import { getExtractorName as getExtractorNameBasedOnTopic } from '@oasisdex/spock-utils/dist/extractors/rawEventBasedOnTopicExtractor';
 import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
-import { normalizeAddressDefinition } from '../../utils';
+import { getAddressesFromConfig, normalizeAddressDefinition } from '../../utils';
 import { parseBytes32String } from 'ethers/utils';
+import { ethers } from 'ethers';
+import BigNumber from 'bignumber.js';
 
 
 const catAbi = require('../../../abis/cat.json');
-const flipAbi = require('../../../abis/flipper.json');
+const ilkRegistryAbi = require('../../../abis/ilk-registry.json')
 
-const handleBite = async (
+interface Ilk {
+    dec: BigNumber,
+    flip: string,
+    gem: string,
+    name: string,
+    pos: string,
+    symbol: string,
+}
+async function getIlkInfo_(ilk: string, services: LocalServices): Promise<Ilk> {
+    const addresses = getAddressesFromConfig(services)
+    const ilkRegistry = new ethers.Contract(addresses.ILK_REGISTRY, ilkRegistryAbi, (services as any).provider)
+
+    return ilkRegistry.ilkData(ilk)
+}
+
+const getIlkInfo = memoize(getIlkInfo_)
+
+
+async function handleBite(
     params: Dictionary<any>,
     log: PersistedLog,
     services: LocalServices,
-) => {
+) {
     const values = {
         auction_id: params.id.toString(),
         ilk: parseBytes32String(params.ilk),
-        urn: params.urn,
+        urn: params.urn.toLowerCase(),
         ink: params.ink.toString(),
         art: params.art.toString(),
         tab: params.tab.toString(),
-        flip: params.flip,
+        flip: params.flip.toLowerCase(),
 
         log_index: log.log_index,
         tx_id: log.tx_id,
@@ -48,20 +67,31 @@ const handleBite = async (
     )
 }
 
-const handleKick = async (
+async function handleAuctionStarted(
     params: Dictionary<any>,
     log: PersistedLog,
     services: LocalServices,
-) => {
+) {
 
-    debugger
-    const values = {
+
+    const timestamp = await services.tx.oneOrNone(
+        `SELECT timestamp FROM vulcan2x.block WHERE id = \${block_id}`,
+        {
+            block_id: log.block_id,
+        },
+    );
+
+    const ilkData = await getIlkInfo(params.ilk, services)
+
+    const event = {
+        kind: "AUCTION_STARTED",
+        collateral: ilkData.symbol,
+        collateral_amount: new BigNumber(params.ink).div(new BigNumber(10).pow(ilkData.dec.toNumber())).toString(),
+        dai_amount: new BigNumber(params.art).div(new BigNumber(10).pow(18)).toString(),
         auction_id: params.id.toString(),
-        lot: params.lot.toString(),
-        bid: params.bid.toString(),
-        tab: params.tab.toString(),
-        usr: params.usr,
-        gal: params.gal,
+        urn: params.urn.toLowerCase(),
+        timestamp: timestamp.timestamp,
+
 
         log_index: log.log_index,
         tx_id: log.tx_id,
@@ -69,27 +99,25 @@ const handleKick = async (
     }
 
     services.tx.none(
-        `INSERT INTO auctions.kick(
-          lot, bid, tab, usr, gal, auction_id,
+        `INSERT INTO vault.events(
+          kind, collateral, collateral_amount, dai_amount, timestamp, auction_id, urn,
           log_index, tx_id, block_id
         ) VALUES (
-          \${lot}, \${bid}, \${tab}, \${usr}, \${gal}, \${auction_id},
+          \${kind}, \${collateral}, \${collateral_amount}, \${dai_amount}, \${timestamp}, \${auction_id}, \${urn},
           \${log_index}, \${tx_id}, \${block_id}
         );`,
-        values
+        event
     )
-
-    debugger
 }
 
 const handlers = {
     async Bite(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
-        await handleBite(event.params, log, services);
-    },
-    async Kick(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
-        await handleKick(event.params, log, services);
+        await handleBite(event.params, log, services)
+        await handleAuctionStarted(event.params, log, services)
     },
 }
+
+export const getCatTransformerName = (address: string) => `catTransformer-${address}`
 
 export const catTransformer: (
     addresses: (string | SimpleProcessorDefinition)[],
@@ -98,7 +126,7 @@ export const catTransformer: (
         const deps = normalizeAddressDefinition(_deps);
 
         return {
-            name: `catTransformer-${deps.address}`,
+            name: getCatTransformerName(deps.address),
             dependencies: [getExtractorName(deps.address)],
             startingBlock: deps.startingBlock,
             transform: async (services, logs) => {
@@ -106,25 +134,4 @@ export const catTransformer: (
             },
         };
     });
-};
-
-export const flipTransformer: (
-    dependencies: (string | SimpleProcessorDefinition)[],
-) => BlockTransformer = dependencies => {
-
-    const transformerDependencies = dependencies
-        .map(normalizeAddressDefinition)
-        .map(dep => `catTransformer-${dep.address}`)
-
-    return {
-        name: `flipTransformer`,
-        dependencies: [getExtractorNameBasedOnTopic('flipper-actions')],
-        transformerDependencies: transformerDependencies,
-        transform: async (services, logs) => {
-            if (flatten(logs).length > 0) {
-                debugger
-            }
-            await handleEvents(services, flipAbi, flatten(logs), handlers);
-        },
-    };
 };

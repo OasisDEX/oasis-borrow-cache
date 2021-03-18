@@ -10,7 +10,7 @@ import {
 } from '@oasisdex/spock-utils/dist/extractors/rawEventDataExtractor';
 import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
-import { normalizeAddressDefinition } from '../../utils';
+import { getAddressesFromConfig, normalizeAddressDefinition } from '../../utils';
 import { Provider } from 'ethers/providers';
 
 const cdpManagerAbi = require('../../../abis/dss-cdp-manager.json');
@@ -164,9 +164,8 @@ const cdpManagerGiveNoteHandlers = (migrationAddress: string) => ({
 })
 
 export const managerGiveTransformer: (
-  addresses: (string | SimpleProcessorDefinition)[],
-  migrationAddress: string,
-) => BlockTransformer[] = (addresses, migrationAddress) => {
+  addresses: (string | SimpleProcessorDefinition)[]
+) => BlockTransformer[] = (addresses) => {
   return addresses.map(_deps => {
     const deps = normalizeAddressDefinition(_deps);
 
@@ -176,7 +175,8 @@ export const managerGiveTransformer: (
       transformerDependencies: [`openCdpTransformer-${deps.address}`],
       startingBlock: deps.startingBlock,
       transform: async (services, logs) => {
-        await handleDsNoteEvents(services, cdpManagerAbi, flatten(logs), cdpManagerGiveNoteHandlers(migrationAddress), 2);
+        const addresses = getAddressesFromConfig(services)
+        await handleDsNoteEvents(services, cdpManagerAbi, flatten(logs), cdpManagerGiveNoteHandlers(addresses.MIGRATION), 2);
       },
     };
   });

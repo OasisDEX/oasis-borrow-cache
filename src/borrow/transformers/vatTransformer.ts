@@ -1,6 +1,6 @@
 import { flatten } from 'lodash';
-import { parseBytes32String } from 'ethers/utils';
-
+import { formatBytes32String, parseBytes32String } from 'ethers/utils';
+import { ethers } from 'ethers';
 import { handleDsNoteEvents, FullNoteEventInfo } from '@oasisdex/spock-utils/dist/transformers/common';
 import {
     getExtractorName,
@@ -8,11 +8,10 @@ import {
 } from '@oasisdex/spock-utils/dist/extractors/rawEventDataExtractor';
 import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
-import { normalizeAddressDefinition } from '../../utils';
+import { getAddressesFromConfig, normalizeAddressDefinition } from '../../utils';
 import { BigNumber } from 'bignumber.js';
 
 const vatAbi = require('../../../abis/vat.json');
-
 
 /*
 - `dink`: change in collateral.
@@ -25,9 +24,6 @@ const rad = new BigNumber(10).pow(45)
 
 
 const vatNoteHandlers = {
-    async 'hope'() {
-
-    },
     async 'fold(bytes32,address,int256)'(
         services: LocalServices,
         { note, log }: FullNoteEventInfo,

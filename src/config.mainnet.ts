@@ -6,9 +6,9 @@ import { UserProvidedSpockConfig } from '@oasisdex/spock-etl/dist/services/confi
 import { managerGiveTransformer, openCdpTransformer } from './borrow/transformers/cdpManagerTransformer';
 
 import { vatCombineTransformer, vatTransformer } from './borrow/transformers/vatTransformer';
-import { catTransformer, flipTransformer } from './borrow/transformers/catTransformer';
-
-const migrationAddress = '0xc73e0383f3aff3215e6f04b0331d58cecf0ab849'
+import { catTransformer } from './borrow/transformers/catTransformer';
+import { AbiInfo, makeRowEventBasedOnDSNoteTopic } from './borrow/customExtractor';
+import { flipNoteTransformer, flipTransformer } from './borrow/transformers/flipperTransformer';
 
 const vat = {
   address: '0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b',
@@ -33,33 +33,49 @@ const cats = [
   },
 ]
 
-const flipperActions = [
+const flipper = [
   {
-    name: 'flipper-actions',
+    name: 'flipper',
     abi: require('../abis/flipper.json'),
     startingBlock: 8928152,
   }
 ]
 
+const flipperNotes: AbiInfo[] = [
+  {
+    name: 'flipper',
+    functionNames: ['tend(uint256,uint256,uint256)', 'dent(uint256,uint256,uint256)', 'deal(uint256)'],
+    abi: require('../abis/flipper.json'),
+    startingBlock: 8928152,
+  }
+]
+
+const addresses = {
+  MIGRATION: '0xc73e0383f3aff3215e6f04b0331d58cecf0ab849',
+  ILK_REGISTRY: '0x8b4ce5dcbb01e0e1f0521cd8dcfb31b308e52c24',
+}
+
 export const config: UserProvidedSpockConfig = {
-  startingBlock: 11912600,
+  startingBlock: 8928152, // 11912600, //
   extractors: [
     ...makeRawLogExtractors(cdpManagers),
     ...makeRawLogExtractors(cats),
     ...makeRawLogExtractors([vat]),
-    ...makeRawEventBasedOnTopicExtractor(flipperActions)
+    ...makeRawEventBasedOnTopicExtractor(flipper),
+    ...makeRowEventBasedOnDSNoteTopic(flipperNotes)
   ],
   transformers: [
     ...openCdpTransformer(cdpManagers),
-    ...managerGiveTransformer(cdpManagers, migrationAddress),
+    ...managerGiveTransformer(cdpManagers),
     ...catTransformer(cats),
     vatTransformer(vat),
     vatCombineTransformer(vat),
     flipTransformer(cats),
+    flipNoteTransformer(cats),
   ],
   migrations: {
-
     borrow: join(__dirname, './borrow/migrations'),
   },
+  addresses,
   onStart: () => { }
 };

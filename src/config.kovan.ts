@@ -7,8 +7,6 @@ import { managerGiveTransformer, openCdpTransformer } from './borrow/transformer
 import { vatCombineTransformer, vatTransformer } from './borrow/transformers/vatTransformer';
 import { catTransformer } from './borrow/transformers/catTransformer';
 
-const migrationAddress = '0xc73e0383f3aff3215e6f04b0331d58cecf0ab849'
-
 const vat = {
   address: '0xbA987bDB501d131f766fEe8180Da5d81b34b69d9',
   startingBlock: 14764534
@@ -41,7 +39,7 @@ export const config: UserProvidedSpockConfig = {
   ],
   transformers: [
     ...openCdpTransformer(cdpManagers),
-    ...managerGiveTransformer(cdpManagers, migrationAddress),
+    ...managerGiveTransformer(cdpManagers),
     ...catTransformer(cats),
     vatTransformer(vat),
     vatCombineTransformer(vat),
