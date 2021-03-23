@@ -2,15 +2,18 @@ import { makeRawLogExtractors } from '@oasisdex/spock-utils/dist//extractors//ra
 import { join } from 'path';
 
 import { UserProvidedSpockConfig } from '@oasisdex/spock-etl/dist/services/config';
-import { managerGiveTransformer, openCdpTransformer } from './borrow/transformers/cdpManagerTransformer';
+import {
+  managerGiveTransformer,
+  openCdpTransformer,
+} from './borrow/transformers/cdpManagerTransformer';
 
 import { vatCombineTransformer, vatTransformer } from './borrow/transformers/vatTransformer';
 import { catTransformer } from './borrow/transformers/catTransformer';
 
 const vat = {
   address: '0xbA987bDB501d131f766fEe8180Da5d81b34b69d9',
-  startingBlock: 14764534
-}
+  startingBlock: 14764534,
+};
 
 const cdpManagers = [
   {
@@ -28,7 +31,7 @@ const cats = [
     address: '0xa5679C04fc3d9d8b0AaB1F0ab83555b301cA70Ea',
     startingBlock: 10742907,
   },
-]
+];
 
 export const config: UserProvidedSpockConfig = {
   startingBlock: 8928152,
@@ -45,8 +48,7 @@ export const config: UserProvidedSpockConfig = {
     vatCombineTransformer(vat),
   ],
   migrations: {
-
     borrow: join(__dirname, './borrow/migrations'),
   },
-  onStart: () => { }
+  onStart: () => {},
 };

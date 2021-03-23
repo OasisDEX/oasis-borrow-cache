@@ -1,8 +1,6 @@
 import { config as mainConfig } from './config.mainnet';
 import { config as kovanConfig } from './config.kovan';
 import { config as localConfig } from './config.localnet';
-import { ethers } from 'ethers';
-
 
 const config = (() => {
   switch (process.env.VL_CHAIN_NAME) {

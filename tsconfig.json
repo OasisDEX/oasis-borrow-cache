@@ -7,10 +7,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "forceConsistentCasingInFileNames": true,
-    "lib": [
-      "es2017",
-      "esnext.asynciterable"
-    ],
+    "lib": ["es2017", "esnext.asynciterable"],
     "sourceMap": true,
     "declaration": true,
     "resolveJsonModule": true,
@@ -20,7 +17,5 @@
     "outDir": "./lib",
     "rootDir": "./src"
   },
-  "include": [
-    "src",
-  ]
+  "include": ["src"]
 }
