@@ -62,7 +62,7 @@ const handleNewCdp = async (
     cdp_id: params.cdp.toString(),
   };
 
-  services.tx.none(
+  await services.tx.none(
     `
     INSERT INTO vault.events(
       kind,
@@ -87,7 +87,7 @@ const handleNewCdp = async (
     eventValues,
   );
 
-  services.tx.none(
+  await services.tx.none(
     `INSERT INTO manager.cdp(
        creator, owner, address, cdp_id, urn, log_index, tx_id, block_id, created_at
      ) VALUES (

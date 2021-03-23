@@ -195,7 +195,7 @@ export const vatCombineTransformer: (
             schema: 'vault',
           },
         },
-      ); // try moving it outside
+      );
 
       const query = services.pg.helpers.insert(events, cs);
       await services.tx.none(query);
