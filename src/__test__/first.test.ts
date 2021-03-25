@@ -1,18 +1,26 @@
 import { pick, omit } from 'lodash';
-import { runIntegrationTest, withScopedEnv, dumpDB, getSQL, createTestServices } from '@oasisdex/spock-test-utils';
+import { prepareDB, getTestConfig, runIntegrationTest, withScopedEnv, dumpDB, getSQL, createTestServices } from '@oasisdex/spock-test-utils';
 import { withConnection, DB } from '@oasisdex/spock-etl/dist/db/db';
 import { join } from 'path';
-import { JsonRpcProvider } from 'ethers/providers';
+import { JsonRpcProvider, Provider } from 'ethers/providers';
 import { expect } from 'chai'
 
-import { } from '../transformers/cdpManagerTransformer'
+import { handlers } from '../borrow/transformers/cdpManagerTransformer'
+import config from '../config'
 
 describe('all', () => {
-  beforeEach(async () => {
-    const services = await createTestServices()
-    await dumpDB(services.db)
+  beforeEach(async (done) => {
+    process.env.VL_CHAIN_NAME = 'mainnet'
+    const testConfig = getTestConfig()
+
+    const services = await createTestServices({ config: testConfig })
+    // console.log(services.db)
+    await dumpDB(testConfig.db)
+    done()
   })
   it('works', () => {
+    const { NewCdp } = handlers({ getUrnForCdp: async (_provider: Provider, _id: string) => '0x1' })
+    console.log(NewCdp)
     expect('a').eq('a')
   })
 });

@@ -90,7 +90,7 @@ const handleNewCdp = async (
   };
 }
 
-const handlers = (dependencies: { getUrnForCdp: (provider: Provider, id: string) => Promise<string> }) => ({
+export const handlers = (dependencies: { getUrnForCdp: (provider: Provider, id: string) => Promise<string> }) => ({
   async NewCdp(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
     await handleNewCdp(event.params, log, services, dependencies);
   },
