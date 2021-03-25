@@ -1,11 +1,17 @@
 import { pick, omit } from 'lodash';
-import { runIntegrationTest, withScopedEnv, dumpDB, getSQL } from '@oasisdex/spock-test-utils';
+import { runIntegrationTest, withScopedEnv, dumpDB, getSQL, createTestServices } from '@oasisdex/spock-test-utils';
 import { withConnection, DB } from '@oasisdex/spock-etl/dist/db/db';
 import { join } from 'path';
 import { JsonRpcProvider } from 'ethers/providers';
 import { expect } from 'chai'
 
+import { } from '../transformers/cdpManagerTransformer'
+
 describe('all', () => {
+  beforeEach(async () => {
+    const services = await createTestServices()
+    await dumpDB(services.db)
+  })
   it('works', () => {
     expect('a').eq('a')
   })
