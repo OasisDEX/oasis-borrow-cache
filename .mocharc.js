@@ -17,14 +17,8 @@ module.exports = {
     extension: ['ts'],
     watchExtensions: ['ts'],
     spec: ['./src/**/*.test.ts'],
-    timeout: 3000,
+    timeout: 150000,
 }
-
-// do not import files that we don't care about
-function noop() {
-    return null
-}
-require.extensions['.svg'] = noop
 
 // setup chai
 var chai = require('chai')

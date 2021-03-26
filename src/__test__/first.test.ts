@@ -5,23 +5,27 @@ import { join } from 'path';
 import { JsonRpcProvider, Provider } from 'ethers/providers';
 import { expect } from 'chai'
 
-import { handlers } from '../borrow/transformers/cdpManagerTransformer'
-import config from '../config'
-
 describe('all', () => {
-  beforeEach(async (done) => {
-    process.env.VL_CHAIN_NAME = 'mainnet'
-    const testConfig = getTestConfig()
+  it('NewCdp event', async (done) => {
+    process.env.VL_CHAIN_NAME = 'mainnet';
+    process.env.VL_CHAIN_HOST =
+      'https://eth-mainnet.alchemyapi.io/jsonrpc/UHaa9ZvfSFjO18VREBbH7uTOIYQy02qL';
+    process.env.VL_LOGGING_LEVEL = '2';
 
-    const services = await createTestServices({ config: testConfig })
-    // console.log(services.db)
-    await dumpDB(testConfig.db)
-    done()
-  })
-  it('works', () => {
-    const { NewCdp } = handlers({ getUrnForCdp: async (_provider: Provider, _id: string) => '0x1' })
-    console.log(NewCdp)
-    expect('a').eq('a')
+    const config = require('../config').default
+    return await withScopedEnv(join(__dirname, '../../'), async () => {
+      console.log('test')
+      const firstVaultBlock = 8928198
+      const services = await runIntegrationTest({
+        ...config,
+        startingBlock: firstVaultBlock,
+        lastBlock: firstVaultBlock + 1,
+      })
+
+      const vault = await services.db.oneOrNone('SELECT * FROM manager.cdp WHERE id = "1"')
+      console.log({ vault })
+      expect('a').eq('a')
+    })
   })
 });
 
