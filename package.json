@@ -30,6 +30,7 @@
     "@types/node": "^10.12.18",
     "@types/promise-retry": "^1.1.1",
     "chai": "^4.3.4",
+    "earljs": "^0.1.10",
     "mocha": "^8.3.2",
     "prettier": "^1.19.1",
     "sinon-chai": "^3.6.0",
