@@ -27,7 +27,6 @@ const rad = new BigNumber(10).pow(45);
 
 const vatNoteHandlers = {
   async 'fold(bytes32,address,int256)'(services: LocalServices, { note, log }: FullNoteEventInfo) {
-    debugger;
     const timestamp = await services.tx.oneOrNone(
       `SELECT timestamp FROM vulcan2x.block WHERE id = \${block_id}`,
       {

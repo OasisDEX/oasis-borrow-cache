@@ -6,5 +6,8 @@
       "esnext"
     ],
   },
-  "exclude": []
+  "include": [
+    "./src",
+    "./test"
+  ]
 }

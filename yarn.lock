@@ -151,7 +151,7 @@
 
 "@oasisdex/spock-test-utils@^0.1.1":
   version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@oasisdex/spock-test-utils/-/spock-test-utils-0.1.1.tgz"
+  resolved "https://registry.yarnpkg.com/@oasisdex/spock-test-utils/-/spock-test-utils-0.1.1.tgz#909498a3416b978a627521434332345977842fce"
   integrity sha512-sWoEWnjMyiQq6eZ0AMooSR2POz5m7Jno/QrRBtipMpit7hpScerBzNKaIpely3oXNUdhRLZ3NHRUTIajjxyvfQ==
   dependencies:
     ts-essentials "^6.0.2"

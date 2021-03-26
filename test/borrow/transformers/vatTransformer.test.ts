@@ -45,7 +45,7 @@ describe('vatTransformer', () => {
 
   afterEach(() => destroyTestServices(services));
 
-  it('works', async () => {
+  it('parse fold events', async () => {
     const transformerInstance = vatTransformer(constants.AddressZero);
     const data = require('../../fixture/fold-log.json');
 
@@ -62,6 +62,29 @@ describe('vatTransformer', () => {
         timestamp: new Date('2019-07-02T11:18:01.000Z'),
         tx_id: 1,
         u: '0xa950524441892a31ebddf91d3ceefa04bf454466',
+      },
+    ]);
+  });
+  it('parse frob events', async () => {
+    const transformerInstance = vatTransformer(constants.AddressZero);
+    const data = require('../../fixture/frob-log.json');
+
+    await transformerInstance.transform(txServices, data);
+
+    const allFrobs = await getSQL(services.db, `SELECT * FROM vat.frob;`);
+    expect(allFrobs).toEqual([
+      {
+        id: 1,
+        dart: '0.000000000000000000',
+        dink: '100000000000000000.000000000000000000',
+        ilk: 'ETH-A',
+        u: '0x9fdc236bb08b80b5ab3d3bf7140b5068cc2ea88a',
+        v: '0x9fdc236bb08b80b5ab3d3bf7140b5068cc2ea88a',
+        w: '0x9fdc236bb08b80b5ab3d3bf7140b5068cc2ea88a',
+        log_index: 1,
+        tx_id: 1,
+        block_id: 1,
+        timestamp: new Date('2019-07-02T11:18:01.000Z')
       },
     ]);
   });
