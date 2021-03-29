@@ -31,7 +31,7 @@ const handleKick = async (
         block_id: log.block_id,
     }
 
-    services.tx.none(
+    await services.tx.none(
         `INSERT INTO auctions.kick(
           lot, bid, tab, usr, gal, auction_id, flipper,
           log_index, tx_id, block_id
@@ -83,7 +83,7 @@ const handleNote = {
             block_id: log.block_id,
         }
 
-        services.tx.none(
+        await services.tx.none(
             `INSERT INTO auctions.tend(
               lot, bid, auction_id, flipper,
               log_index, tx_id, block_id
@@ -109,7 +109,7 @@ const handleNote = {
             block_id: log.block_id,
         }
 
-        services.tx.none(
+        await services.tx.none(
             `INSERT INTO auctions.dent(
               lot, bid, auction_id, flipper,
               log_index, tx_id, block_id
@@ -133,7 +133,7 @@ const handleNote = {
             block_id: log.block_id,
         }
 
-        services.tx.none(
+        await services.tx.none(
             `INSERT INTO auctions.deal(
               auction_id, flipper,
               log_index, tx_id, block_id
@@ -163,43 +163,3 @@ export const flipNoteTransformer: (
         },
     };
 };
-
-// export const flipDealNoteTransformer: () => BlockTransformer = () => {
-//     return {
-//         name: `flipperDealNoteTransformer`,
-//         dependencies: [getExtractorNameBasedOnDSNoteTopic('flipper')],
-//         transformerDependencies: ['flipperNoteTransformer'],
-//         transform: async (services, _logs) => {
-//             const logs = flatten(_logs)
-//             if (logs.length === 0) {
-//                 return;
-//             }
-//             const blocks = Array.from(new Set(logs.map(log => log.block_id)))
-//             debugger
-//             const deals = await services.tx.multi(`select * from auctions.deal where block_id in (\$1:csv)`, [blocks])
-
-//             debugger
-//         },
-//     };
-// };
-
-
-/*
-
-     const tends = await services.tx.oneOrNone(
-            `SELECT * FROM auctions.tend WHERE auction_id = \${auction_id} and flipper = \${flipper}`,
-            {
-                auction_id: note.params.id.toString(),
-                flipper: log.address.toLowerCase(),
-            }
-        )
-
-        const dents = await services.tx.oneOrNone(
-            `SELECT * FROM auctions.dent WHERE auction_id = \${auction_id} and flipper = \${flipper}`,
-            {
-                auction_id: note.params.id.toString(),
-                flipper: log.address.toLowerCase(),
-            }
-        )
-
-        */

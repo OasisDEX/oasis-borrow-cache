@@ -23,7 +23,6 @@ const vatAbi = require('../../../abis/vat.json');
 
 const wad = new BigNumber(10).pow(18);
 const ray = new BigNumber(10).pow(27);
-const rad = new BigNumber(10).pow(45);
 
 const vatNoteHandlers = {
   async 'fold(bytes32,address,int256)'(services: LocalServices, { note, log }: FullNoteEventInfo) {
@@ -60,39 +59,42 @@ const vatNoteHandlers = {
     services: LocalServices,
     { note, log }: FullNoteEventInfo,
   ) {
-    debugger;
-    try {
-      const timestamp = await services.tx.oneOrNone(
-        `SELECT timestamp FROM vulcan2x.block WHERE id = \${block_id}`,
-        {
-          block_id: log.block_id,
-        },
-      );
-      const values = {
-        dink: note.params.dink.toString(),
-        dart: note.params.dart.toString(),
-        ilk: parseBytes32String(note.params.i),
-        u: note.params.u.toLowerCase(),
-        v: note.params.v.toLowerCase(),
-        w: note.params.w.toLowerCase(),
-        timestamp: timestamp.timestamp,
-        log_index: log.log_index,
-        tx_id: log.tx_id,
+    const timestamp = await services.tx.oneOrNone(
+      `SELECT timestamp FROM vulcan2x.block WHERE id = \${block_id}`,
+      {
         block_id: log.block_id,
-      };
-      services.tx.none(
-        `
+      },
+    );
+
+    if (parseBytes32String(note.params.i) === 'ETH-A') {
+      console.log(note.params.dart.toString())
+      console.log(note.params.dink.toString())
+      const x = {}
+    }
+
+    const values = {
+      dink: note.params.dink.toString(),
+      dart: note.params.dart.toString(),
+      ilk: parseBytes32String(note.params.i),
+      u: note.params.u.toLowerCase(),
+      v: note.params.v.toLowerCase(),
+      w: note.params.w.toLowerCase(),
+      timestamp: timestamp.timestamp,
+      log_index: log.log_index,
+      tx_id: log.tx_id,
+      block_id: log.block_id,
+    };
+    await services.tx.none(
+      `
             INSERT INTO vat.frob(
                 dart, dink, ilk, u, v, w, timestamp, log_index, tx_id, block_id
             ) VALUES (
                 \${dart}, \${dink}, \${ilk}, \${u}, \${v}, \${w}, \${timestamp}, \${log_index},
                 \${tx_id}, \${block_id}
             );`,
-        values,
-      );
-    } catch (e) {
-      debugger;
-    }
+      values,
+    );
+
   },
 };
 

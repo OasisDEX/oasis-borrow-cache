@@ -28,33 +28,33 @@ const handleNewCdp = async (
     },
   );
 
-  try {
-    const urn = await dependencies.getUrnForCdp((services as any).provider as Provider, params.cdp.toString())
 
-    const values = {
-      creator: params.usr.toLowerCase(),
-      owner: params.own.toLowerCase(),
-      address: log.address,
-      cdp_id: params.cdp.toString(),
-      urn: urn.toLowerCase(),
-      log_index: log.log_index,
-      tx_id: log.tx_id,
-      block_id: log.block_id,
-      created_at: timestamp.timestamp,
-    };
+  const urn = await dependencies.getUrnForCdp((services as any).provider as Provider, params.cdp.toString())
 
-    const eventValues = {
-      kind: 'OPEN',
-      urn: urn.toLowerCase(),
-      vault_creator: params.usr.toLowerCase(),
-      timestamp: timestamp.timestamp,
-      log_index: log.log_index,
-      tx_id: log.tx_id,
-      block_id: log.block_id,
-      cdp_id: params.cdp.toString(),
-    }
+  const values = {
+    creator: params.usr.toLowerCase(),
+    owner: params.own.toLowerCase(),
+    address: log.address,
+    cdp_id: params.cdp.toString(),
+    urn: urn.toLowerCase(),
+    log_index: log.log_index,
+    tx_id: log.tx_id,
+    block_id: log.block_id,
+    created_at: timestamp.timestamp,
+  };
 
-    services.tx.none(`
+  const eventValues = {
+    kind: 'OPEN',
+    urn: urn.toLowerCase(),
+    vault_creator: params.usr.toLowerCase(),
+    timestamp: timestamp.timestamp,
+    log_index: log.log_index,
+    tx_id: log.tx_id,
+    block_id: log.block_id,
+    cdp_id: params.cdp.toString(),
+  }
+
+  await services.tx.none(`
     INSERT INTO vault.events(
       kind,
       urn,
@@ -76,18 +76,15 @@ const handleNewCdp = async (
     )
   `, eventValues)
 
-    services.tx.none(
-      `INSERT INTO manager.cdp(
+  await services.tx.none(
+    `INSERT INTO manager.cdp(
        creator, owner, address, cdp_id, urn, log_index, tx_id, block_id, created_at
      ) VALUES (
        \${creator}, \${owner}, \${address}, \${cdp_id}, \${urn}, \${log_index},
        \${tx_id}, \${block_id}, \${created_at}
      );`,
-      values,
-    );
-  } catch (e) {
-    console.log('unknown cdp')
-  };
+    values,
+  );
 }
 
 export const handlers = (dependencies: { getUrnForCdp: (provider: Provider, id: string) => Promise<string> }) => ({
@@ -102,7 +99,6 @@ export const openCdpTransformer: (
 
   return addresses.map(_deps => {
     const deps = normalizeAddressDefinition(_deps);
-
 
     const getUrnForCdp = async (provider: Provider, id: string) => {
       const contract = new ethers.Contract(deps.address, cdpManagerAbi, provider)
@@ -150,7 +146,7 @@ const cdpManagerGiveNoteHandlers = (migrationAddress: string) => ({
       block_id: log.block_id,
     }
 
-    services.tx.none(
+    await services.tx.none(
       `INSERT INTO vault.events(
         kind, transfer_from, transfer_to, cdp_id, urn, timestamp,
         log_index, tx_id, block_id

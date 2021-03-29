@@ -55,7 +55,7 @@ async function handleBite(
         block_id: log.block_id,
     }
 
-    services.tx.none(
+    await services.tx.none(
         `INSERT INTO auctions.bite(
           ilk, urn, ink, art, tab, flip, auction_id,
           log_index, tx_id, block_id
@@ -92,13 +92,12 @@ async function handleAuctionStarted(
         urn: params.urn.toLowerCase(),
         timestamp: timestamp.timestamp,
 
-
         log_index: log.log_index,
         tx_id: log.tx_id,
         block_id: log.block_id,
     }
 
-    services.tx.none(
+    await services.tx.none(
         `INSERT INTO vault.events(
           kind, collateral, collateral_amount, dai_amount, timestamp, auction_id, urn,
           log_index, tx_id, block_id
