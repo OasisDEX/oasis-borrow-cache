@@ -65,7 +65,7 @@ const addresses = {
 };
 
 export const config: UserProvidedSpockConfig = {
-  startingBlock: 8967124, //8928152,
+  startingBlock: 9638188, //8928152,
   extractors: [
     ...makeRawLogExtractors(cdpManagers),
     ...makeRawLogExtractors(cats),
@@ -79,8 +79,8 @@ export const config: UserProvidedSpockConfig = {
     ...catTransformer(cats, { getIlkInfo }),
     vatTransformer(vat),
     vatCombineTransformer(vat),
-    flipTransformer(cats),
-    flipNoteTransformer(cats),
+    flipTransformer(),
+    flipNoteTransformer(),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),

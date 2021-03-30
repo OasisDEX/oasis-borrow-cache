@@ -79,8 +79,8 @@ export const config: UserProvidedSpockConfig = {
     ...catTransformer(cats, { getIlkInfo }),
     vatTransformer(vat),
     vatCombineTransformer(vat),
-    flipTransformer(cats),
-    flipNoteTransformer(cats),
+    flipTransformer(),
+    flipNoteTransformer(),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),
