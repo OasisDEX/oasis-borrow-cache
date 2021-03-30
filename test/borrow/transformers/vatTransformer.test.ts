@@ -1,41 +1,14 @@
 import { expect } from 'earljs';
 import { constants } from 'ethers';
 import {
-  getTestConfig,
   getSQL,
-  createTestServices,
   destroyTestServices,
   executeSQL,
 } from '@oasisdex/spock-test-utils';
 
 import { vatTransformer, vatCombineTransformer } from '../../../src/borrow/transformers/vatTransformer';
 import { Services, TransactionalServices } from '@oasisdex/spock-etl/dist/services/types';
-import { join } from 'path';
-
-async function createServices(): Promise<[Services, TransactionalServices]> {
-  const config = getTestConfig();
-
-  const services = await createTestServices({
-    config: {
-      ...config,
-      ...{
-        migrations: {
-          borrow: join(__dirname, '../../../src/borrow/migrations'),
-        },
-      },
-    },
-  });
-
-  const txServices: TransactionalServices = {
-    ...services,
-    tx: services.db as any,
-  };
-
-  return [
-    services,
-    txServices
-  ]
-}
+import { createServices } from '../../utils/createServices';
 
 describe('vatTransformer', () => {
   let services: Services;
