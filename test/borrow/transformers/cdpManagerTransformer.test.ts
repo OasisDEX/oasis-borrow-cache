@@ -127,4 +127,38 @@ describe('CdpMigrationTransformer', () => {
             }
         ]);
     });
+
+    it('handles MIGRATE events', async () => {
+        const cdpManagerTransformerInstance = openCdpTransformer([constants.AddressZero], { getUrnForCdp })[0];
+        const transformerInstance = managerGiveTransformer([constants.AddressZero])[0];
+        const data = require('../../fixture/migrate-log.json');
+
+        await cdpManagerTransformerInstance.transform(txServices, data);
+        await transformerInstance.transform(txServices, data);
+
+        const allEvents = await getSQL(services.db, `SELECT * FROM vault.events e WHERE e.kind = 'MIGRATE';`);
+        expect(allEvents).toEqual([
+            {
+                id: 2,
+                kind: "MIGRATE",
+                collateral_amount: null,
+                dai_amount: null,
+                rate: null,
+                vault_creator: null,
+                depositor: null,
+                urn: "0x000",
+                v_gem: null,
+                w_dai: null,
+                cdp_id: "0xc73e0383f3aff3215e6f04b0331d58cecf0ab849",
+                transfer_from: "0xc73e0383f3aff3215e6f04b0331d58cecf0ab849",
+                transfer_to: "0x8a6f431d8c641204c24065f2030d853d5472b947",
+                timestamp: new Date('2019-07-02T11:18:02.000Z'),
+                log_index: 1,
+                tx_id: 2,
+                block_id: 2,
+                collateral: null,
+                auction_id: null,
+            }
+        ]);
+    });
 })
