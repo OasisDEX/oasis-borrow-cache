@@ -35,6 +35,29 @@ describe('CdpManagerTransformer', () => {
 
     afterEach(() => destroyTestServices(services));
 
+    it('saves cdp', async () => {
+        const transformerInstance = openCdpTransformer([constants.AddressZero], { getUrnForCdp })[0];
+        const data = require('../../fixture/open-cdp-log.json');
+
+        await transformerInstance.transform(txServices, data);
+
+        const cdp = await getSQL(services.db, `SELECT * FROM manager.cdp;`);
+        expect(cdp).toEqual([
+            {
+                id: 1,
+                creator: "0x361c9299a7fbe1b98f563a24f36facf33e88abbd",
+                owner: "0x361c9299a7fbe1b98f563a24f36facf33e88abbd",
+                address: "0x5ef30b9986345249bc32d8928b7ee64de9435e39",
+                urn: "0x000",
+                cdp_id: "6548",
+                created_at: new Date('2019-07-02T11:18:01.000Z'),
+                log_index: 1,
+                tx_id: 1,
+                block_id: 1,
+            }
+        ]);
+    });
+
     it('handles OPEN events', async () => {
         const transformerInstance = openCdpTransformer([constants.AddressZero], { getUrnForCdp })[0];
         const data = require('../../fixture/open-cdp-log.json');
