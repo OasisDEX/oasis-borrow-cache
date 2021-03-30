@@ -264,4 +264,39 @@ describe('Vat combine transformer', () => {
       }
     ]);
   })
+
+  it('combines events into PAYBACK event', async () => {
+    const transformerInstance = vatTransformer(constants.AddressZero);
+    const combineTransformerInstance = vatCombineTransformer(constants.AddressZero);
+    const data = require('../../fixture/combine-payback-log.json');
+
+    await transformerInstance.transform(txServices, data);
+    await combineTransformerInstance.transform(txServices, data);
+
+    const allEvents = await getSQL(services.db, `SELECT * FROM vault.events;`);
+
+    expect(allEvents).toEqual([
+      {
+        kind: "PAYBACK",
+        id: 1,
+        cdp_id: null,
+        collateral_amount: "0.000000000000000000",
+        dai_amount: "-9.994875558242905139",
+        urn: "0xed2f58708943ce39131bc3a6970e2ca9c3d3932f",
+        transfer_from: null,
+        timestamp: new Date('2019-07-02T11:18:02.000Z'),
+        log_index: 2,
+        depositor: null,
+        tx_id: 4,
+        w_dai: "0xed2f58708943ce39131bc3a6970e2ca9c3d3932f",
+        vault_creator: null,
+        block_id: 2,
+        auction_id: null,
+        collateral: null,
+        v_gem: "0xed2f58708943ce39131bc3a6970e2ca9c3d3932f",
+        transfer_to: null,
+        rate: "1.000007388734071157"
+      }
+    ]);
+  })
 })

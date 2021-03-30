@@ -69,7 +69,6 @@ const vatNoteHandlers: DsNoteHandlers = {
       },
     );
 
-
     const values = {
       dink: note.params.dink.toString(),
       dart: note.params.dart.toString(),
