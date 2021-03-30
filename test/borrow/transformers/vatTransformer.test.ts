@@ -160,6 +160,41 @@ describe('Vat combine transformer', () => {
     ]);
   })
 
+  it('combines events into GENERATE event', async () => {
+    const transformerInstance = vatTransformer(constants.AddressZero);
+    const combineTransformerInstance = vatCombineTransformer(constants.AddressZero);
+    const data = require('../../fixture/combine-generate-log.json');
+
+    await transformerInstance.transform(txServices, data);
+    await combineTransformerInstance.transform(txServices, data);
+
+    const allEvents = await getSQL(services.db, `SELECT * FROM vault.events;`);
+
+    expect(allEvents).toEqual([
+      {
+        kind: "GENERATE",
+        id: 1,
+        cdp_id: null,
+        collateral_amount: "0.000000000000000000",
+        dai_amount: "4.997321810738751341",
+        urn: "0xb6e75813fe688be1b3a3a5ca2c51dace1ed63411",
+        transfer_from: null,
+        timestamp: new Date('2019-07-02 11:18:02+00'),
+        log_index: 2,
+        depositor: null,
+        tx_id: 4,
+        w_dai: "0xb6e75813fe688be1b3a3a5ca2c51dace1ed63411",
+        vault_creator: null,
+        block_id: 2,
+        auction_id: null,
+        collateral: null,
+        v_gem: "0xb6e75813fe688be1b3a3a5ca2c51dace1ed63411",
+        transfer_to: null,
+        rate: "1.000007388734071157"
+      }
+    ]);
+  })
+
   it('combines events into DEPOSIT-GENERATE event', async () => {
     const transformerInstance = vatTransformer(constants.AddressZero);
     const combineTransformerInstance = vatCombineTransformer(constants.AddressZero);
@@ -195,10 +230,10 @@ describe('Vat combine transformer', () => {
     ]);
   })
 
-  it('combines events into GENERATE event', async () => {
+  it('combines events into WITHDRAW event', async () => {
     const transformerInstance = vatTransformer(constants.AddressZero);
     const combineTransformerInstance = vatCombineTransformer(constants.AddressZero);
-    const data = require('../../fixture/combine-generate-log.json');
+    const data = require('../../fixture/combine-withdraw-log.json');
 
     await transformerInstance.transform(txServices, data);
     await combineTransformerInstance.transform(txServices, data);
@@ -207,23 +242,23 @@ describe('Vat combine transformer', () => {
 
     expect(allEvents).toEqual([
       {
-        kind: "GENERATE",
+        kind: "WITHDRAW",
         id: 1,
         cdp_id: null,
-        collateral_amount: "0.000000000000000000",
-        dai_amount: "4.997321810738751341",
-        urn: "0xb6e75813fe688be1b3a3a5ca2c51dace1ed63411",
+        collateral_amount: "-1.000000000000000000",
+        dai_amount: "0.000000000000000000",
+        urn: "0x4c7a773d2aae9a0238f9b0a4c98698921de368a9",
         transfer_from: null,
-        timestamp: new Date('2019-07-02 11:18:02+00'),
+        timestamp: new Date('2019-07-02T11:18:02.000Z'),
         log_index: 2,
         depositor: null,
         tx_id: 4,
-        w_dai: "0xb6e75813fe688be1b3a3a5ca2c51dace1ed63411",
+        w_dai: "0x4c7a773d2aae9a0238f9b0a4c98698921de368a9",
         vault_creator: null,
         block_id: 2,
         auction_id: null,
         collateral: null,
-        v_gem: "0xb6e75813fe688be1b3a3a5ca2c51dace1ed63411",
+        v_gem: "0x4c7a773d2aae9a0238f9b0a4c98698921de368a9",
         transfer_to: null,
         rate: "1.000007388734071157"
       }

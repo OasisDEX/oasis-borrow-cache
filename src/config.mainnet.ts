@@ -63,7 +63,7 @@ const addresses = {
 };
 
 export const config: UserProvidedSpockConfig = {
-  startingBlock: 8958685, //8928152, // 11912600, //
+  startingBlock: 8957427, //8928152, // 11912600, //
   extractors: [
     ...makeRawLogExtractors(cdpManagers),
     ...makeRawLogExtractors(cats),
