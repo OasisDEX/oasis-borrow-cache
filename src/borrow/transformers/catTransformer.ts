@@ -1,4 +1,4 @@
-import { flatten, memoize } from 'lodash';
+import { flatten } from 'lodash';
 import { Dictionary } from 'ts-essentials';
 
 import { handleEvents, FullEventInfo } from '@oasisdex/spock-utils/dist/transformers/common';
@@ -9,35 +9,12 @@ import {
 } from '@oasisdex/spock-utils/dist/extractors/rawEventDataExtractor';
 import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
-import { getAddressesFromConfig, normalizeAddressDefinition } from '../../utils';
+import { normalizeAddressDefinition } from '../../utils';
 import { parseBytes32String } from 'ethers/utils';
-import { ethers } from 'ethers';
 import BigNumber from 'bignumber.js';
+import { Ilk } from '../services/getIlkInfo';
 
 const catAbi = require('../../../abis/cat.json');
-const ilkRegistryAbi = require('../../../abis/ilk-registry.json');
-
-interface Ilk {
-  dec: BigNumber;
-  flip: string;
-  gem: string;
-  name: string;
-  pos: string;
-  symbol: string;
-}
-async function getIlkInfo_(ilk: string, services: LocalServices): Promise<Ilk> {
-  const addresses = getAddressesFromConfig(services);
-  const ilkRegistry = new ethers.Contract(
-    addresses.ILK_REGISTRY,
-    ilkRegistryAbi,
-    (services as any).provider,
-  );
-
-  return ilkRegistry.ilkData(ilk);
-}
-
-const getIlkInfo = memoize(getIlkInfo_);
-
 async function handleBite(
   params: Dictionary<any>,
   log: PersistedLog,
@@ -73,6 +50,7 @@ async function handleAuctionStarted(
   params: Dictionary<any>,
   log: PersistedLog,
   services: LocalServices,
+  dependencies: CatTransformerDependencies
 ): Promise<void> {
   const timestamp = await services.tx.oneOrNone(
     `SELECT timestamp FROM vulcan2x.block WHERE id = \${block_id}`,
@@ -81,7 +59,7 @@ async function handleAuctionStarted(
     },
   );
 
-  const ilkData = await getIlkInfo(params.ilk, services);
+  const ilkData = await dependencies.getIlkInfo(params.ilk, services);
 
   const event = {
     kind: 'AUCTION_STARTED',
@@ -111,18 +89,22 @@ async function handleAuctionStarted(
   );
 }
 
-const handlers = {
+const handlers = (dependencies: CatTransformerDependencies) => ({
   async Bite(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
     await handleBite(event.params, log, services);
-    await handleAuctionStarted(event.params, log, services);
+    await handleAuctionStarted(event.params, log, services, dependencies);
   },
-};
+});
 
 export const getCatTransformerName = (address: string) => `catTransformer-${address}`;
 
+interface CatTransformerDependencies {
+  getIlkInfo: (ilk: string, services: LocalServices) => Promise<Ilk>
+}
 export const catTransformer: (
   addresses: (string | SimpleProcessorDefinition)[],
-) => BlockTransformer[] = addresses => {
+  dependencies: CatTransformerDependencies
+) => BlockTransformer[] = (addresses, dependencies) => {
   return addresses.map(_deps => {
     const deps = normalizeAddressDefinition(_deps);
 
@@ -131,7 +113,7 @@ export const catTransformer: (
       dependencies: [getExtractorName(deps.address)],
       startingBlock: deps.startingBlock,
       transform: async (services, logs) => {
-        await handleEvents(services, catAbi, flatten(logs), handlers);
+        await handleEvents(services, catAbi, flatten(logs), handlers(dependencies));
       },
     };
   });

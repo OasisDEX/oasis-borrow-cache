@@ -12,6 +12,7 @@ import { vatCombineTransformer, vatTransformer } from './borrow/transformers/vat
 import { catTransformer } from './borrow/transformers/catTransformer';
 import { AbiInfo, makeRowEventBasedOnDSNoteTopic } from './borrow/customExtractor';
 import { flipNoteTransformer, flipTransformer } from './borrow/transformers/flipperTransformer';
+import { getIlkInfo } from './borrow/services/getIlkInfo';
 
 const vat = {
   address: '0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b',
@@ -63,7 +64,7 @@ const addresses = {
 };
 
 export const config: UserProvidedSpockConfig = {
-  startingBlock: 8928152,
+  startingBlock: 9638188, //8928152,
   extractors: [
     ...makeRawLogExtractors(cdpManagers),
     ...makeRawLogExtractors(cats),
@@ -74,7 +75,7 @@ export const config: UserProvidedSpockConfig = {
   transformers: [
     ...openCdpTransformer(cdpManagers),
     ...managerGiveTransformer(cdpManagers),
-    ...catTransformer(cats),
+    ...catTransformer(cats, { getIlkInfo }),
     vatTransformer(vat),
     vatCombineTransformer(vat),
     flipTransformer(cats),

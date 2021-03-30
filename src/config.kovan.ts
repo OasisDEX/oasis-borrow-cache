@@ -12,6 +12,7 @@ import { vatCombineTransformer, vatTransformer } from './borrow/transformers/vat
 import { catTransformer } from './borrow/transformers/catTransformer';
 import { AbiInfo, makeRowEventBasedOnDSNoteTopic } from './borrow/customExtractor';
 import { flipNoteTransformer, flipTransformer } from './borrow/transformers/flipperTransformer';
+import { getIlkInfo } from './borrow/services/getIlkInfo';
 
 const vat = {
   address: '0xba987bdb501d131f766fee8180da5d81b34b69d9',
@@ -74,7 +75,7 @@ export const config: UserProvidedSpockConfig = {
   transformers: [
     ...openCdpTransformer(cdpManagers),
     ...managerGiveTransformer(cdpManagers),
-    ...catTransformer(cats),
+    ...catTransformer(cats, { getIlkInfo }),
     vatTransformer(vat),
     vatCombineTransformer(vat),
     flipTransformer(cats),
