@@ -68,6 +68,11 @@ const vatNoteHandlers: DsNoteHandlers = {
         block_id: log.block_id,
       },
     );
+
+    if (parseBytes32String(note.params.i) === 'ETH-A' && note.params.dart.toString() !== '0') {
+      console.log(note.params.dart.toString())
+    }
+
     const values = {
       dink: note.params.dink.toString(),
       dart: note.params.dart.toString(),

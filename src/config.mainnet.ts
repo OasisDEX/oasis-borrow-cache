@@ -63,7 +63,7 @@ const addresses = {
 };
 
 export const config: UserProvidedSpockConfig = {
-  startingBlock: 8957461, //8928152, // 11912600, //
+  startingBlock: 8958685, //8928152, // 11912600, //
   extractors: [
     ...makeRawLogExtractors(cdpManagers),
     ...makeRawLogExtractors(cats),
@@ -84,5 +84,5 @@ export const config: UserProvidedSpockConfig = {
     borrow: join(__dirname, './borrow/migrations'),
   },
   addresses,
-  onStart: () => {},
+  onStart: () => { },
 };
