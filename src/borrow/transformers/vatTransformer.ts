@@ -69,11 +69,6 @@ const vatNoteHandlers: DsNoteHandlers = {
       },
     );
 
-    if (parseBytes32String(note.params.i) === 'ETH-A') {
-      console.log(note.params.dart.toString())
-      console.log(note.params.dink.toString())
-    }
-
     const values = {
       dink: note.params.dink.toString(),
       dart: note.params.dart.toString(),

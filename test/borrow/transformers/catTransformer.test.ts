@@ -23,7 +23,7 @@ const mockIlk: Ilk = {
 
 const getIlkInfo = async () => mockIlk
 
-describe('vatTransformer', () => {
+describe('catTransformer', () => {
     let services: Services;
     let txServices: TransactionalServices;
 
@@ -43,7 +43,7 @@ describe('vatTransformer', () => {
 
     afterEach(() => destroyTestServices(services));
 
-    it('handle bite note events', async () => {
+    it('handles bite note events', async () => {
         const transformerInstance = catTransformer([constants.AddressZero], { getIlkInfo })[0];
         const data = require('../../fixture/bite-log.json');
 
@@ -67,7 +67,7 @@ describe('vatTransformer', () => {
         ]);
     });
 
-    it('handle AUCTION_STARTED events', async () => {
+    it('handles AUCTION_STARTED events', async () => {
         const transformerInstance = catTransformer([constants.AddressZero], { getIlkInfo })[0];
         const data = require('../../fixture/bite-log.json');
 

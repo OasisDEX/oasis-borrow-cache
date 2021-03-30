@@ -1,6 +1,5 @@
 import { flatten } from 'lodash';
 import { Dictionary } from 'ts-essentials';
-import { ethers } from 'ethers';
 
 import {
   handleEvents,
@@ -25,7 +24,7 @@ const handleNewCdp = async (
   params: Dictionary<any>,
   log: PersistedLog,
   services: LocalServices,
-  dependencies: { getUrnForCdp: (provider: Provider, id: string) => Promise<string> },
+  dependencies: OpenCdpTransformerDependencies,
 ) => {
   const timestamp = await services.tx.oneOrNone(
     `SELECT timestamp FROM vulcan2x.block WHERE id = \${block_id}`,
@@ -37,6 +36,7 @@ const handleNewCdp = async (
   const urn = await dependencies.getUrnForCdp(
     (services as any).provider as Provider,
     params.cdp.toString(),
+    log.address
   );
 
   const values = {
@@ -98,31 +98,29 @@ const handleNewCdp = async (
   );
 };
 
-const handlers = (dependencies: {
-  getUrnForCdp: (provider: Provider, id: string) => Promise<string>;
-}) => ({
+const handlers = (dependencies: OpenCdpTransformerDependencies) => ({
   async NewCdp(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
     await handleNewCdp(event.params, log, services, dependencies);
   },
 });
 
+interface OpenCdpTransformerDependencies {
+  getUrnForCdp: (provider: Provider, id: string, managerAddress: string) => Promise<string>
+}
+
 export const openCdpTransformer: (
   addresses: (string | SimpleProcessorDefinition)[],
-) => BlockTransformer[] = addresses => {
+  dependencies: OpenCdpTransformerDependencies,
+) => BlockTransformer[] = (addresses, dependencies) => {
   return addresses.map(_deps => {
     const deps = normalizeAddressDefinition(_deps);
-
-    const getUrnForCdp = async (provider: Provider, id: string) => {
-      const contract = new ethers.Contract(deps.address, cdpManagerAbi, provider);
-      return contract.urns(id); // try adding block hash in options
-    };
 
     return {
       name: `openCdpTransformer-${deps.address}`,
       dependencies: [getExtractorName(deps.address)],
       startingBlock: deps.startingBlock,
       transform: async (services, logs) => {
-        await handleEvents(services, cdpManagerAbi, flatten(logs), handlers({ getUrnForCdp }));
+        await handleEvents(services, cdpManagerAbi, flatten(logs), handlers(dependencies));
       },
     };
   });

@@ -5,9 +5,10 @@ import {
 } from '@oasisdex/spock-test-utils';
 import { Services, TransactionalServices } from '@oasisdex/spock-etl/dist/services/types';
 import { join } from 'path';
+import { SpockConfig } from '@oasisdex/spock-etl/dist/services/config';
 
-export async function createServices(): Promise<[Services, TransactionalServices]> {
-  const config = getTestConfig();
+export async function createServices(customConfig?: Partial<SpockConfig>): Promise<[Services, TransactionalServices]> {
+  const config = getTestConfig(customConfig);
 
   const services = await createTestServices({
     config: {
