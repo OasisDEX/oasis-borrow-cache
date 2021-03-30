@@ -36,7 +36,7 @@ const handleNewCdp = async (
   const urn = await dependencies.getUrnForCdp(
     (services as any).provider as Provider,
     params.cdp.toString(),
-    log.address
+    log.address,
   );
 
   const values = {
@@ -105,7 +105,7 @@ const handlers = (dependencies: OpenCdpTransformerDependencies) => ({
 });
 
 interface OpenCdpTransformerDependencies {
-  getUrnForCdp: (provider: Provider, id: string, managerAddress: string) => Promise<string>
+  getUrnForCdp: (provider: Provider, id: string, managerAddress: string) => Promise<string>;
 }
 
 export const openCdpTransformer: (

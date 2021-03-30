@@ -7,21 +7,21 @@ import BigNumber from 'bignumber.js';
 const ilkRegistryAbi = require('../../../abis/ilk-registry.json');
 
 export interface Ilk {
-    dec: BigNumber;
-    flip: string;
-    gem: string;
-    name: string;
-    pos: string;
-    symbol: string;
+  dec: BigNumber;
+  flip: string;
+  gem: string;
+  name: string;
+  pos: string;
+  symbol: string;
 }
 async function getIlkInfo_(ilk: string, services: LocalServices): Promise<Ilk> {
-    const addresses = getAddressesFromConfig(services);
-    const ilkRegistry = new ethers.Contract(
-        addresses.ILK_REGISTRY,
-        ilkRegistryAbi,
-        (services as any).provider
-    );
+  const addresses = getAddressesFromConfig(services);
+  const ilkRegistry = new ethers.Contract(
+    addresses.ILK_REGISTRY,
+    ilkRegistryAbi,
+    (services as any).provider,
+  );
 
-    return ilkRegistry.ilkData(ilk);
+  return ilkRegistry.ilkData(ilk);
 }
 export const getIlkInfo = memoize(getIlkInfo_);

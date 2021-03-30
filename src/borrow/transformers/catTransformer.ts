@@ -50,7 +50,7 @@ async function handleAuctionStarted(
   params: Dictionary<any>,
   log: PersistedLog,
   services: LocalServices,
-  dependencies: CatTransformerDependencies
+  dependencies: CatTransformerDependencies,
 ): Promise<void> {
   const timestamp = await services.tx.oneOrNone(
     `SELECT timestamp FROM vulcan2x.block WHERE id = \${block_id}`,
@@ -99,11 +99,11 @@ const handlers = (dependencies: CatTransformerDependencies) => ({
 export const getCatTransformerName = (address: string) => `catTransformer-${address}`;
 
 interface CatTransformerDependencies {
-  getIlkInfo: (ilk: string, services: LocalServices) => Promise<Ilk>
+  getIlkInfo: (ilk: string, services: LocalServices) => Promise<Ilk>;
 }
 export const catTransformer: (
   addresses: (string | SimpleProcessorDefinition)[],
-  dependencies: CatTransformerDependencies
+  dependencies: CatTransformerDependencies,
 ) => BlockTransformer[] = (addresses, dependencies) => {
   return addresses.map(_deps => {
     const deps = normalizeAddressDefinition(_deps);

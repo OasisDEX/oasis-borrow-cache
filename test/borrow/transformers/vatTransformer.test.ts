@@ -1,12 +1,11 @@
 import { expect } from 'earljs';
 import { constants } from 'ethers';
-import {
-  getSQL,
-  destroyTestServices,
-  executeSQL,
-} from '@oasisdex/spock-test-utils';
+import { getSQL, destroyTestServices, executeSQL } from '@oasisdex/spock-test-utils';
 
-import { vatTransformer, vatCombineTransformer } from '../../../src/borrow/transformers/vatTransformer';
+import {
+  vatTransformer,
+  vatCombineTransformer,
+} from '../../../src/borrow/transformers/vatTransformer';
 import { Services, TransactionalServices } from '@oasisdex/spock-etl/dist/services/types';
 import { createServices } from '../../utils/createServices';
 
@@ -15,7 +14,7 @@ describe('vatTransformer', () => {
   let txServices: TransactionalServices;
 
   beforeEach(async () => {
-    [services, txServices] = await createServices()
+    [services, txServices] = await createServices();
 
     await executeSQL(
       services.db,
@@ -70,18 +69,18 @@ describe('vatTransformer', () => {
         log_index: 1,
         tx_id: 1,
         block_id: 1,
-        timestamp: new Date('2019-07-02T11:18:01.000Z')
+        timestamp: new Date('2019-07-02T11:18:01.000Z'),
       },
     ]);
   });
-})
+});
 
 describe('Vat combine transformer', () => {
   let services: Services;
   let txServices: TransactionalServices;
 
   beforeEach(async () => {
-    [services, txServices] = await createServices()
+    [services, txServices] = await createServices();
 
     await executeSQL(
       services.db,
@@ -111,19 +110,19 @@ describe('Vat combine transformer', () => {
     expect(allEvents).toEqual([
       {
         id: 1,
-        kind: "DEPOSIT",
-        collateral_amount: "0.100000000000000000",
-        dai_amount: "0.000000000000000000",
-        rate: "1.000007388734071157",
+        kind: 'DEPOSIT',
+        collateral_amount: '0.100000000000000000',
+        dai_amount: '0.000000000000000000',
+        rate: '1.000007388734071157',
         vault_creator: null,
         depositor: null,
-        urn: "0x7097bd26db93b34c2e95112abd75c00a1e5bdd9e",
-        v_gem: "0x7097bd26db93b34c2e95112abd75c00a1e5bdd9e",
-        w_dai: "0x7097bd26db93b34c2e95112abd75c00a1e5bdd9e",
+        urn: '0x7097bd26db93b34c2e95112abd75c00a1e5bdd9e',
+        v_gem: '0x7097bd26db93b34c2e95112abd75c00a1e5bdd9e',
+        w_dai: '0x7097bd26db93b34c2e95112abd75c00a1e5bdd9e',
         cdp_id: null,
         transfer_from: null,
         transfer_to: null,
-        timestamp: new Date("2019-07-02 11:18:02+00"),
+        timestamp: new Date('2019-07-02 11:18:02+00'),
         log_index: 2,
         tx_id: 4,
         block_id: 2,
@@ -131,7 +130,7 @@ describe('Vat combine transformer', () => {
         auction_id: null,
       },
     ]);
-  })
+  });
 
   it('combines events into GENERATE event', async () => {
     const transformerInstance = vatTransformer(constants.AddressZero);
@@ -145,28 +144,28 @@ describe('Vat combine transformer', () => {
 
     expect(allEvents).toEqual([
       {
-        kind: "GENERATE",
+        kind: 'GENERATE',
         id: 1,
         cdp_id: null,
-        collateral_amount: "0.000000000000000000",
-        dai_amount: "4.997321810738751341",
-        urn: "0xb6e75813fe688be1b3a3a5ca2c51dace1ed63411",
+        collateral_amount: '0.000000000000000000',
+        dai_amount: '4.997321810738751341',
+        urn: '0xb6e75813fe688be1b3a3a5ca2c51dace1ed63411',
         transfer_from: null,
         timestamp: new Date('2019-07-02 11:18:02+00'),
         log_index: 2,
         depositor: null,
         tx_id: 4,
-        w_dai: "0xb6e75813fe688be1b3a3a5ca2c51dace1ed63411",
+        w_dai: '0xb6e75813fe688be1b3a3a5ca2c51dace1ed63411',
         vault_creator: null,
         block_id: 2,
         auction_id: null,
         collateral: null,
-        v_gem: "0xb6e75813fe688be1b3a3a5ca2c51dace1ed63411",
+        v_gem: '0xb6e75813fe688be1b3a3a5ca2c51dace1ed63411',
         transfer_to: null,
-        rate: "1.000007388734071157"
-      }
+        rate: '1.000007388734071157',
+      },
     ]);
-  })
+  });
 
   it('combines events into DEPOSIT-GENERATE event', async () => {
     const transformerInstance = vatTransformer(constants.AddressZero);
@@ -180,28 +179,28 @@ describe('Vat combine transformer', () => {
 
     expect(allEvents).toEqual([
       {
-        kind: "DEPOSIT-GENERATE",
+        kind: 'DEPOSIT-GENERATE',
         id: 1,
         cdp_id: null,
-        collateral_amount: "12.001720024901368662",
-        urn: "0x5aeb2a597f2c2ec1e8587ff99225e32dfb722b36",
+        collateral_amount: '12.001720024901368662',
+        urn: '0x5aeb2a597f2c2ec1e8587ff99225e32dfb722b36',
         transfer_from: null,
         timestamp: new Date('2019-07-02T11:18:01.000Z'),
         log_index: 2,
         depositor: null,
         tx_id: 4,
-        w_dai: "0x5aeb2a597f2c2ec1e8587ff99225e32dfb722b36",
+        w_dai: '0x5aeb2a597f2c2ec1e8587ff99225e32dfb722b36',
         vault_creator: null,
         block_id: 1,
         auction_id: null,
         collateral: null,
-        dai_amount: "811.344795256768841439",
-        v_gem: "0x5aeb2a597f2c2ec1e8587ff99225e32dfb722b36",
+        dai_amount: '811.344795256768841439',
+        v_gem: '0x5aeb2a597f2c2ec1e8587ff99225e32dfb722b36',
         transfer_to: null,
-        rate: "1.000005709754190194"
-      }
+        rate: '1.000005709754190194',
+      },
     ]);
-  })
+  });
 
   it('combines events into WITHDRAW event', async () => {
     const transformerInstance = vatTransformer(constants.AddressZero);
@@ -215,28 +214,28 @@ describe('Vat combine transformer', () => {
 
     expect(allEvents).toEqual([
       {
-        kind: "WITHDRAW",
+        kind: 'WITHDRAW',
         id: 1,
         cdp_id: null,
-        collateral_amount: "-1.000000000000000000",
-        dai_amount: "0.000000000000000000",
-        urn: "0x4c7a773d2aae9a0238f9b0a4c98698921de368a9",
+        collateral_amount: '-1.000000000000000000',
+        dai_amount: '0.000000000000000000',
+        urn: '0x4c7a773d2aae9a0238f9b0a4c98698921de368a9',
         transfer_from: null,
         timestamp: new Date('2019-07-02T11:18:02.000Z'),
         log_index: 2,
         depositor: null,
         tx_id: 4,
-        w_dai: "0x4c7a773d2aae9a0238f9b0a4c98698921de368a9",
+        w_dai: '0x4c7a773d2aae9a0238f9b0a4c98698921de368a9',
         vault_creator: null,
         block_id: 2,
         auction_id: null,
         collateral: null,
-        v_gem: "0x4c7a773d2aae9a0238f9b0a4c98698921de368a9",
+        v_gem: '0x4c7a773d2aae9a0238f9b0a4c98698921de368a9',
         transfer_to: null,
-        rate: "1.000007388734071157"
-      }
+        rate: '1.000007388734071157',
+      },
     ]);
-  })
+  });
 
   it('combines events into PAYBACK event', async () => {
     const transformerInstance = vatTransformer(constants.AddressZero);
@@ -250,28 +249,28 @@ describe('Vat combine transformer', () => {
 
     expect(allEvents).toEqual([
       {
-        kind: "PAYBACK",
+        kind: 'PAYBACK',
         id: 1,
         cdp_id: null,
-        collateral_amount: "0.000000000000000000",
-        dai_amount: "-9.994875558242905139",
-        urn: "0xed2f58708943ce39131bc3a6970e2ca9c3d3932f",
+        collateral_amount: '0.000000000000000000',
+        dai_amount: '-9.994875558242905139',
+        urn: '0xed2f58708943ce39131bc3a6970e2ca9c3d3932f',
         transfer_from: null,
         timestamp: new Date('2019-07-02T11:18:02.000Z'),
         log_index: 2,
         depositor: null,
         tx_id: 4,
-        w_dai: "0xed2f58708943ce39131bc3a6970e2ca9c3d3932f",
+        w_dai: '0xed2f58708943ce39131bc3a6970e2ca9c3d3932f',
         vault_creator: null,
         block_id: 2,
         auction_id: null,
         collateral: null,
-        v_gem: "0xed2f58708943ce39131bc3a6970e2ca9c3d3932f",
+        v_gem: '0xed2f58708943ce39131bc3a6970e2ca9c3d3932f',
         transfer_to: null,
-        rate: "1.000007388734071157"
-      }
+        rate: '1.000007388734071157',
+      },
     ]);
-  })
+  });
 
   it('combines events into WITHDRAW-PAYBACK event', async () => {
     const transformerInstance = vatTransformer(constants.AddressZero);
@@ -285,26 +284,26 @@ describe('Vat combine transformer', () => {
 
     expect(allEvents).toEqual([
       {
-        kind: "WITHDRAW-PAYBACK",
+        kind: 'WITHDRAW-PAYBACK',
         id: 1,
         cdp_id: null,
-        collateral_amount: "-8.405434718355618834",
-        dai_amount: "-574.626696106628942493",
-        urn: "0x92560fe2271d403c56bd975e047511d29e193452",
+        collateral_amount: '-8.405434718355618834',
+        dai_amount: '-574.626696106628942493',
+        urn: '0x92560fe2271d403c56bd975e047511d29e193452',
         transfer_from: null,
         timestamp: new Date('2019-07-02T11:18:02.000Z'),
         log_index: 2,
         depositor: null,
         tx_id: 4,
-        w_dai: "0x92560fe2271d403c56bd975e047511d29e193452",
+        w_dai: '0x92560fe2271d403c56bd975e047511d29e193452',
         vault_creator: null,
         block_id: 2,
         auction_id: null,
         collateral: null,
-        v_gem: "0x92560fe2271d403c56bd975e047511d29e193452",
+        v_gem: '0x92560fe2271d403c56bd975e047511d29e193452',
         transfer_to: null,
-        rate: "1.000007388734071157"
-      }
+        rate: '1.000007388734071157',
+      },
     ]);
-  })
-})
+  });
+});

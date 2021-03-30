@@ -6,17 +6,12 @@ import {
   FullNoteEventInfo,
   FullEventInfo,
 } from '@oasisdex/spock-utils/dist/transformers/common';
-import {
-  PersistedLog,
-  SimpleProcessorDefinition,
-} from '@oasisdex/spock-utils/dist/extractors/rawEventDataExtractor';
+import { PersistedLog } from '@oasisdex/spock-utils/dist/extractors/rawEventDataExtractor';
 import { getExtractorName as getExtractorNameBasedOnTopic } from '@oasisdex/spock-utils/dist/extractors/rawEventBasedOnTopicExtractor';
 import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
-import { normalizeAddressDefinition } from '../../utils';
 import { getExtractorNameBasedOnDSNoteTopic } from '../customExtractor';
 import { Dictionary } from 'ts-essentials';
-import { getCatTransformerName } from './catTransformer';
 
 const flipAbi = require('../../../abis/flipper.json');
 
@@ -141,8 +136,7 @@ const handleNote = {
   },
 };
 
-export const flipNoteTransformer: (
-) => BlockTransformer = () => {
+export const flipNoteTransformer: () => BlockTransformer = () => {
   return {
     name: `flipperNoteTransformer`,
     dependencies: [getExtractorNameBasedOnDSNoteTopic('flipper')],
