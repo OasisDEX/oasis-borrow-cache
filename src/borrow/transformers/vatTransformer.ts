@@ -1,9 +1,9 @@
 import { flatten } from 'lodash';
-import { formatBytes32String, parseBytes32String } from 'ethers/utils';
-import { ethers } from 'ethers';
+import { parseBytes32String } from 'ethers/utils';
 import {
   handleDsNoteEvents,
   FullNoteEventInfo,
+  DsNoteHandlers,
 } from '@oasisdex/spock-utils/dist/transformers/common';
 import {
   getExtractorName,
@@ -11,7 +11,7 @@ import {
 } from '@oasisdex/spock-utils/dist/extractors/rawEventDataExtractor';
 import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
-import { getAddressesFromConfig, normalizeAddressDefinition } from '../../utils';
+import { normalizeAddressDefinition } from '../../utils';
 import { BigNumber } from 'bignumber.js';
 
 const vatAbi = require('../../../abis/vat.json');
@@ -24,8 +24,11 @@ const vatAbi = require('../../../abis/vat.json');
 const wad = new BigNumber(10).pow(18);
 const ray = new BigNumber(10).pow(27);
 
-const vatNoteHandlers = {
-  async 'fold(bytes32,address,int256)'(services: LocalServices, { note, log }: FullNoteEventInfo) {
+const vatNoteHandlers: DsNoteHandlers = {
+  async 'fold(bytes32,address,int256)'(
+    services: LocalServices,
+    { note, log }: FullNoteEventInfo,
+  ): Promise<void> {
     const timestamp = await services.tx.oneOrNone(
       `SELECT timestamp FROM vulcan2x.block WHERE id = \${block_id}`,
       {
@@ -58,20 +61,13 @@ const vatNoteHandlers = {
   async 'frob(bytes32,address,address,address,int256,int256)'(
     services: LocalServices,
     { note, log }: FullNoteEventInfo,
-  ) {
+  ): Promise<void> {
     const timestamp = await services.tx.oneOrNone(
       `SELECT timestamp FROM vulcan2x.block WHERE id = \${block_id}`,
       {
         block_id: log.block_id,
       },
     );
-
-    if (parseBytes32String(note.params.i) === 'ETH-A') {
-      console.log(note.params.dart.toString())
-      console.log(note.params.dink.toString())
-      const x = {}
-    }
-
     const values = {
       dink: note.params.dink.toString(),
       dart: note.params.dart.toString(),
@@ -94,7 +90,6 @@ const vatNoteHandlers = {
             );`,
       values,
     );
-
   },
 };
 
@@ -132,54 +127,49 @@ export const vatCombineTransformer: (
 
       const frobs = await services.tx.multi(
         `
-            select 
-                frob.*, (
-                    select COALESCE(sum(rate), 0)
-                    from vat.fold 
-                    where 
-                        i = frob.ilk and (
-                            block_id < frob.block_id or 
-                            block_id = frob.block_id  and log_index <= frob.log_index
-                        )
-                ) rate 
-            from vat.frob frob
-            where frob.block_id in (\$1:csv)
+                select 
+                    frob.*, (
+                        select COALESCE(sum(rate), 0)
+                        from vat.fold 
+                        where 
+                            i = frob.ilk and (
+                                block_id < frob.block_id or 
+                                block_id = frob.block_id  and log_index <= frob.log_index
+                            )
+                    ) rate 
+                from vat.frob frob
+                where frob.block_id in (\$1:csv)
             `,
         [blocks],
       );
 
-      const events = flatten(frobs)
-        .map(frob => {
-          const dink = new BigNumber(frob.dink).div(wad);
-          const dart = new BigNumber(frob.dart).div(wad);
-          const rate = new BigNumber(ray).plus(new BigNumber(frob.rate)).div(ray);
+      const events = flatten(frobs).map(frob => {
+        const dink = new BigNumber(frob.dink).div(wad);
+        const dart = new BigNumber(frob.dart).div(wad);
+        const rate = new BigNumber(ray).plus(new BigNumber(frob.rate)).div(ray);
 
-          if (frob.rate === null) {
-            console.log('RATE SHOULD NOT BE NULL');
-            return undefined;
-          }
-          const e = {
-            kind: [
-              !dink.isZero() && `${dink.gt(0) ? 'DEPOSIT' : 'WITHDRAW'}`,
-              !dart.isZero() && `${dart.gt(0) ? 'GENERATE' : 'PAYBACK'}`,
-            ]
-              .filter(x => !!x)
-              .join('-'),
-            rate: rate.toString(),
-            collateral_amount: dink.toString(),
-            dai_amount: dart.times(rate).toString(),
-            urn: frob.u,
-            timestamp: frob.timestamp,
-            tx_id: frob.tx_id,
-            block_id: frob.block_id,
-            log_index: frob.log_index,
-            v_gem: frob.v,
-            w_dai: frob.w,
-          };
-
-          return e;
-        })
-        .filter(e => e !== undefined);
+        if (frob.rate === null) {
+          throw new Error('RATE SHOULD NOT BE NULL');
+        }
+        return {
+          kind: [
+            !dink.isZero() && `${dink.gt(0) ? 'DEPOSIT' : 'WITHDRAW'}`,
+            !dart.isZero() && `${dart.gt(0) ? 'GENERATE' : 'PAYBACK'}`,
+          ]
+            .filter(x => !!x)
+            .join('-'),
+          rate: rate.toString(),
+          collateral_amount: dink.toString(),
+          dai_amount: dart.times(rate).toString(),
+          urn: frob.u,
+          timestamp: frob.timestamp,
+          tx_id: frob.tx_id,
+          block_id: frob.block_id,
+          log_index: frob.log_index,
+          v_gem: frob.v,
+          w_dai: frob.w,
+        };
+      });
 
       if (events.length === 0) {
         return;

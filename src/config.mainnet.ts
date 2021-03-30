@@ -3,7 +3,10 @@ import { makeRawEventBasedOnTopicExtractor } from '@oasisdex/spock-utils/dist/ex
 import { join } from 'path';
 
 import { UserProvidedSpockConfig } from '@oasisdex/spock-etl/dist/services/config';
-import { managerGiveTransformer, openCdpTransformer } from './borrow/transformers/cdpManagerTransformer';
+import {
+  managerGiveTransformer,
+  openCdpTransformer,
+} from './borrow/transformers/cdpManagerTransformer';
 
 import { vatCombineTransformer, vatTransformer } from './borrow/transformers/vatTransformer';
 import { catTransformer } from './borrow/transformers/catTransformer';
@@ -12,8 +15,8 @@ import { flipNoteTransformer, flipTransformer } from './borrow/transformers/flip
 
 const vat = {
   address: '0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b',
-  startingBlock: 8928152
-}
+  startingBlock: 8928152,
+};
 
 const cdpManagers = [
   {
@@ -31,29 +34,33 @@ const cats = [
     address: '0xa5679C04fc3d9d8b0AaB1F0ab83555b301cA70Ea',
     startingBlock: 10742907,
   },
-]
+];
 
 const flipper = [
   {
     name: 'flipper',
     abi: require('../abis/flipper.json'),
     startingBlock: 8928152,
-  }
-]
+  },
+];
 
 const flipperNotes: AbiInfo[] = [
   {
     name: 'flipper',
-    functionNames: ['tend(uint256,uint256,uint256)', 'dent(uint256,uint256,uint256)', 'deal(uint256)'],
+    functionNames: [
+      'tend(uint256,uint256,uint256)',
+      'dent(uint256,uint256,uint256)',
+      'deal(uint256)',
+    ],
     abi: require('../abis/flipper.json'),
     startingBlock: 8928152,
-  }
-]
+  },
+];
 
 const addresses = {
   MIGRATION: '0xc73e0383f3aff3215e6f04b0331d58cecf0ab849',
   ILK_REGISTRY: '0x8b4ce5dcbb01e0e1f0521cd8dcfb31b308e52c24',
-}
+};
 
 export const config: UserProvidedSpockConfig = {
   startingBlock: 8957461, //8928152, // 11912600, //
@@ -62,7 +69,7 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors(cats),
     ...makeRawLogExtractors([vat]),
     ...makeRawEventBasedOnTopicExtractor(flipper),
-    ...makeRowEventBasedOnDSNoteTopic(flipperNotes)
+    ...makeRowEventBasedOnDSNoteTopic(flipperNotes),
   ],
   transformers: [
     ...openCdpTransformer(cdpManagers),
@@ -77,5 +84,5 @@ export const config: UserProvidedSpockConfig = {
     borrow: join(__dirname, './borrow/migrations'),
   },
   addresses,
-  onStart: () => { }
+  onStart: () => {},
 };

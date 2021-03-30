@@ -1,8 +1,14 @@
 import { flatten } from 'lodash';
-import { Dictionary } from 'ts-essentials'
+import { Dictionary } from 'ts-essentials';
 import { ethers } from 'ethers';
 
-import { handleEvents, FullEventInfo, FullNoteEventInfo, handleDsNoteEvents } from '@oasisdex/spock-utils/dist/transformers/common';
+import {
+  handleEvents,
+  FullEventInfo,
+  FullNoteEventInfo,
+  handleDsNoteEvents,
+  DsNoteHandlers,
+} from '@oasisdex/spock-utils/dist/transformers/common';
 import {
   getExtractorName,
   PersistedLog,
@@ -19,7 +25,7 @@ const handleNewCdp = async (
   params: Dictionary<any>,
   log: PersistedLog,
   services: LocalServices,
-  dependencies: { getUrnForCdp: (provider: Provider, id: string) => Promise<string> }
+  dependencies: { getUrnForCdp: (provider: Provider, id: string) => Promise<string> },
 ) => {
   const timestamp = await services.tx.oneOrNone(
     `SELECT timestamp FROM vulcan2x.block WHERE id = \${block_id}`,
@@ -28,8 +34,10 @@ const handleNewCdp = async (
     },
   );
 
-
-  const urn = await dependencies.getUrnForCdp((services as any).provider as Provider, params.cdp.toString())
+  const urn = await dependencies.getUrnForCdp(
+    (services as any).provider as Provider,
+    params.cdp.toString(),
+  );
 
   const values = {
     creator: params.usr.toLowerCase(),
@@ -52,9 +60,10 @@ const handleNewCdp = async (
     tx_id: log.tx_id,
     block_id: log.block_id,
     cdp_id: params.cdp.toString(),
-  }
+  };
 
-  await services.tx.none(`
+  await services.tx.none(
+    `
     INSERT INTO vault.events(
       kind,
       urn,
@@ -74,7 +83,9 @@ const handleNewCdp = async (
       \${block_id},
       \${cdp_id}
     )
-  `, eventValues)
+  `,
+    eventValues,
+  );
 
   await services.tx.none(
     `INSERT INTO manager.cdp(
@@ -85,9 +96,11 @@ const handleNewCdp = async (
      );`,
     values,
   );
-}
+};
 
-export const handlers = (dependencies: { getUrnForCdp: (provider: Provider, id: string) => Promise<string> }) => ({
+const handlers = (dependencies: {
+  getUrnForCdp: (provider: Provider, id: string) => Promise<string>;
+}) => ({
   async NewCdp(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
     await handleNewCdp(event.params, log, services, dependencies);
   },
@@ -96,14 +109,13 @@ export const handlers = (dependencies: { getUrnForCdp: (provider: Provider, id: 
 export const openCdpTransformer: (
   addresses: (string | SimpleProcessorDefinition)[],
 ) => BlockTransformer[] = addresses => {
-
   return addresses.map(_deps => {
     const deps = normalizeAddressDefinition(_deps);
 
     const getUrnForCdp = async (provider: Provider, id: string) => {
-      const contract = new ethers.Contract(deps.address, cdpManagerAbi, provider)
-      return contract.urns(id)
-    }
+      const contract = new ethers.Contract(deps.address, cdpManagerAbi, provider);
+      return contract.urns(id); // try adding block hash in options
+    };
 
     return {
       name: `openCdpTransformer-${deps.address}`,
@@ -116,52 +128,56 @@ export const openCdpTransformer: (
   });
 };
 
-const cdpManagerGiveNoteHandlers = (migrationAddress: string) => ({
-  async 'give(uint256,address)'(
-    services: LocalServices,
-    { note, log }: FullNoteEventInfo,
-  ) {
-
-    const cdp = await services.tx.oneOrNone(`
+function cdpManagerGiveNoteHandlers(migrationAddress: string): DsNoteHandlers {
+  return {
+    async 'give(uint256,address)'(
+      services: LocalServices,
+      { note, log }: FullNoteEventInfo,
+    ): Promise<void> {
+      const cdp = await services.tx.oneOrNone(
+        `
       SELECT * FROM manager.cdp WHERE cdp_id = \${cdp_id}
-    `, { cdp_id: note.params.cdp.toString() })
+    `,
+        { cdp_id: note.params.cdp.toString() },
+      );
 
-    const timestamp = await services.tx.oneOrNone(
-      `SELECT timestamp FROM vulcan2x.block WHERE id = \${block_id}`,
-      {
+      const timestamp = await services.tx.oneOrNone(
+        `SELECT timestamp FROM vulcan2x.block WHERE id = \${block_id}`,
+        {
+          block_id: log.block_id,
+        },
+      );
+
+      const values = {
+        kind: note.caller.toLowerCase() === migrationAddress.toLowerCase() ? 'MIGRATE' : 'TRANSFER',
+        cdp_id: cdp.cdp_id,
+        transfer_from: note.caller.toLowerCase(),
+        transfer_to: note.params.dst.toLowerCase(),
+        urn: cdp.urn,
+        timestamp: timestamp.timestamp,
+
+        log_index: log.log_index,
+        tx_id: log.tx_id,
         block_id: log.block_id,
-      },
-    );
+      };
 
-    const values = {
-      kind: note.caller.toLowerCase() === migrationAddress.toLowerCase() ? 'MIGRATE' : "TRANSFER",
-      cdp_id: cdp.cdp_id,
-      transfer_from: note.caller.toLowerCase(),
-      transfer_to: note.params.dst.toLowerCase(),
-      urn: cdp.urn,
-      timestamp: timestamp.timestamp,
-
-      log_index: log.log_index,
-      tx_id: log.tx_id,
-      block_id: log.block_id,
-    }
-
-    await services.tx.none(
-      `INSERT INTO vault.events(
+      await services.tx.none(
+        `INSERT INTO vault.events(
         kind, transfer_from, transfer_to, cdp_id, urn, timestamp,
         log_index, tx_id, block_id
       ) VALUES (
         \${kind}, \${transfer_from}, \${transfer_to}, \${transfer_from}, \${urn}, \${timestamp},
         \${log_index}, \${tx_id}, \${block_id}
       );`,
-      values
-    )
-  }
-})
+        values,
+      );
+    },
+  };
+}
 
 export const managerGiveTransformer: (
-  addresses: (string | SimpleProcessorDefinition)[]
-) => BlockTransformer[] = (addresses) => {
+  addresses: (string | SimpleProcessorDefinition)[],
+) => BlockTransformer[] = addresses => {
   return addresses.map(_deps => {
     const deps = normalizeAddressDefinition(_deps);
 
@@ -171,9 +187,15 @@ export const managerGiveTransformer: (
       transformerDependencies: [`openCdpTransformer-${deps.address}`],
       startingBlock: deps.startingBlock,
       transform: async (services, logs) => {
-        const addresses = getAddressesFromConfig(services)
-        await handleDsNoteEvents(services, cdpManagerAbi, flatten(logs), cdpManagerGiveNoteHandlers(addresses.MIGRATION), 2);
+        const addresses = getAddressesFromConfig(services);
+        await handleDsNoteEvents(
+          services,
+          cdpManagerAbi,
+          flatten(logs),
+          cdpManagerGiveNoteHandlers(addresses.MIGRATION),
+          2,
+        );
       },
     };
   });
-}
+};

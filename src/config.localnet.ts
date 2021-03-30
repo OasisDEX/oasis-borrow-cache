@@ -1,7 +1,6 @@
 import { makeRawLogExtractors } from '@oasisdex/spock-utils/dist//extractors//rawEventDataExtractor';
 import { makeRawEventBasedOnTopicExtractor } from '@oasisdex/spock-utils/dist/extractors/rawEventBasedOnTopicExtractor';
 
-import { join } from 'path';
 import { values } from 'lodash';
 import { Addresses, makeToken, lowercaseValues } from './addresses-utils';
 import { UserProvidedSpockConfig } from '@oasisdex/spock-etl/dist/services/config';
@@ -95,8 +94,7 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors(cdpManager),
     ...makeRawEventBasedOnTopicExtractor(proxyActionsAbis),
   ],
-  transformers: [
-  ],
+  transformers: [],
   migrations: {},
   api: {
     whitelisting: {
@@ -108,5 +106,5 @@ export const config: UserProvidedSpockConfig = {
     },
   },
   addresses,
-  onStart: () => { },
+  onStart: () => {},
 };
