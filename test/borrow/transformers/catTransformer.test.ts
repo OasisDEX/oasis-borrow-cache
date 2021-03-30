@@ -44,12 +44,7 @@ describe('vatTransformer', () => {
     afterEach(() => destroyTestServices(services));
 
     it('handle bite note events', async () => {
-        const transformerInstance = catTransformer(
-            [constants.AddressZero],
-            {
-                getIlkInfo,
-            }
-        )[0];
+        const transformerInstance = catTransformer([constants.AddressZero], { getIlkInfo })[0];
         const data = require('../../fixture/bite-log.json');
 
         await transformerInstance.transform(txServices, data);
@@ -68,6 +63,38 @@ describe('vatTransformer', () => {
                 log_index: 1,
                 tx_id: 1,
                 block_id: 1,
+            }
+        ]);
+    });
+
+    it('handle AUCTION_STARTED events', async () => {
+        const transformerInstance = catTransformer([constants.AddressZero], { getIlkInfo })[0];
+        const data = require('../../fixture/bite-log.json');
+
+        await transformerInstance.transform(txServices, data);
+
+        const allEvents = await getSQL(services.db, `SELECT * FROM vault.events;`);
+        expect(allEvents).toEqual([
+            {
+                id: 1,
+                kind: "AUCTION_STARTED",
+                collateral_amount: "2000.000000000000000000",
+                dai_amount: "2562.530344205456551250",
+                rate: null,
+                vault_creator: null,
+                depositor: null,
+                urn: "0xbae2de84e004a28bbecf7e01ef46cbacd179b598",
+                v_gem: null,
+                w_dai: null,
+                cdp_id: null,
+                transfer_from: null,
+                transfer_to: null,
+                timestamp: new Date("2019-07-02T11:18:01.000Z"),
+                log_index: 1,
+                tx_id: 1,
+                block_id: 1,
+                collateral: "MOCKED",
+                auction_id: "572",
             }
         ]);
     });
