@@ -9,7 +9,7 @@ import {
 } from './borrow/transformers/cdpManagerTransformer';
 
 import { vatCombineTransformer, vatTransformer } from './borrow/transformers/vatTransformer';
-import { catTransformer } from './borrow/transformers/catTransformer';
+import { auctionTransformer, catTransformer } from './borrow/transformers/catTransformer';
 import { AbiInfo, makeRowEventBasedOnDSNoteTopic } from './borrow/customExtractor';
 import { flipNoteTransformer, flipTransformer } from './borrow/transformers/flipperTransformer';
 
@@ -75,6 +75,7 @@ export const config: UserProvidedSpockConfig = {
     ...openCdpTransformer(cdpManagers),
     ...managerGiveTransformer(cdpManagers),
     ...catTransformer(cats),
+    ...auctionTransformer(cats),
     vatTransformer(vat),
     vatCombineTransformer(vat),
     flipTransformer(cats),

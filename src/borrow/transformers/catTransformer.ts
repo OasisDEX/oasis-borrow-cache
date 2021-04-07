@@ -87,7 +87,7 @@ async function handleAuctionStarted(
     kind: 'AUCTION_STARTED',
     collateral: ilkData.symbol,
     collateral_amount: new BigNumber(params.ink)
-      .div(new BigNumber(10).pow(ilkData.dec.toNumber()))
+      .div(new BigNumber(10).pow(18))
       .toString(),
     dai_amount: new BigNumber(params.art).div(new BigNumber(10).pow(18)).toString(),
     auction_id: params.id.toString(),
@@ -111,10 +111,9 @@ async function handleAuctionStarted(
   );
 }
 
-const handlers = {
+const catHandlers = {
   async Bite(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
     await handleBite(event.params, log, services);
-    await handleAuctionStarted(event.params, log, services);
   },
 };
 
@@ -131,7 +130,32 @@ export const catTransformer: (
       dependencies: [getExtractorName(deps.address)],
       startingBlock: deps.startingBlock,
       transform: async (services, logs) => {
-        await handleEvents(services, catAbi, flatten(logs), handlers);
+        await handleEvents(services, catAbi, flatten(logs), catHandlers);
+      },
+    };
+  });
+};
+
+const handlersV2 = {
+  async Bite(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
+    await handleAuctionStarted(event.params, log, services);
+  },
+};
+
+export const getAuctionTransformerName = (address: string) => `auctionTransformer-${address}`;
+
+export const auctionTransformer: (
+  addresses: (string | SimpleProcessorDefinition)[],
+) => BlockTransformer[] = addresses => {
+  return addresses.map(_deps => {
+    const deps = normalizeAddressDefinition(_deps);
+
+    return {
+      name: getAuctionTransformerName(deps.address),
+      dependencies: [getExtractorName(deps.address)],
+      startingBlock: deps.startingBlock,
+      transform: async (services, logs) => {
+        await handleEvents(services, catAbi, flatten(logs), handlersV2);
       },
     };
   });
