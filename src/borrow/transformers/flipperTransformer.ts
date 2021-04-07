@@ -53,7 +53,6 @@ export const flipTransformer: () => BlockTransformer = () => {
   return {
     name: flipperTransformer,
     dependencies: [getExtractorNameBasedOnTopic('flipper')],
-    // transformerDependencies: transformerDependencies,
     transform: async (services, logs) => {
       await handleEvents(services, flipAbi, flatten(logs), handlers);
     },
