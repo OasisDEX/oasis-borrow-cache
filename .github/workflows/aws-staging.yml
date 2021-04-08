@@ -32,26 +32,25 @@ jobs:
     - name: Build, tag, and push image to Amazon ECR
       id: build-image
       env:
-        IMAGE_TAG: latest
+        IMAGE_TAG1: ${{ github.sha }}
+        IMAGE_TAG2: latest
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       run: |
         # Build a docker container and
         # push it to ECR so that it can
         # be deployed to ECS.
-        docker build -t $ECR_REGISTRY/$SERVICE_NAME:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$SERVICE_NAME:$IMAGE_TAG
-        echo "::set-output name=image::$ECR_REGISTRY/$SERVICE_NAME:$IMAGE_TAG"
+        docker build -t $ECR_REGISTRY/$SERVICE_NAME:$IMAGE_TAG1 -t $ECR_REGISTRY/$SERVICE_NAME:$IMAGE_TAG2 .
+        docker push $ECR_REGISTRY/$SERVICE_NAME:$IMAGE_TAG1
+        echo "::set-output name=image::$ECR_REGISTRY/$SERVICE_NAME:$IMAGE_TAG1"
 
     - name: Download ETL task definition
       run: |
         aws ecs describe-task-definition --task-definition ${SERVICE_NAME}-etl --query taskDefinition > task-definition-etl.json
-    
+
     - name: Download API task definition
       run: |
         aws ecs describe-task-definition --task-definition ${SERVICE_NAME}-api --query taskDefinition > task-definition-api.json
- 
-    # At the moment we are always on "latest" tag anyway
-    # but going to render a new task definition anyway
+
     - name: Render ETL task definition for migrate container
       id: render-etl-migrate
       uses: aws-actions/amazon-ecs-render-task-definition@v1
