@@ -3,14 +3,14 @@ on:
     branches:
       - master
 
-name: Deploy Staging
+name: Deploy to AWS Staging
 
 jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
     env:
-      REGION: eu-central-1
+      AWS_REGION: eu-central-1
       SERVICE_NAME: stagingcache-staging
       CLUSTER_NAME: oasis-borrow-cache-staging
 
@@ -23,7 +23,7 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ env.REGION }}
+        aws-region: ${{ env.AWS_REGION }}
 
     - name: Login to Amazon ECR
       id: login-ecr
@@ -32,61 +32,24 @@ jobs:
     - name: Build, tag, and push image to Amazon ECR
       id: build-image
       env:
-        IMAGE_TAG1: ${{ github.sha }}
-        IMAGE_TAG2: latest
+        SHA_TAG: ${{ github.sha }}
+        LATEST_TAG: latest
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       run: |
         # Build a docker container and
         # push it to ECR so that it can
         # be deployed to ECS.
-        docker build -t $ECR_REGISTRY/$SERVICE_NAME:$IMAGE_TAG1 -t $ECR_REGISTRY/$SERVICE_NAME:$IMAGE_TAG2 .
-        docker push $ECR_REGISTRY/$SERVICE_NAME:$IMAGE_TAG1
-        echo "::set-output name=image::$ECR_REGISTRY/$SERVICE_NAME:$IMAGE_TAG1"
+        docker build -t $ECR_REGISTRY/$SERVICE_NAME:$SHA_TAG -t $ECR_REGISTRY/$SERVICE_NAME:$LATEST_TAG .
+        docker push $ECR_REGISTRY/$SERVICE_NAME:$SHA_TAG
 
-    - name: Download ETL task definition
+    - name: Update ${{ env.SERVICE_NAME }}-etl ECS service with latest Docker image
+      id: service-update
       run: |
-        aws ecs describe-task-definition --task-definition ${SERVICE_NAME}-etl --query taskDefinition > task-definition-etl.json
+        aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.SERVICE_NAME }}-etl --force-new-deployment  --endpoint https://ecs.eu-central-1.amazonaws.com --region $AWS_REGION
+        aws ecs wait services-stable --cluster $CLUSTER_NAME --service ${{ env.SERVICE_NAME }}-etl
 
-    - name: Download API task definition
+    - name: Update ${{ env.SERVICE_NAME }}-api ECS service with latest Docker image
+      id: service-update
       run: |
-        aws ecs describe-task-definition --task-definition ${SERVICE_NAME}-api --query taskDefinition > task-definition-api.json
-
-    - name: Render ETL task definition for migrate container
-      id: render-etl-migrate
-      uses: aws-actions/amazon-ecs-render-task-definition@v1
-      with:
-        task-definition: task-definition-etl.json
-        container-name: ${{ env.SERVICE_NAME }}-migrate
-        image: ${{ steps.build-image.outputs.image }}
-
-    - name: Render ETL task definition for etl container
-      id: render-etl
-      uses: aws-actions/amazon-ecs-render-task-definition@v1
-      with:
-        task-definition: ${{ steps.render-etl-migrate.outputs.task-definition }}
-        container-name: ${{ env.SERVICE_NAME }}-etl
-        image: ${{ steps.build-image.outputs.image }}
-
-    - name: Render API task definition
-      id: render-api
-      uses: aws-actions/amazon-ecs-render-task-definition@v1
-      with:
-        task-definition: task-definition-api.json
-        container-name: ${{ env.SERVICE_NAME }}-api
-        image: ${{ steps.build-image.outputs.image }}
-
-    - name: Deploy ETL task definition
-      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-      with:
-        task-definition: ${{ steps.render-etl.outputs.task-definition }}
-        service: ${{ env.SERVICE_NAME }}-etl
-        cluster: ${{ env.CLUSTER_NAME }}
-        wait-for-service-stability: true
-
-    - name: Deploy API task definition
-      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-      with:
-        task-definition: ${{ steps.render-api.outputs.task-definition }}
-        service: ${{ env.SERVICE_NAME }}-api
-        cluster: ${{ env.CLUSTER_NAME }}
-        wait-for-service-stability: true
+        aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.SERVICE_NAME }}-api --force-new-deployment  --endpoint https://ecs.eu-central-1.amazonaws.com --region $AWS_REGION
+        aws ecs wait services-stable --cluster $CLUSTER_NAME --service ${{ env.SERVICE_NAME }}-api
