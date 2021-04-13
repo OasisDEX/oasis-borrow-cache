@@ -14,6 +14,7 @@ import { AbiInfo, makeRowEventBasedOnDSNoteTopic } from './borrow/customExtracto
 import { flipNoteTransformer, flipTransformer } from './borrow/transformers/flipperTransformer';
 import { getIlkInfo } from './borrow/services/getIlkInfo';
 import { getUrnForCdp } from './borrow/services/getUrnForCdp';
+import { auctionLiq2Transformer, dogTransformer } from './borrow/transformers/dogTransformer';
 
 const vat = {
   address: '0xba987bdb501d131f766fee8180da5d81b34b69d9',
@@ -37,6 +38,13 @@ const cats = [
     startingBlock: 20465209,
   },
 ];
+
+const dogs = [
+  {
+    address: '0x121d0953683f74e9a338d40d9b4659c0ebb539a0',
+    startingBlock: 24136109,
+  },
+]
 
 const flipper = [
   {
@@ -65,10 +73,11 @@ const addresses = {
 };
 
 export const config: UserProvidedSpockConfig = {
-  startingBlock: 14764534,
+  startingBlock: 24136109, //14764534,
   extractors: [
     ...makeRawLogExtractors(cdpManagers),
     ...makeRawLogExtractors(cats),
+    ...makeRawLogExtractors(dogs),
     ...makeRawLogExtractors([vat]),
     ...makeRawEventBasedOnTopicExtractor(flipper),
     ...makeRowEventBasedOnDSNoteTopic(flipperNotes),
@@ -78,6 +87,8 @@ export const config: UserProvidedSpockConfig = {
     ...managerGiveTransformer(cdpManagers),
     ...catTransformer(cats),
     ...auctionTransformer(cats, { getIlkInfo }),
+    ...dogTransformer(dogs),
+    ...auctionLiq2Transformer(dogs, { getIlkInfo }),
     vatTransformer(vat),
     vatCombineTransformer(vat),
     flipTransformer(),
