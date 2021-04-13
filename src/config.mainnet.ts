@@ -9,7 +9,7 @@ import {
 } from './borrow/transformers/cdpManagerTransformer';
 
 import { vatCombineTransformer, vatTransformer } from './borrow/transformers/vatTransformer';
-import { catTransformer } from './borrow/transformers/catTransformer';
+import { auctionTransformer, catTransformer } from './borrow/transformers/catTransformer';
 import { AbiInfo, makeRowEventBasedOnDSNoteTopic } from './borrow/customExtractor';
 import { flipNoteTransformer, flipTransformer } from './borrow/transformers/flipperTransformer';
 import { getIlkInfo } from './borrow/services/getIlkInfo';
@@ -76,7 +76,8 @@ export const config: UserProvidedSpockConfig = {
   transformers: [
     ...openCdpTransformer(cdpManagers, { getUrnForCdp }),
     ...managerGiveTransformer(cdpManagers),
-    ...catTransformer(cats, { getIlkInfo }),
+    ...catTransformer(cats),
+    ...auctionTransformer(cats, { getIlkInfo }),
     vatTransformer(vat),
     vatCombineTransformer(vat),
     flipTransformer(),
@@ -86,5 +87,5 @@ export const config: UserProvidedSpockConfig = {
     borrow: join(__dirname, './borrow/migrations'),
   },
   addresses,
-  onStart: () => {},
+  onStart: () => { },
 };

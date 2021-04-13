@@ -50,7 +50,7 @@ async function handleAuctionStarted(
   params: Dictionary<any>,
   log: PersistedLog,
   services: LocalServices,
-  dependencies: CatTransformerDependencies,
+  dependencies: auctionsTransformerDependencies,
 ): Promise<void> {
   const timestamp = await services.tx.oneOrNone(
     `SELECT timestamp FROM vulcan2x.block WHERE id = \${block_id}`,
@@ -65,7 +65,7 @@ async function handleAuctionStarted(
     kind: 'AUCTION_STARTED',
     collateral: ilkData.symbol,
     collateral_amount: new BigNumber(params.ink)
-      .div(new BigNumber(10).pow(ilkData.dec.toNumber()))
+      .div(new BigNumber(10).pow(18))
       .toString(),
     dai_amount: new BigNumber(params.art).div(new BigNumber(10).pow(18)).toString(),
     auction_id: params.id.toString(),
@@ -89,22 +89,16 @@ async function handleAuctionStarted(
   );
 }
 
-const handlers = (dependencies: CatTransformerDependencies) => ({
+const catHandlers = {
   async Bite(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
     await handleBite(event.params, log, services);
-    await handleAuctionStarted(event.params, log, services, dependencies);
-  },
-});
+  }
+}
 
 export const getCatTransformerName = (address: string) => `catTransformer-${address}`;
-
-interface CatTransformerDependencies {
-  getIlkInfo: (ilk: string, services: LocalServices) => Promise<Ilk>;
-}
 export const catTransformer: (
   addresses: (string | SimpleProcessorDefinition)[],
-  dependencies: CatTransformerDependencies,
-) => BlockTransformer[] = (addresses, dependencies) => {
+) => BlockTransformer[] = addresses => {
   return addresses.map(_deps => {
     const deps = normalizeAddressDefinition(_deps);
 
@@ -113,7 +107,37 @@ export const catTransformer: (
       dependencies: [getExtractorName(deps.address)],
       startingBlock: deps.startingBlock,
       transform: async (services, logs) => {
-        await handleEvents(services, catAbi, flatten(logs), handlers(dependencies));
+        await handleEvents(services, catAbi, flatten(logs), catHandlers);
+      },
+    };
+  });
+};
+
+interface auctionsTransformerDependencies {
+  getIlkInfo: (ilk: string, services: LocalServices) => Promise<Ilk>;
+}
+
+const handlersV2 = (dependencies: auctionsTransformerDependencies) => ({
+  async Bite(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
+    await handleAuctionStarted(event.params, log, services, dependencies);
+  },
+});
+
+export const getAuctionTransformerName = (address: string) => `auctionTransformer-${address}`;
+
+export const auctionTransformer: (
+  addresses: (string | SimpleProcessorDefinition)[],
+  dependencies: auctionsTransformerDependencies,
+) => BlockTransformer[] = (addresses, dependencies) => {
+  return addresses.map(_deps => {
+    const deps = normalizeAddressDefinition(_deps);
+
+    return {
+      name: getAuctionTransformerName(deps.address),
+      dependencies: [getExtractorName(deps.address)],
+      startingBlock: deps.startingBlock,
+      transform: async (services, logs) => {
+        await handleEvents(services, catAbi, flatten(logs), handlersV2(dependencies));
       },
     };
   });
