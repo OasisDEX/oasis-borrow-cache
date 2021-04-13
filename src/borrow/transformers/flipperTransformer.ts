@@ -6,17 +6,12 @@ import {
   FullNoteEventInfo,
   FullEventInfo,
 } from '@oasisdex/spock-utils/dist/transformers/common';
-import {
-  PersistedLog,
-  SimpleProcessorDefinition,
-} from '@oasisdex/spock-utils/dist/extractors/rawEventDataExtractor';
+import { PersistedLog } from '@oasisdex/spock-utils/dist/extractors/rawEventDataExtractor';
 import { getExtractorName as getExtractorNameBasedOnTopic } from '@oasisdex/spock-utils/dist/extractors/rawEventBasedOnTopicExtractor';
 import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
-import { normalizeAddressDefinition } from '../../utils';
 import { getExtractorNameBasedOnDSNoteTopic } from '../customExtractor';
 import { Dictionary } from 'ts-essentials';
-import { getCatTransformerName } from './catTransformer';
 
 const flipAbi = require('../../../abis/flipper.json');
 
@@ -54,17 +49,10 @@ const handlers = {
 };
 
 const flipperTransformer = 'flipperTransformer';
-export const flipTransformer: (
-  dependencies: (string | SimpleProcessorDefinition)[],
-) => BlockTransformer = dependencies => {
-  const transformerDependencies = dependencies
-    .map(normalizeAddressDefinition)
-    .map(dep => getCatTransformerName(dep.address));
-
+export const flipTransformer: () => BlockTransformer = () => {
   return {
     name: flipperTransformer,
     dependencies: [getExtractorNameBasedOnTopic('flipper')],
-    transformerDependencies: transformerDependencies,
     transform: async (services, logs) => {
       await handleEvents(services, flipAbi, flatten(logs), handlers);
     },
@@ -147,17 +135,10 @@ const handleNote = {
   },
 };
 
-export const flipNoteTransformer: (
-  dependencies: (string | SimpleProcessorDefinition)[],
-) => BlockTransformer = dependencies => {
-  const transformerDependencies = dependencies
-    .map(normalizeAddressDefinition)
-    .map(dep => getCatTransformerName(dep.address));
-
+export const flipNoteTransformer: () => BlockTransformer = () => {
   return {
     name: `flipperNoteTransformer`,
     dependencies: [getExtractorNameBasedOnDSNoteTopic('flipper')],
-    transformerDependencies: [...transformerDependencies, flipperTransformer],
     transform: async (services, logs) => {
       await handleDsNoteEvents(services, flipAbi, flatten(logs), handleNote, 2);
     },

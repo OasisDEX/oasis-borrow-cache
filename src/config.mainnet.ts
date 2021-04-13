@@ -12,6 +12,8 @@ import { vatCombineTransformer, vatTransformer } from './borrow/transformers/vat
 import { auctionTransformer, catTransformer } from './borrow/transformers/catTransformer';
 import { AbiInfo, makeRowEventBasedOnDSNoteTopic } from './borrow/customExtractor';
 import { flipNoteTransformer, flipTransformer } from './borrow/transformers/flipperTransformer';
+import { getIlkInfo } from './borrow/services/getIlkInfo';
+import { getUrnForCdp } from './borrow/services/getUrnForCdp';
 
 const vat = {
   address: '0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b',
@@ -63,7 +65,7 @@ const addresses = {
 };
 
 export const config: UserProvidedSpockConfig = {
-  startingBlock: 12136054, //8928152, // 11912600, //
+  startingBlock: 8928152,
   extractors: [
     ...makeRawLogExtractors(cdpManagers),
     ...makeRawLogExtractors(cats),
@@ -72,14 +74,14 @@ export const config: UserProvidedSpockConfig = {
     ...makeRowEventBasedOnDSNoteTopic(flipperNotes),
   ],
   transformers: [
-    ...openCdpTransformer(cdpManagers),
+    ...openCdpTransformer(cdpManagers, { getUrnForCdp }),
     ...managerGiveTransformer(cdpManagers),
     ...catTransformer(cats),
-    ...auctionTransformer(cats),
+    ...auctionTransformer(cats, { getIlkInfo }),
     vatTransformer(vat),
     vatCombineTransformer(vat),
-    flipTransformer(cats),
-    flipNoteTransformer(cats),
+    flipTransformer(),
+    flipNoteTransformer(),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),

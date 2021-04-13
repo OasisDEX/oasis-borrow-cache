@@ -68,6 +68,7 @@ const vatNoteHandlers: DsNoteHandlers = {
         block_id: log.block_id,
       },
     );
+
     const values = {
       dink: note.params.dink.toString(),
       dart: note.params.dart.toString(),
