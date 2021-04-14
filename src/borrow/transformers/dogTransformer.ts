@@ -27,7 +27,7 @@ async function handleBark(
         ink: params.ink.toString(),
         art: params.art.toString(),
         due: params.due.toString(),
-        clip: params.flip.toLowerCase(),
+        clip: params.clip.toLowerCase(),
 
         log_index: log.log_index,
         tx_id: log.tx_id,
@@ -36,11 +36,11 @@ async function handleBark(
 
     await services.tx.none(
         `INSERT INTO auctions.bark(
-          
-          log_index, tx_id, block_id
+            auction_id, ilk, urn, ink, art, due, clip,
+            log_index, tx_id, block_id
         ) VALUES (
-          
-          \${log_index}, \${tx_id}, \${block_id}
+            \${auction_id}, \${ilk}, \${urn}, \${ink}, \${art}, \${due}, \${clip},
+            \${log_index}, \${tx_id}, \${block_id}
         );`,
         values,
     );
@@ -61,15 +61,13 @@ async function handleLiq2AuctionStarted(
 
     const ilkData = await dependencies.getIlkInfo(params.ilk, services);
 
-    debugger
-
     const event = {
         kind: 'AUCTION_STARTED',
         collateral: ilkData.symbol,
         collateral_amount: new BigNumber(params.ink)
             .div(new BigNumber(10).pow(18))
             .toString(),
-        dai_amount: new BigNumber(params.art).div(new BigNumber(10).pow(18)).toString(),
+        dai_amount: new BigNumber(params.due).div(new BigNumber(10).pow(45)).toString(),
         auction_id: params.id.toString(),
         urn: params.urn.toLowerCase(),
         timestamp: timestamp.timestamp,
@@ -92,7 +90,7 @@ async function handleLiq2AuctionStarted(
 }
 
 const dogHandlers = {
-    async Bite(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
+    async Bark(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
         await handleBark(event.params, log, services);
     }
 }
@@ -120,7 +118,7 @@ interface auctionsTransformerDependencies {
 }
 
 const handlersLiq2 = (dependencies: auctionsTransformerDependencies) => ({
-    async Bite(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
+    async Bark(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
         await handleLiq2AuctionStarted(event.params, log, services, dependencies);
     },
 });
