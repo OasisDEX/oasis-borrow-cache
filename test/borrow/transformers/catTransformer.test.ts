@@ -2,7 +2,7 @@ import { expect } from 'earljs';
 import { constants } from 'ethers';
 import { getSQL, destroyTestServices, executeSQL } from '@oasisdex/spock-test-utils';
 
-import { catTransformer } from '../../../src/borrow/transformers/catTransformer';
+import { auctionTransformer, catTransformer } from '../../../src/borrow/transformers/catTransformer';
 import { Services, TransactionalServices } from '@oasisdex/spock-etl/dist/services/types';
 import { createServices } from '../../utils/createServices';
 import { Ilk } from '../../../src/borrow/services/getIlkInfo';
@@ -40,7 +40,7 @@ describe('catTransformer', () => {
   afterEach(() => destroyTestServices(services));
 
   it('handles bite note events', async () => {
-    const transformerInstance = catTransformer([constants.AddressZero], { getIlkInfo })[0];
+    const transformerInstance = catTransformer([constants.AddressZero])[0];
     const data = require('../../fixture/bite-log.json');
 
     await transformerInstance.transform(txServices, data);
@@ -64,7 +64,7 @@ describe('catTransformer', () => {
   });
 
   it('handles AUCTION_STARTED events', async () => {
-    const transformerInstance = catTransformer([constants.AddressZero], { getIlkInfo })[0];
+    const transformerInstance = auctionTransformer([constants.AddressZero], { getIlkInfo })[0];
     const data = require('../../fixture/bite-log.json');
 
     await transformerInstance.transform(txServices, data);
@@ -74,7 +74,7 @@ describe('catTransformer', () => {
       {
         id: 1,
         kind: 'AUCTION_STARTED',
-        collateral_amount: '2000.000000000000000000',
+        collateral_amount: '20.000000000000000000',
         dai_amount: '2562.530344205456551250',
         rate: null,
         vault_creator: null,
