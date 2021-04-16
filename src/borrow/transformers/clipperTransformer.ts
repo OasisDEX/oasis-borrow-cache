@@ -9,6 +9,8 @@ import { getExtractorName as getExtractorNameBasedOnTopic } from '@oasisdex/spoc
 import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
 import { Dictionary } from 'ts-essentials';
+import BigNumber from 'bignumber.js';
+import { rad } from '../../utils/precision';
 
 const clipperAbi = require('../../../abis/clipper.json');
 
@@ -81,8 +83,8 @@ const handleAuctionFinished = async (params: Dictionary<any>, log: PersistedLog,
         const event = {
             kind: "TAKE",
             auction_id: params.id.toString(),
-            collateral_amount: params.lot.toString(),
-            dai_amount: params.tab.toString(),
+            collateral_amount: new BigNumber(params.lot).div(rad).toString(),
+            dai_amount: new BigNumber(params.tab).div(rad).toString(),
             urn: bark.urn,
             timestamp: timestamp.timestamp,
 
