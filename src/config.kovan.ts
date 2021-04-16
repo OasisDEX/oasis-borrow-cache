@@ -14,7 +14,7 @@ import { AbiInfo, makeRowEventBasedOnDSNoteTopic } from './borrow/customExtracto
 import { flipNoteTransformer, flipTransformer } from './borrow/transformers/flipperTransformer';
 import { getIlkInfo } from './borrow/services/getIlkInfo';
 import { getUrnForCdp } from './borrow/services/getUrnForCdp';
-import { auctionLiq2Transformer, dogTransformer } from './borrow/transformers/dogTransformer';
+import { auctionLiq2Transformer, dogTransformer, getDogTransformerName } from './borrow/transformers/dogTransformer';
 import { clipperTransformer } from './borrow/transformers/clipperTransformer';
 
 const vat = {
@@ -104,7 +104,7 @@ export const config: UserProvidedSpockConfig = {
     vatCombineTransformer(vat),
     flipTransformer(),
     flipNoteTransformer(),
-    clipperTransformer(),
+    clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),

@@ -135,12 +135,30 @@ const handlers = {
 
 export const clipperTransformerName = 'clipperTransformer'
 
-export const clipperTransformer: () => BlockTransformer = () => {
+async function filterClipperLogs(services: LocalServices, logs: PersistedLog[]) {
+    if (logs.length === 0) {
+        return logs
+    }
+
+    const clippers = await services.tx.manyOrNone(
+        `SELECT clip FROM dog.bark WHERE (${logs.map(log => `'${log.address}' = clip`).join(' OR ')})`
+    )
+    const clippersAddresses = clippers.map((result: { clip: string }) => result.clip)
+
+    if (clippersAddresses.length === 0) {
+        return []
+    }
+    return logs.filter(log => clippersAddresses.includes(log.address))
+}
+
+export const clipperTransformer: (transformerDependencies: string[]) => BlockTransformer = (transformerDependencies) => {
     return {
         name: clipperTransformerName,
         dependencies: [getExtractorNameBasedOnTopic('clipper')],
+        transformerDependencies,
         transform: async (services, logs) => {
-            await handleEvents(services, clipperAbi, flatten(logs), handlers);
+            const allowedLogs = await filterClipperLogs(services, flatten(logs))
+            await handleEvents(services, clipperAbi, allowedLogs, handlers);
         },
     };
 };

@@ -13,16 +13,9 @@ import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
 import { normalizeAddressDefinition } from '../../utils';
 import { BigNumber } from 'bignumber.js';
+import { wad, ray } from '../../utils/precision';
 
 const vatAbi = require('../../../abis/vat.json');
-
-/*
-- `dink`: change in collateral.
-- `dart`: change in debt.
-*/
-
-const wad = new BigNumber(10).pow(18);
-const ray = new BigNumber(10).pow(27);
 
 const vatNoteHandlers: DsNoteHandlers = {
   async 'fold(bytes32,address,int256)'(

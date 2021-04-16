@@ -14,6 +14,7 @@ import { parseBytes32String } from 'ethers/utils';
 import { Ilk } from '../services/getIlkInfo';
 import BigNumber from 'bignumber.js';
 import { clipperTransformerName } from './clipperTransformer';
+import { rad, wad } from '../../utils/precision';
 
 const dogAbi = require('../../../abis/dog.json');
 async function handleBark(
@@ -28,7 +29,7 @@ async function handleBark(
         ink: params.ink.toString(),
         art: params.art.toString(),
         due: params.due.toString(),
-        clip: params.clip.toLowerCase(),// 🤔 QUESTION: maybe we should have some registry of clippers so that in ClipperTransformer whether we are handling a event from our Clipper
+        clip: params.clip.toLowerCase(),
 
         log_index: log.log_index,
         tx_id: log.tx_id,
@@ -79,12 +80,17 @@ async function handleLiq2AuctionStarted(
     services: LocalServices,
     dependencies: auctionsTransformerDependencies,
 ): Promise<void> {
-    const Kick = await services.tx.oneOrNone(
-        `SELECT timestamp FROM clipper.kick WHERE id = \${block_id}`,
+    const kick = await services.tx.oneOrNone(
+        `SELECT * FROM clipper.kick WHERE block_id = \${block_id} AND log_index = \${log_index}`,
         {
+            log_index: log.log_index - 1,
             block_id: log.block_id,
         },
     );
+
+    if (kick === null) {
+        throw new Error('Missing corresponding Kick event for Bark event')
+    }
 
     const timestamp = await services.tx.oneOrNone(
         `SELECT timestamp FROM vulcan2x.block WHERE id = \${block_id}`,
@@ -96,15 +102,16 @@ async function handleLiq2AuctionStarted(
     const ilkData = await dependencies.getIlkInfo(params.ilk, services);
 
     const event = {
-        kind: 'AUCTION_STARTED',
+        kind: 'AUCTION_STARTED_V2',
         collateral: ilkData.symbol,
         collateral_amount: new BigNumber(params.ink)
-            .div(new BigNumber(10).pow(18))
+            .div(wad)
             .toString(),
-        dai_amount: new BigNumber(params.due).div(new BigNumber(10).pow(45)).toString(),
+        dai_amount: new BigNumber(kick.tab).div(rad).toString(),
         auction_id: params.id.toString(),
         urn: params.urn.toLowerCase(),
         timestamp: timestamp.timestamp,
+        liq_penalty: new BigNumber(kick.tab).minus(params.due).toString(),
 
         log_index: log.log_index,
         tx_id: log.tx_id,
@@ -113,10 +120,10 @@ async function handleLiq2AuctionStarted(
 
     await services.tx.none(
         `INSERT INTO vault.events(
-            kind, collateral, collateral_amount, dai_amount, timestamp, auction_id, urn,
+            kind, collateral, collateral_amount, dai_amount, timestamp, auction_id, urn, liq_penalty,
             log_index, tx_id, block_id
           ) VALUES (
-            \${kind}, \${collateral}, \${collateral_amount}, \${dai_amount}, \${timestamp}, \${auction_id}, \${urn},
+            \${kind}, \${collateral}, \${collateral_amount}, \${dai_amount}, \${timestamp}, \${auction_id}, \${urn}, liq_penalty,
             \${log_index}, \${tx_id}, \${block_id}
           );`,
         event,

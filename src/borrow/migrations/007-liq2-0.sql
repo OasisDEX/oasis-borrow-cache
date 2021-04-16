@@ -88,3 +88,5 @@ CREATE VIEW api.vault_events AS (
 
 ALTER TABLE auctions.bite SET SCHEMA cat;
 ALTER SCHEMA auctions RENAME TO flipper;
+
+ALTER TABLE vault.events ADD liq_penalty VARCHAR(66) NULL;
