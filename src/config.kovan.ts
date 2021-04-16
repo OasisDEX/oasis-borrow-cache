@@ -15,6 +15,7 @@ import { flipNoteTransformer, flipTransformer } from './borrow/transformers/flip
 import { getIlkInfo } from './borrow/services/getIlkInfo';
 import { getUrnForCdp } from './borrow/services/getUrnForCdp';
 import { auctionLiq2Transformer, dogTransformer } from './borrow/transformers/dogTransformer';
+import { clipperTransformer } from './borrow/transformers/clipperTransformer';
 
 const vat = {
   address: '0xba987bdb501d131f766fee8180da5d81b34b69d9',
@@ -46,13 +47,21 @@ const dogs = [
   },
 ]
 
-const flipper = [
+const flippers = [
   {
     name: 'flipper',
     abi: require('../abis/flipper.json'),
     startingBlock: 14764534,
   },
 ];
+
+const clippers = [
+  {
+    name: 'clipper',
+    abi: require('../abis/clipper.json'),
+    startingBlock: 24136159,
+  },
+]
 
 const flipperNotes: AbiInfo[] = [
   {
@@ -67,20 +76,22 @@ const flipperNotes: AbiInfo[] = [
   },
 ];
 
+
 const addresses = {
   MIGRATION: '0x411B2Faa662C8e3E5cF8f01dFdae0aeE482ca7b0',
   ILK_REGISTRY: '0xedE45A0522CA19e979e217064629778d6Cc2d9Ea',
 };
 
 export const config: UserProvidedSpockConfig = {
-  startingBlock: 24136109, //14764534,
+  startingBlock: 24254383, //14764534,
   extractors: [
     ...makeRawLogExtractors(cdpManagers),
     ...makeRawLogExtractors(cats),
     ...makeRawLogExtractors(dogs),
     ...makeRawLogExtractors([vat]),
-    ...makeRawEventBasedOnTopicExtractor(flipper),
+    ...makeRawEventBasedOnTopicExtractor(flippers),
     ...makeRowEventBasedOnDSNoteTopic(flipperNotes),
+    ...makeRawEventBasedOnTopicExtractor(clippers),
   ],
   transformers: [
     ...openCdpTransformer(cdpManagers, { getUrnForCdp }),
@@ -93,6 +104,7 @@ export const config: UserProvidedSpockConfig = {
     vatCombineTransformer(vat),
     flipTransformer(),
     flipNoteTransformer(),
+    clipperTransformer(),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),

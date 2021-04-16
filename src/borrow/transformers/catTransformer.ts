@@ -27,7 +27,7 @@ async function handleBite(
     ink: params.ink.toString(),
     art: params.art.toString(),
     tab: params.tab.toString(),
-    flip: params.flip.toLowerCase(),
+    flip: params.flip.toLowerCase(), // 🤔 QUESTION: maybe we should have some registry of flippers so that in FlipperTransformer whether we are handling a event from our Flipper
 
     log_index: log.log_index,
     tx_id: log.tx_id,
@@ -35,7 +35,7 @@ async function handleBite(
   };
 
   await services.tx.none(
-    `INSERT INTO auctions.bite(
+    `INSERT INTO cat.bite(
           ilk, urn, ink, art, tab, flip, auction_id,
           log_index, tx_id, block_id
         ) VALUES (
