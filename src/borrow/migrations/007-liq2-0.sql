@@ -77,7 +77,15 @@ CREATE TABLE dog.bark (
     unique (tx_id, log_index)
 );
 
+ALTER TABLE auctions.bite SET SCHEMA cat;
+ALTER SCHEMA auctions RENAME TO flipper;
+
+ALTER TABLE vault.events ADD liq_penalty VARCHAR(66) NULL;
+
 DROP VIEW api.vault_events;
+
+CREATE INDEX bark_clip ON dog.bark(clip);
+CREATE INDEX bark_auction_id ON dog.bark(auction_id);
 
 CREATE VIEW api.vault_events AS (
     SELECT e.*, t.hash 
@@ -85,8 +93,3 @@ CREATE VIEW api.vault_events AS (
     WHERE NOT e.kind = ''
     ORDER BY timestamp ASC, block_id ASC, log_index ASC
 );
-
-ALTER TABLE auctions.bite SET SCHEMA cat;
-ALTER SCHEMA auctions RENAME TO flipper;
-
-ALTER TABLE vault.events ADD liq_penalty VARCHAR(66) NULL;
