@@ -123,7 +123,7 @@ async function handleLiq2AuctionStarted(
             kind, collateral, collateral_amount, dai_amount, timestamp, auction_id, urn, liq_penalty,
             log_index, tx_id, block_id
           ) VALUES (
-            \${kind}, \${collateral}, \${collateral_amount}, \${dai_amount}, \${timestamp}, \${auction_id}, \${urn}, liq_penalty,
+            \${kind}, \${collateral}, \${collateral_amount}, \${dai_amount}, \${timestamp}, \${auction_id}, \${urn}, \${liq_penalty},
             \${log_index}, \${tx_id}, \${block_id}
           );`,
         event,

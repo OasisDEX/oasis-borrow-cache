@@ -65,7 +65,43 @@ const handleTake = async (params: Dictionary<any>, log: PersistedLog, services: 
         );`,
         values,
     );
+};
 
+const handleAuctionFinished = async (params: Dictionary<any>, log: PersistedLog, services: LocalServices) => {
+    if (params.lot.toString() === '0' || params.tab.toString() === '0') {
+        const bark = await services.tx.oneOrNone(`
+            SELECT * FROM dog.bark WHERE auction_id = '${params.id.toString()}';
+        `)
+        const timestamp = await services.tx.oneOrNone(
+            `SELECT timestamp FROM vulcan2x.block WHERE id = \${block_id}`,
+            {
+                block_id: log.block_id,
+            },
+        );
+        const event = {
+            kind: "TAKE",
+            auction_id: params.id.toString(),
+            collateral_amount: params.lot.toString(),
+            dai_amount: params.tab.toString(),
+            urn: bark.urn,
+            timestamp: timestamp.timestamp,
+
+            log_index: log.log_index,
+            tx_id: log.tx_id,
+            block_id: log.block_id,
+        };
+
+        await services.tx.none(
+            `INSERT INTO vault.events(
+                kind, auction_id, collateral_amount, dai_amount, urn, timestamp,
+                log_index, tx_id, block_id
+            ) VALUES (
+                \${kind}, \${auction_id}, \${collateral_amount}, \${dai_amount}, \${urn}, \${timestamp},
+                \${log_index}, \${tx_id}, \${block_id}
+            );`,
+            event,
+        );
+    }
 };
 
 const handleRedo = async (params: Dictionary<any>, log: PersistedLog, services: LocalServices) => {
@@ -124,6 +160,7 @@ const handlers = {
     },
     async Take(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
         await handleTake(event.params, log, services)
+        await handleAuctionFinished(event.params, log, services)
     },
     async Redo(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
         await handleRedo(event.params, log, services)
@@ -141,7 +178,7 @@ async function filterClipperLogs(services: LocalServices, logs: PersistedLog[]) 
     }
 
     const clippers = await services.tx.manyOrNone(
-        `SELECT clip FROM dog.bark WHERE (${logs.map(log => `'${log.address}' = clip`).join(' OR ')})`
+        `SELECT DISTINCT clip FROM dog.bark`
     )
     const clippersAddresses = clippers.map((result: { clip: string }) => result.clip)
 

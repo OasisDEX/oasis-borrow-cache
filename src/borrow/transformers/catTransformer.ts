@@ -117,7 +117,7 @@ interface auctionsTransformerDependencies {
   getIlkInfo: (ilk: string, services: LocalServices) => Promise<Ilk>;
 }
 
-const handlersV2 = (dependencies: auctionsTransformerDependencies) => ({
+const auctionsHandlers = (dependencies: auctionsTransformerDependencies) => ({
   async Bite(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
     await handleAuctionStarted(event.params, log, services, dependencies);
   },
@@ -137,7 +137,7 @@ export const auctionTransformer: (
       dependencies: [getExtractorName(deps.address)],
       startingBlock: deps.startingBlock,
       transform: async (services, logs) => {
-        await handleEvents(services, catAbi, flatten(logs), handlersV2(dependencies));
+        await handleEvents(services, catAbi, flatten(logs), auctionsHandlers(dependencies));
       },
     };
   });
