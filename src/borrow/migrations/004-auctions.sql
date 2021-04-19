@@ -1,12 +1,13 @@
-CREATE SCHEMA auctions
+CREATE SCHEMA cat;
+CREATE SCHEMA flipper;
 
-CREATE TABLE auctions.bite (
+CREATE TABLE cat.bite (
     id                      serial primary key,
     ilk                     character varying(32) not null,
     urn                     character varying(66) not null,
-    ink                     decimal(78,18) not null,
-    art                     decimal(78,18) not null,
-    tab                     decimal(78,18) not null,
+    ink                     decimal(78,0) not null,
+    art                     decimal(78,0) not null,
+    tab                     decimal(78,0) not null,
     flip                    character varying(66)  not null,
     auction_id              character varying(66) not null,
 
@@ -16,12 +17,12 @@ CREATE TABLE auctions.bite (
     unique (tx_id, log_index)
 );
 
-CREATE TABLE auctions.kick (
+CREATE TABLE flipper.kick (
     id                      serial primary key,
     auction_id              character varying(66) not null,
-    lot                     decimal(78,18) not null,
-    bid                     decimal(78,18) not null,
-    tab                     decimal(78,18) not null,
+    lot                     decimal(78,0) not null,
+    bid                     decimal(78,0) not null,
+    tab                     decimal(78,0) not null,
     usr                     character varying(66) not null,
     gal                     character varying(66) not null,
     flipper                 character varying(66) not null,
@@ -32,11 +33,11 @@ CREATE TABLE auctions.kick (
     unique (tx_id, log_index)
 );
 
-CREATE TABLE auctions.tend (
+CREATE TABLE flipper.tend (
     id                      serial primary key,
     auction_id              character varying(66) not null,
-    lot                     decimal(78,18) not null,
-    bid                     decimal(78,18) not null,
+    lot                     decimal(78,0) not null,
+    bid                     decimal(78,0) not null,
     flipper                 character varying(66) not null,
 
     log_index               integer not null,
@@ -45,11 +46,11 @@ CREATE TABLE auctions.tend (
     unique (tx_id, log_index)
 );
 
-CREATE TABLE auctions.dent (
+CREATE TABLE flipper.dent (
     id                      serial primary key,
     auction_id              character varying(66) not null,
-    lot                     decimal(78,18) not null,
-    bid                     decimal(78,18) not null,
+    lot                     decimal(78,0) not null,
+    bid                     decimal(78,0) not null,
     flipper                 character varying(66) not null,
     
     log_index               integer not null,
@@ -58,7 +59,7 @@ CREATE TABLE auctions.dent (
     unique (tx_id, log_index)
 );
 
-CREATE TABLE auctions.deal (
+CREATE TABLE flipper.deal (
     id                      serial primary key,
     auction_id              character varying(66) not null,
     flipper                 character varying(66) not null,

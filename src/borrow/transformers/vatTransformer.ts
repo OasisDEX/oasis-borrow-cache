@@ -160,10 +160,9 @@ export const vatCombineTransformer: (
           tx_id: frob.tx_id,
           block_id: frob.block_id,
           log_index: frob.log_index,
-          v_gem: frob.v,
-          w_dai: frob.w,
         };
-      });
+      })
+        .filter(event => event.kind !== '')
 
       if (events.length === 0) {
         return;
@@ -179,8 +178,6 @@ export const vatCombineTransformer: (
           'tx_id',
           'block_id',
           'log_index',
-          'v_gem',
-          'w_dai',
           'rate',
         ],
         {

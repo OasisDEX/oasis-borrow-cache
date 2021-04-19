@@ -5,7 +5,7 @@ CREATE TABLE manager.cdp (
   creator    character varying(66) not null,
   owner      character varying(66) not null,
   address    character varying(66) not null,
-  urn        character varying(66),
+  urn        character varying(66) not null,
   cdp_id     character varying(66) not null,
   created_at timestamptz not null,
 
