@@ -21,7 +21,7 @@ const handleKick = async (params: Dictionary<any>, log: PersistedLog, services: 
     lot: params.lot.toString(),
     bid: params.bid.toString(),
     tab: params.tab.toString(),
-    usr: params.usr, // TODO check values addresses
+    usr: params.usr.toLowerCase(),
     gal: params.gal,
     flipper: log.address.toLowerCase(),
 
