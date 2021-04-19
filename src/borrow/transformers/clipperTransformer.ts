@@ -10,7 +10,7 @@ import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
 import { Dictionary } from 'ts-essentials';
 import BigNumber from 'bignumber.js';
-import { rad, wad } from '../../utils/precision';
+import { rad, ray, wad } from '../../utils/precision';
 
 const clipperAbi = require('../../../abis/clipper.json');
 
@@ -69,24 +69,54 @@ const handleTake = async (params: Dictionary<any>, log: PersistedLog, services: 
     );
 };
 
-const handleAuctionFinished = async (params: Dictionary<any>, log: PersistedLog, services: LocalServices) => {
-    if (params.lot.toString() === '0' || params.tab.toString() === '0') {
-        const bark = await services.tx.oneOrNone(`
-            SELECT * FROM dog.bark WHERE auction_id = '${params.id.toString()}';
-        `)
-        const timestamp = await services.tx.oneOrNone(
-            `SELECT timestamp FROM vulcan2x.block WHERE id = \${block_id}`,
-            {
-                block_id: log.block_id,
-            },
-        );
-        const event = {
-            kind: "TAKE",
+const handleAuctionTake = async (params: Dictionary<any>, log: PersistedLog, services: LocalServices) => {
+    const bark = await services.tx.oneOrNone(`
+        SELECT * FROM dog.bark WHERE auction_id = '${params.id.toString()}';
+    `)
+    const timestamp = await services.tx.oneOrNone(
+        `SELECT timestamp FROM vulcan2x.block WHERE id = \${block_id}`,
+        {
+            block_id: log.block_id,
+        },
+    );
+    const auctionFinished = params.lot.toString() === '0' || params.tab.toString() === '0'
+    const slice = new BigNumber(params.owe).div(params.price)
+
+    const event = {
+        kind: "TAKE",
+        auction_id: params.id.toString(),
+        urn: bark.urn,
+        timestamp: timestamp.timestamp,
+        remaining_debt: new BigNumber(params.tab).div(rad).toString(),
+        remaining_collateral: new BigNumber(params.lot).div(wad).toString(),
+        collateral_price: new BigNumber(params.price).div(ray).toString(),
+        covered_debt: new BigNumber(params.owe).div(rad).toString(),
+        collateral_taken: slice.div(wad).toString(),
+
+        log_index: log.log_index,
+        tx_id: log.tx_id,
+        block_id: log.block_id,
+    };
+
+    await services.tx.none(
+        `INSERT INTO vault.events(
+                kind, auction_id, remaining_collateral, remaining_debt, urn, timestamp, collateral_price, covered_debt, collateral_taken,
+                log_index, tx_id, block_id
+            ) VALUES (
+                \${kind}, \${auction_id}, \${remaining_collateral}, \${remaining_debt}, \${urn}, \${timestamp}, \${collateral_price}, \${covered_debt}, \${collateral_taken},
+                \${log_index}, \${tx_id}, \${block_id}
+            );`,
+        event,
+    );
+
+    if (auctionFinished) {
+        const auctionFinishedEvent = {
+            kind: "AUCTION_V2_FINISHED",
             auction_id: params.id.toString(),
-            collateral_amount: new BigNumber(params.lot).div(wad).toString(),
-            dai_amount: new BigNumber(params.tab).div(rad).toString(),
             urn: bark.urn,
             timestamp: timestamp.timestamp,
+            remaining_debt: new BigNumber(params.tab).div(rad).toString(),
+            remaining_collateral: new BigNumber(params.lot).div(wad).toString(),
 
             log_index: log.log_index,
             tx_id: log.tx_id,
@@ -95,15 +125,16 @@ const handleAuctionFinished = async (params: Dictionary<any>, log: PersistedLog,
 
         await services.tx.none(
             `INSERT INTO vault.events(
-                kind, auction_id, collateral_amount, dai_amount, urn, timestamp,
-                log_index, tx_id, block_id
-            ) VALUES (
-                \${kind}, \${auction_id}, \${collateral_amount}, \${dai_amount}, \${urn}, \${timestamp},
-                \${log_index}, \${tx_id}, \${block_id}
-            );`,
-            event,
+                    kind, auction_id, remaining_collateral, remaining_debt, urn, timestamp,
+                    log_index, tx_id, block_id
+                ) VALUES (
+                    \${kind}, \${auction_id}, \${remaining_collateral}, \${remaining_debt}, \${urn}, \${timestamp},
+                    \${log_index}, \${tx_id}, \${block_id}
+                );`,
+            auctionFinishedEvent,
         );
     }
+
 };
 
 const handleRedo = async (params: Dictionary<any>, log: PersistedLog, services: LocalServices) => {
@@ -162,7 +193,7 @@ const handlers = {
     },
     async Take(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
         await handleTake(event.params, log, services)
-        await handleAuctionFinished(event.params, log, services)
+        await handleAuctionTake(event.params, log, services)
     },
     async Redo(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
         await handleRedo(event.params, log, services)
