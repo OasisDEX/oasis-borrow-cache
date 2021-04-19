@@ -112,7 +112,7 @@ const handleAuctionTake = async (
 
   if (auctionFinished) {
     const auctionFinishedEvent = {
-      kind: 'AUCTION_V2_FINISHED',
+      kind: 'AUCTION_FINISHED_V2',
       auction_id: params.id.toString(),
       urn: bark.urn,
       timestamp: timestamp.timestamp,
