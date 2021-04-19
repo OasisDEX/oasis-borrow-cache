@@ -137,32 +137,33 @@ export const vatCombineTransformer: (
         [blocks],
       );
 
-      const events = flatten(frobs).map(frob => {
-        const dink = new BigNumber(frob.dink).div(wad);
-        const dart = new BigNumber(frob.dart).div(wad);
-        const rate = new BigNumber(ray).plus(new BigNumber(frob.rate)).div(ray);
+      const events = flatten(frobs)
+        .map(frob => {
+          const dink = new BigNumber(frob.dink).div(wad);
+          const dart = new BigNumber(frob.dart).div(wad);
+          const rate = new BigNumber(ray).plus(new BigNumber(frob.rate)).div(ray);
 
-        if (frob.rate === null) {
-          throw new Error('RATE SHOULD NOT BE NULL');
-        }
-        return {
-          kind: [
-            !dink.isZero() && `${dink.gt(0) ? 'DEPOSIT' : 'WITHDRAW'}`,
-            !dart.isZero() && `${dart.gt(0) ? 'GENERATE' : 'PAYBACK'}`,
-          ]
-            .filter(x => !!x)
-            .join('-'),
-          rate: rate.toString(),
-          collateral_amount: dink.toString(),
-          dai_amount: dart.times(rate).toString(),
-          urn: frob.u,
-          timestamp: frob.timestamp,
-          tx_id: frob.tx_id,
-          block_id: frob.block_id,
-          log_index: frob.log_index,
-        };
-      })
-        .filter(event => event.kind !== '')
+          if (frob.rate === null) {
+            throw new Error('RATE SHOULD NOT BE NULL');
+          }
+          return {
+            kind: [
+              !dink.isZero() && `${dink.gt(0) ? 'DEPOSIT' : 'WITHDRAW'}`,
+              !dart.isZero() && `${dart.gt(0) ? 'GENERATE' : 'PAYBACK'}`,
+            ]
+              .filter(x => !!x)
+              .join('-'),
+            rate: rate.toString(),
+            collateral_amount: dink.toString(),
+            dai_amount: dart.times(rate).toString(),
+            urn: frob.u,
+            timestamp: frob.timestamp,
+            tx_id: frob.tx_id,
+            block_id: frob.block_id,
+            log_index: frob.log_index,
+          };
+        })
+        .filter(event => event.kind !== '');
 
       if (events.length === 0) {
         return;
