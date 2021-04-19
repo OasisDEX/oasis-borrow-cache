@@ -77,19 +77,26 @@ CREATE TABLE dog.bark (
     unique (tx_id, log_index)
 );
 
+CREATE INDEX bark_clip ON dog.bark(clip);
+CREATE INDEX bark_auction_id ON dog.bark(auction_id);
+
 ALTER TABLE auctions.bite SET SCHEMA cat;
 ALTER SCHEMA auctions RENAME TO flipper;
 
 ALTER TABLE vault.events ADD liq_penalty VARCHAR(66) NULL;
+ALTER TABLE vault.events ADD collateral_price decimal(78,18) NULL;
+ALTER TABLE vault.events ADD covered_debt decimal(78,18) NULL;
+ALTER TABLE vault.events ADD remaining_debt decimal(78,18) NULL;
+ALTER TABLE vault.events ADD remaining_collateral decimal(78,18) NULL;
+ALTER TABLE vault.events ADD collateral_taken decimal(78,18) NULL;
+
+CREATE INDEX event_auction_id ON vault.events(auction_id);
 
 DROP VIEW api.vault_events;
-
-CREATE INDEX bark_clip ON dog.bark(clip);
-CREATE INDEX bark_auction_id ON dog.bark(auction_id);
-
 CREATE VIEW api.vault_events AS (
     SELECT e.*, t.hash 
     FROM vault.events e JOIN vulcan2x.transaction t ON e.tx_id = t.id 
     WHERE NOT e.kind = ''
     ORDER BY timestamp ASC, block_id ASC, log_index ASC
 );
+ALTER TABLE vault.events DROP CONSTRAINT events_tx_id_log_index_key;

@@ -18,11 +18,11 @@ const handleKick = async (params: Dictionary<any>, log: PersistedLog, services: 
     const values = {
         auction_id: params.id.toString(),
         coin: params.coin.toString(),
-        kpr: params.kpr,
+        kpr: params.kpr.toLowerCase(),
         lot: params.lot.toString(),
         tab: params.tab.toString(),
         top: params.top.toString(),
-        usr: params.usr,
+        usr: params.usr.toLowerCase(),
         clipper: log.address.toLowerCase(),
 
         log_index: log.log_index,
@@ -50,7 +50,7 @@ const handleTake = async (params: Dictionary<any>, log: PersistedLog, services: 
         owe: params.owe.toString(),
         price: params.price.toString(),
         tab: params.tab.toString(),
-        usr: params.usr,
+        usr: params.usr.toLowerCase(),
 
         log_index: log.log_index,
         tx_id: log.tx_id,
@@ -110,11 +110,11 @@ const handleRedo = async (params: Dictionary<any>, log: PersistedLog, services: 
     const values = {
         auction_id: params.id.toString(),
         coin: params.lot.toString(),
-        kpr: params.kpr,
+        kpr: params.kpr.toLowerCase(),
         lot: params.lot.toString(),
         tab: params.tab.toString(),
         top: params.top.toString(),
-        usr: params.usr,
+        usr: params.usr.toLowerCase(),
 
         log_index: log.log_index,
         tx_id: log.tx_id,
