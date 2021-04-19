@@ -128,6 +128,12 @@ describe('Vat combine transformer', () => {
         block_id: 2,
         collateral: null,
         auction_id: null,
+        collateral_price: null,
+        collateral_taken: null,
+        covered_debt: null,
+        liq_penalty: null,
+        remaining_collateral: null,
+        remaining_debt: null,
       },
     ]);
   });
@@ -163,6 +169,12 @@ describe('Vat combine transformer', () => {
         v_gem: '0xb6e75813fe688be1b3a3a5ca2c51dace1ed63411',
         transfer_to: null,
         rate: '1.000007388734071157',
+        collateral_price: null,
+        collateral_taken: null,
+        covered_debt: null,
+        liq_penalty: null,
+        remaining_collateral: null,
+        remaining_debt: null,
       },
     ]);
   });
@@ -198,6 +210,12 @@ describe('Vat combine transformer', () => {
         v_gem: '0x5aeb2a597f2c2ec1e8587ff99225e32dfb722b36',
         transfer_to: null,
         rate: '1.000005709754190194',
+        collateral_price: null,
+        collateral_taken: null,
+        covered_debt: null,
+        liq_penalty: null,
+        remaining_collateral: null,
+        remaining_debt: null,
       },
     ]);
   });
@@ -233,6 +251,12 @@ describe('Vat combine transformer', () => {
         v_gem: '0x4c7a773d2aae9a0238f9b0a4c98698921de368a9',
         transfer_to: null,
         rate: '1.000007388734071157',
+        collateral_price: null,
+        collateral_taken: null,
+        covered_debt: null,
+        liq_penalty: null,
+        remaining_collateral: null,
+        remaining_debt: null,
       },
     ]);
   });
@@ -268,6 +292,12 @@ describe('Vat combine transformer', () => {
         v_gem: '0xed2f58708943ce39131bc3a6970e2ca9c3d3932f',
         transfer_to: null,
         rate: '1.000007388734071157',
+        collateral_price: null,
+        collateral_taken: null,
+        covered_debt: null,
+        liq_penalty: null,
+        remaining_collateral: null,
+        remaining_debt: null,
       },
     ]);
   });
@@ -303,6 +333,12 @@ describe('Vat combine transformer', () => {
         v_gem: '0x92560fe2271d403c56bd975e047511d29e193452',
         transfer_to: null,
         rate: '1.000007388734071157',
+        collateral_price: null,
+        collateral_taken: null,
+        covered_debt: null,
+        liq_penalty: null,
+        remaining_collateral: null,
+        remaining_debt: null,
       },
     ]);
   });

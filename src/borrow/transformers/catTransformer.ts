@@ -64,9 +64,7 @@ async function handleAuctionStarted(
   const event = {
     kind: 'AUCTION_STARTED',
     collateral: ilkData.symbol,
-    collateral_amount: new BigNumber(params.ink)
-      .div(new BigNumber(10).pow(18))
-      .toString(),
+    collateral_amount: new BigNumber(params.ink).div(new BigNumber(10).pow(18)).toString(),
     dai_amount: new BigNumber(params.art).div(new BigNumber(10).pow(18)).toString(),
     auction_id: params.id.toString(),
     urn: params.urn.toLowerCase(),
@@ -92,8 +90,8 @@ async function handleAuctionStarted(
 const catHandlers = {
   async Bite(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
     await handleBite(event.params, log, services);
-  }
-}
+  },
+};
 
 export const getCatTransformerName = (address: string) => `catTransformer-${address}`;
 export const catTransformer: (

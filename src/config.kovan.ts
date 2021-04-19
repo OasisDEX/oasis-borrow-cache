@@ -14,7 +14,11 @@ import { AbiInfo, makeRowEventBasedOnDSNoteTopic } from './borrow/customExtracto
 import { flipNoteTransformer, flipTransformer } from './borrow/transformers/flipperTransformer';
 import { getIlkInfo } from './borrow/services/getIlkInfo';
 import { getUrnForCdp } from './borrow/services/getUrnForCdp';
-import { auctionLiq2Transformer, dogTransformer, getDogTransformerName } from './borrow/transformers/dogTransformer';
+import {
+  auctionLiq2Transformer,
+  dogTransformer,
+  getDogTransformerName,
+} from './borrow/transformers/dogTransformer';
 import { clipperTransformer } from './borrow/transformers/clipperTransformer';
 
 const vat = {
@@ -45,7 +49,7 @@ const dogs = [
     address: '0x121d0953683f74e9a338d40d9b4659c0ebb539a0',
     startingBlock: 24136109,
   },
-]
+];
 
 const flippers = [
   {
@@ -61,7 +65,7 @@ const clippers = [
     abi: require('../abis/clipper.json'),
     startingBlock: 24136159,
   },
-]
+];
 
 const flipperNotes: AbiInfo[] = [
   {
@@ -75,7 +79,6 @@ const flipperNotes: AbiInfo[] = [
     startingBlock: 14764534,
   },
 ];
-
 
 const addresses = {
   MIGRATION: '0x411B2Faa662C8e3E5cF8f01dFdae0aeE482ca7b0',
@@ -110,5 +113,5 @@ export const config: UserProvidedSpockConfig = {
     borrow: join(__dirname, './borrow/migrations'),
   },
   addresses,
-  onStart: () => { },
+  onStart: () => {},
 };

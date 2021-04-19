@@ -2,7 +2,10 @@ import { expect } from 'earljs';
 import { constants } from 'ethers';
 import { getSQL, destroyTestServices, executeSQL } from '@oasisdex/spock-test-utils';
 
-import { auctionTransformer, catTransformer } from '../../../src/borrow/transformers/catTransformer';
+import {
+  auctionTransformer,
+  catTransformer,
+} from '../../../src/borrow/transformers/catTransformer';
 import { Services, TransactionalServices } from '@oasisdex/spock-etl/dist/services/types';
 import { createServices } from '../../utils/createServices';
 import { Ilk } from '../../../src/borrow/services/getIlkInfo';
@@ -45,7 +48,7 @@ describe('catTransformer', () => {
 
     await transformerInstance.transform(txServices, data);
 
-    const allBites = await getSQL(services.db, `SELECT * FROM auctions.bite;`);
+    const allBites = await getSQL(services.db, `SELECT * FROM cat.bite;`);
     expect(allBites).toEqual([
       {
         id: 1,
@@ -85,6 +88,12 @@ describe('catTransformer', () => {
         cdp_id: null,
         transfer_from: null,
         transfer_to: null,
+        collateral_price: null,
+        collateral_taken: null,
+        covered_debt: null,
+        liq_penalty: null,
+        remaining_collateral: null,
+        remaining_debt: null,
         timestamp: new Date('2019-07-02T11:18:01.000Z'),
         log_index: 1,
         tx_id: 1,

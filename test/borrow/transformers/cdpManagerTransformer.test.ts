@@ -85,6 +85,12 @@ describe('CdpManagerTransformer', () => {
         block_id: 1,
         collateral: null,
         auction_id: null,
+        collateral_price: null,
+        collateral_taken: null,
+        covered_debt: null,
+        liq_penalty: null,
+        remaining_collateral: null,
+        remaining_debt: null,
       },
     ]);
   });
@@ -150,6 +156,12 @@ describe('CdpMigrationTransformer', () => {
         block_id: 2,
         collateral: null,
         auction_id: null,
+        collateral_price: null,
+        collateral_taken: null,
+        covered_debt: null,
+        liq_penalty: null,
+        remaining_collateral: null,
+        remaining_debt: null,
       },
     ]);
   });
@@ -189,6 +201,12 @@ describe('CdpMigrationTransformer', () => {
         block_id: 2,
         collateral: null,
         auction_id: null,
+        collateral_price: null,
+        collateral_taken: null,
+        covered_debt: null,
+        liq_penalty: null,
+        remaining_collateral: null,
+        remaining_debt: null,
       },
     ]);
   });
