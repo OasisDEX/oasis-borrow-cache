@@ -148,7 +148,7 @@ function cdpManagerGiveNoteHandlers(migrationAddress: string): DsNoteHandlers {
 
       const values = {
         kind: note.caller.toLowerCase() === migrationAddress.toLowerCase() ? 'MIGRATE' : 'TRANSFER',
-        cdp_id: cdp.cdp_id,
+        cdp_id: note.params.cdp.toString(),
         transfer_from: note.caller.toLowerCase(),
         transfer_to: note.params.dst.toLowerCase(),
         urn: cdp.urn,
