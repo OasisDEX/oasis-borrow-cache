@@ -107,7 +107,7 @@ async function handleLiq2AuctionStarted(
     auction_id: params.id.toString(),
     urn: params.urn.toLowerCase(),
     timestamp: timestamp.timestamp,
-    liq_penalty: new BigNumber(kick.tab).minus(params.due).toString(),
+    liq_penalty: new BigNumber(kick.tab).minus(params.due).div(rad).toString(),
 
     log_index: log.log_index,
     tx_id: log.tx_id,
