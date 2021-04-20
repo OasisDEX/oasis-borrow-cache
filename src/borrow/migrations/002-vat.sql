@@ -27,7 +27,7 @@ CREATE TABLE vat.fold (
     block_id   integer not null REFERENCES vulcan2x.block(id) ON DELETE CASCADE,
     timestamp  timestamptz not null,
     unique (tx_id, log_index)
-)
+);
 
 CREATE TABLE vat.fork(
     id         serial primary key,
@@ -42,7 +42,7 @@ CREATE TABLE vat.fork(
     block_id   integer not null REFERENCES vulcan2x.block(id) ON DELETE CASCADE,
     timestamp  timestamptz not null,
     unique (tx_id, log_index)
-)
+);
 
 CREATE TABLE vat.grab(
     id         serial primary key,
@@ -58,4 +58,4 @@ CREATE TABLE vat.grab(
     block_id   integer not null REFERENCES vulcan2x.block(id) ON DELETE CASCADE,
     timestamp  timestamptz not null,
     unique (tx_id, log_index)
-)
+);

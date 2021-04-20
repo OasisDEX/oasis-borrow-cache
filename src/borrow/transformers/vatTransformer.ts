@@ -18,6 +18,78 @@ import { wad, ray } from '../../utils/precision';
 const vatAbi = require('../../../abis/vat.json');
 
 const vatNoteHandlers: DsNoteHandlers = {
+  async 'fork(bytes32,address,address,int256,int256)'(
+    services: LocalServices,
+    { note, log }: FullNoteEventInfo,
+  ): Promise<void> {
+    const timestamp = await services.tx.oneOrNone(
+      `SELECT timestamp FROM vulcan2x.block WHERE id = \${block_id}`,
+      {
+        block_id: log.block_id,
+      },
+    );
+
+    const values = {
+      ilk: parseBytes32String(note.params.ilk),
+      src: note.params.src.toLowerCase(),
+      dst: note.params.dst.toLowerCase(),
+      dink: note.params.dink.toString(),
+      dart: note.params.rate.toString(),
+
+      timestamp: timestamp.timestamp,
+      log_index: log.log_index,
+      tx_id: log.tx_id,
+      block_id: log.block_id,
+    };
+
+    await services.tx.none(
+      `
+                INSERT INTO vat.fork(
+                    ilk, src, dst, dink, dart,
+                    log_index, tx_id, block_id, timestamp
+                ) VALUES (
+                    \${ilk}, \${src}, \${dst}, \${dink}, \${dink},  
+                    \${log_index}, \${tx_id}, \${block_id}, \${timestamp}
+                );`,
+      values,
+    );
+  },
+  async 'grab(bytes32,address,address,address,int256,int256)'(
+    services: LocalServices,
+    { note, log }: FullNoteEventInfo,
+  ): Promise<void> {
+    const timestamp = await services.tx.oneOrNone(
+      `SELECT timestamp FROM vulcan2x.block WHERE id = \${block_id}`,
+      {
+        block_id: log.block_id,
+      },
+    );
+    const values = {
+      i: parseBytes32String(note.params.i),
+      u: note.params.u.toLowerCase(),
+      v: note.params.v.toLowerCase(),
+      w: note.params.w.toLowerCase(),
+      dink: note.params.dink.toString(),
+      dart: note.params.dart.toString(),
+
+      timestamp: timestamp.timestamp,
+      log_index: log.log_index,
+      tx_id: log.tx_id,
+      block_id: log.block_id,
+    };
+
+    await services.tx.none(
+      `
+                INSERT INTO vat.grab(
+                    i, u, v, w, dink, dart,
+                    log_index, tx_id, block_id, timestamp
+                ) VALUES (
+                    \${i}, \${u}, \${v}, \${w}, \${dink}, \${dink},  
+                    \${log_index}, \${tx_id}, \${block_id}, \${timestamp}
+                );`,
+      values,
+    );
+  },
   async 'fold(bytes32,address,int256)'(
     services: LocalServices,
     { note, log }: FullNoteEventInfo,
@@ -43,7 +115,8 @@ const vatNoteHandlers: DsNoteHandlers = {
     await services.tx.none(
       `
                 INSERT INTO vat.fold(
-                    i, rate, u, log_index, tx_id, block_id, timestamp
+                    i, rate, u, 
+                    log_index, tx_id, block_id, timestamp
                 ) VALUES (
                     \${i}, \${rate}, \${u}, \${log_index},
                     \${tx_id}, \${block_id}, \${timestamp}
