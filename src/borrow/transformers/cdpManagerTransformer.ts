@@ -164,7 +164,7 @@ function cdpManagerGiveNoteHandlers(migrationAddress: string): DsNoteHandlers {
         kind, transfer_from, transfer_to, cdp_id, urn, timestamp,
         log_index, tx_id, block_id
       ) VALUES (
-        \${kind}, \${transfer_from}, \${transfer_to}, \${transfer_from}, \${urn}, \${timestamp},
+        \${kind}, \${transfer_from}, \${transfer_to}, \${cdp_id}, \${urn}, \${timestamp},
         \${log_index}, \${tx_id}, \${block_id}
       );`,
         values,
