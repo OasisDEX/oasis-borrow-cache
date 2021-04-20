@@ -22,7 +22,7 @@ const handleKick = async (params: Dictionary<any>, log: PersistedLog, services: 
     bid: params.bid.toString(),
     tab: params.tab.toString(),
     usr: params.usr.toLowerCase(),
-    gal: params.gal,
+    gal: params.gal.toLowerCase(),
     flipper: log.address.toLowerCase(),
 
     log_index: log.log_index,

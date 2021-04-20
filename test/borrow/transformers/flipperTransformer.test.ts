@@ -47,7 +47,7 @@ describe('flipperTransformer', () => {
         bid: '0',
         tab: '548311413765941636196675879758775710587899457773',
         usr: '0xb861d96d3d7619a517ebfb8d1e31f734658207e7',
-        gal: '0xA950524441892A31ebddF91d3cEEFa04Bf454466',
+        gal: '0xa950524441892a31ebddf91d3ceefa04bf454466',
         flipper: '0xd8a04f5412223f513dc55f839574430f5ec15531',
         log_index: 1,
         tx_id: 1,
