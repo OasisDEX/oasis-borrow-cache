@@ -89,9 +89,8 @@ ALTER TABLE vault.events ADD collateral_taken decimal(78,18) NULL;
 CREATE INDEX event_auction_id ON vault.events(auction_id);
 
 CREATE VIEW api.vault_events AS (
-    SELECT e.*, t.hash, COALESCE(c.cdp_id, null)
+    SELECT e.*, t.hash
     FROM vault.events e 
     JOIN vulcan2x.transaction t ON e.tx_id = t.id
-    JOIN manager.cdp c ON c.urn = e.urn
     ORDER BY timestamp ASC, block_id ASC, log_index ASC
 );
