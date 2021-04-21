@@ -34,7 +34,7 @@ const vatNoteHandlers: DsNoteHandlers = {
       src: note.params.src.toLowerCase(),
       dst: note.params.dst.toLowerCase(),
       dink: note.params.dink.toString(),
-      dart: note.params.rate.toString(),
+      dart: note.params.dart.toString(),
 
       timestamp: timestamp.timestamp,
       log_index: log.log_index,
