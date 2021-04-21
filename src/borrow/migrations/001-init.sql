@@ -5,7 +5,7 @@ CREATE TABLE manager.cdp (
   creator    character varying(66) not null,
   owner      character varying(66) not null,
   address    character varying(66) not null,
-  urn        character varying(66),
+  urn        character varying(66) not null,
   cdp_id     character varying(66) not null,
   created_at timestamptz not null,
 
@@ -14,3 +14,6 @@ CREATE TABLE manager.cdp (
   block_id   integer not null REFERENCES vulcan2x.block(id) ON DELETE CASCADE,
   unique (log_index, tx_id)
 );
+
+CREATE INDEX manager_cdp_urn ON manager.cdp(urn);
+CREATE INDEX manager_cdp_cdp_id ON manager.cdp(cdp_id);

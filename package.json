@@ -16,7 +16,7 @@
     "coverage": " yarn test:coverage && codecov",
     "test:e2e": "jest --forceExit --runInBand e2e",
     "test:e2e:fix": "jest -u --forceExit --runInBand e2e",
-    "test:fix": "yarn lint:fix && yarn test:unit",
+    "test:fix": "yarn lint:fix && yarn test",
     "start-etl": "TS_NODE_TRANSPILE_ONLY=true node -r ./loadenv.js ./node_modules/@oasisdex/spock-etl/dist/bin/etl.js ./src/config.ts",
     "migrate": "TS_NODE_TRANSPILE_ONLY=true node -r ./loadenv.js ./node_modules/@oasisdex/spock-etl/dist/bin/migrate.js ./src/config.ts",
     "start-api": "TS_NODE_TRANSPILE_ONLY=true DEBUG=apicache node -r ./loadenv.js ./node_modules/@oasisdex/spock-graphql-api/dist/index.js ./src/config.ts",

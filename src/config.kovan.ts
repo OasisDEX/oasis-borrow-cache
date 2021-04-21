@@ -14,6 +14,12 @@ import { AbiInfo, makeRowEventBasedOnDSNoteTopic } from './borrow/customExtracto
 import { flipNoteTransformer, flipTransformer } from './borrow/transformers/flipperTransformer';
 import { getIlkInfo } from './borrow/services/getIlkInfo';
 import { getUrnForCdp } from './borrow/services/getUrnForCdp';
+import {
+  auctionLiq2Transformer,
+  dogTransformer,
+  getDogTransformerName,
+} from './borrow/transformers/dogTransformer';
+import { clipperTransformer } from './borrow/transformers/clipperTransformer';
 
 const vat = {
   address: '0xba987bdb501d131f766fee8180da5d81b34b69d9',
@@ -38,11 +44,26 @@ const cats = [
   },
 ];
 
-const flipper = [
+const dogs = [
+  {
+    address: '0x121d0953683f74e9a338d40d9b4659c0ebb539a0',
+    startingBlock: 24136109,
+  },
+];
+
+const flippers = [
   {
     name: 'flipper',
     abi: require('../abis/flipper.json'),
     startingBlock: 14764534,
+  },
+];
+
+const clippers = [
+  {
+    name: 'clipper',
+    abi: require('../abis/clipper.json'),
+    startingBlock: 24136159,
   },
 ];
 
@@ -65,27 +86,32 @@ const addresses = {
 };
 
 export const config: UserProvidedSpockConfig = {
-  startingBlock: 14764534,
+  startingBlock: 24202900, //14764534,
   extractors: [
     ...makeRawLogExtractors(cdpManagers),
     ...makeRawLogExtractors(cats),
+    ...makeRawLogExtractors(dogs),
     ...makeRawLogExtractors([vat]),
-    ...makeRawEventBasedOnTopicExtractor(flipper),
+    ...makeRawEventBasedOnTopicExtractor(flippers),
     ...makeRowEventBasedOnDSNoteTopic(flipperNotes),
+    ...makeRawEventBasedOnTopicExtractor(clippers),
   ],
   transformers: [
     ...openCdpTransformer(cdpManagers, { getUrnForCdp }),
     ...managerGiveTransformer(cdpManagers),
     ...catTransformer(cats),
     ...auctionTransformer(cats, { getIlkInfo }),
+    ...dogTransformer(dogs),
+    ...auctionLiq2Transformer(dogs, { getIlkInfo }),
     vatTransformer(vat),
     vatCombineTransformer(vat),
     flipTransformer(),
     flipNoteTransformer(),
+    clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),
   },
   addresses,
-  onStart: () => { },
+  onStart: () => {},
 };

@@ -35,7 +35,7 @@ async function handleBite(
   };
 
   await services.tx.none(
-    `INSERT INTO auctions.bite(
+    `INSERT INTO cat.bite(
           ilk, urn, ink, art, tab, flip, auction_id,
           log_index, tx_id, block_id
         ) VALUES (
@@ -64,9 +64,7 @@ async function handleAuctionStarted(
   const event = {
     kind: 'AUCTION_STARTED',
     collateral: ilkData.symbol,
-    collateral_amount: new BigNumber(params.ink)
-      .div(new BigNumber(10).pow(18))
-      .toString(),
+    collateral_amount: new BigNumber(params.ink).div(new BigNumber(10).pow(18)).toString(),
     dai_amount: new BigNumber(params.art).div(new BigNumber(10).pow(18)).toString(),
     auction_id: params.id.toString(),
     urn: params.urn.toLowerCase(),
@@ -92,8 +90,8 @@ async function handleAuctionStarted(
 const catHandlers = {
   async Bite(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
     await handleBite(event.params, log, services);
-  }
-}
+  },
+};
 
 export const getCatTransformerName = (address: string) => `catTransformer-${address}`;
 export const catTransformer: (
@@ -117,7 +115,7 @@ interface auctionsTransformerDependencies {
   getIlkInfo: (ilk: string, services: LocalServices) => Promise<Ilk>;
 }
 
-const handlersV2 = (dependencies: auctionsTransformerDependencies) => ({
+const auctionsHandlers = (dependencies: auctionsTransformerDependencies) => ({
   async Bite(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
     await handleAuctionStarted(event.params, log, services, dependencies);
   },
@@ -137,7 +135,7 @@ export const auctionTransformer: (
       dependencies: [getExtractorName(deps.address)],
       startingBlock: deps.startingBlock,
       transform: async (services, logs) => {
-        await handleEvents(services, catAbi, flatten(logs), handlersV2(dependencies));
+        await handleEvents(services, catAbi, flatten(logs), auctionsHandlers(dependencies));
       },
     };
   });

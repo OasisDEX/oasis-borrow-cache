@@ -21,8 +21,8 @@ const handleKick = async (params: Dictionary<any>, log: PersistedLog, services: 
     lot: params.lot.toString(),
     bid: params.bid.toString(),
     tab: params.tab.toString(),
-    usr: params.usr, // TODO check values addresses
-    gal: params.gal,
+    usr: params.usr.toLowerCase(),
+    gal: params.gal.toLowerCase(),
     flipper: log.address.toLowerCase(),
 
     log_index: log.log_index,
@@ -31,7 +31,7 @@ const handleKick = async (params: Dictionary<any>, log: PersistedLog, services: 
   };
 
   await services.tx.none(
-    `INSERT INTO auctions.kick(
+    `INSERT INTO flipper.kick(
           lot, bid, tab, usr, gal, auction_id, flipper,
           log_index, tx_id, block_id
         ) VALUES (
@@ -76,7 +76,7 @@ const handleNote = {
     };
 
     await services.tx.none(
-      `INSERT INTO auctions.tend(
+      `INSERT INTO flipper.tend(
               lot, bid, auction_id, flipper,
               log_index, tx_id, block_id
             ) VALUES (
@@ -102,7 +102,7 @@ const handleNote = {
     };
 
     await services.tx.none(
-      `INSERT INTO auctions.dent(
+      `INSERT INTO flipper.dent(
               lot, bid, auction_id, flipper,
               log_index, tx_id, block_id
             ) VALUES (
@@ -123,7 +123,7 @@ const handleNote = {
     };
 
     await services.tx.none(
-      `INSERT INTO auctions.deal(
+      `INSERT INTO flipper.deal(
               auction_id, flipper,
               log_index, tx_id, block_id
             ) VALUES (
