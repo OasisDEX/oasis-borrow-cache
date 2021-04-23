@@ -213,15 +213,20 @@ const moveEventsHandlers: DsNoteHandlers = {
       SELECT COALESCE(sum(f.rate), 0) AS rate 
         FROM vat.fold f 
           WHERE f.i = '${parseBytes32String(note.params.ilk)}'
-            AND (${log.block_id} < f.block_id OR ${log.block_id} = f.block_id AND ${log.log_index} <= f.log_index);
+            AND (${log.block_id} < f.block_id OR ${log.block_id} = f.block_id AND ${
+        log.log_index
+      } <= f.log_index);
       `,
     );
-    const rate = new BigNumber(ray).plus(new BigNumber(folds.rate))
+    const rate = new BigNumber(ray).plus(new BigNumber(folds.rate));
 
     const eventBase = {
       ilk: parseBytes32String(note.params.ilk),
       collateral_amount: new BigNumber(note.params.dink).div(wad).toString(),
-      dai_amount: new BigNumber(note.params.dart).times(rate).div(rad).toString(),
+      dai_amount: new BigNumber(note.params.dart)
+        .times(rate)
+        .div(rad)
+        .toString(),
       transfer_from: note.params.src.toLowerCase(),
       transfer_to: note.params.dst.toLowerCase(),
       rate: rate.toString(),
@@ -230,7 +235,7 @@ const moveEventsHandlers: DsNoteHandlers = {
       log_index: log.log_index,
       tx_id: log.tx_id,
       block_id: log.block_id,
-    }
+    };
 
     const moveIn = {
       kind: 'MOVE_DEST',
@@ -270,7 +275,7 @@ const moveEventsHandlers: DsNoteHandlers = {
     const query = services.pg.helpers.insert([moveIn, moveOut], cs);
     await services.tx.none(query);
   },
-}
+};
 
 const rawMoveHandlers: DsNoteHandlers = {
   async 'fork(bytes32,address,address,int256,int256)'(
@@ -345,7 +350,7 @@ const rawMoveHandlers: DsNoteHandlers = {
       values,
     );
   },
-}
+};
 
 export const vatRawMoveTransformer: (
   addresses: string | SimpleProcessorDefinition,
@@ -361,7 +366,6 @@ export const vatRawMoveTransformer: (
     },
   };
 };
-
 
 export const vatMoveTransformer: (
   addresses: string | SimpleProcessorDefinition,
