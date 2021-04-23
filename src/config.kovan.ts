@@ -8,7 +8,7 @@ import {
   openCdpTransformer,
 } from './borrow/transformers/cdpManagerTransformer';
 
-import { vatCombineTransformer, vatTransformer } from './borrow/transformers/vatTransformer';
+import { vatCombineTransformer, vatMoveTransformer, vatRawMoveTransformer, vatTransformer } from './borrow/transformers/vatTransformer';
 import { auctionTransformer, catTransformer } from './borrow/transformers/catTransformer';
 import { AbiInfo, makeRowEventBasedOnDSNoteTopic } from './borrow/customExtractor';
 import { flipNoteTransformer, flipTransformer } from './borrow/transformers/flipperTransformer';
@@ -21,9 +21,11 @@ import {
 } from './borrow/transformers/dogTransformer';
 import { clipperTransformer } from './borrow/transformers/clipperTransformer';
 
+const GENESIS = 14764534;
+
 const vat = {
   address: '0xba987bdb501d131f766fee8180da5d81b34b69d9',
-  startingBlock: 14764534,
+  startingBlock: GENESIS,
 };
 
 const cdpManagers = [
@@ -55,7 +57,7 @@ const flippers = [
   {
     name: 'flipper',
     abi: require('../abis/flipper.json'),
-    startingBlock: 14764534,
+    startingBlock: GENESIS,
   },
 ];
 
@@ -76,7 +78,7 @@ const flipperNotes: AbiInfo[] = [
       'deal(uint256)',
     ],
     abi: require('../abis/flipper.json'),
-    startingBlock: 14764534,
+    startingBlock: GENESIS,
   },
 ];
 
@@ -86,7 +88,7 @@ const addresses = {
 };
 
 export const config: UserProvidedSpockConfig = {
-  startingBlock: 14764534,
+  startingBlock: GENESIS,
   extractors: [
     ...makeRawLogExtractors(cdpManagers),
     ...makeRawLogExtractors(cats),
@@ -105,6 +107,8 @@ export const config: UserProvidedSpockConfig = {
     ...auctionLiq2Transformer(dogs, { getIlkInfo }),
     vatTransformer(vat),
     vatCombineTransformer(vat),
+    vatMoveTransformer(vat),
+    vatRawMoveTransformer(vat),
     flipTransformer(),
     flipNoteTransformer(),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
@@ -113,5 +117,5 @@ export const config: UserProvidedSpockConfig = {
     borrow: join(__dirname, './borrow/migrations'),
   },
   addresses,
-  onStart: () => {},
+  onStart: () => { },
 };

@@ -8,16 +8,18 @@ import {
   openCdpTransformer,
 } from './borrow/transformers/cdpManagerTransformer';
 
-import { vatCombineTransformer, vatTransformer } from './borrow/transformers/vatTransformer';
+import { vatCombineTransformer, vatMoveTransformer, vatRawMoveTransformer, vatTransformer } from './borrow/transformers/vatTransformer';
 import { auctionTransformer, catTransformer } from './borrow/transformers/catTransformer';
 import { AbiInfo, makeRowEventBasedOnDSNoteTopic } from './borrow/customExtractor';
 import { flipNoteTransformer, flipTransformer } from './borrow/transformers/flipperTransformer';
 import { getIlkInfo } from './borrow/services/getIlkInfo';
 import { getUrnForCdp } from './borrow/services/getUrnForCdp';
 
+const GENESIS = 8928152;
+
 const vat = {
   address: '0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b',
-  startingBlock: 8928152,
+  startingBlock: GENESIS,
 };
 
 const cdpManagers = [
@@ -42,7 +44,7 @@ const flipper = [
   {
     name: 'flipper',
     abi: require('../abis/flipper.json'),
-    startingBlock: 8928152,
+    startingBlock: GENESIS,
   },
 ];
 
@@ -55,7 +57,7 @@ const flipperNotes: AbiInfo[] = [
       'deal(uint256)',
     ],
     abi: require('../abis/flipper.json'),
-    startingBlock: 8928152,
+    startingBlock: GENESIS,
   },
 ];
 
@@ -65,7 +67,7 @@ const addresses = {
 };
 
 export const config: UserProvidedSpockConfig = {
-  startingBlock: 8928152,
+  startingBlock: 11719481, //GENESIS,
   extractors: [
     ...makeRawLogExtractors(cdpManagers),
     ...makeRawLogExtractors(cats),
@@ -80,6 +82,8 @@ export const config: UserProvidedSpockConfig = {
     ...auctionTransformer(cats, { getIlkInfo }),
     vatTransformer(vat),
     vatCombineTransformer(vat),
+    vatMoveTransformer(vat),
+    vatRawMoveTransformer(vat),
     flipTransformer(),
     flipNoteTransformer(),
   ],
@@ -87,5 +91,5 @@ export const config: UserProvidedSpockConfig = {
     borrow: join(__dirname, './borrow/migrations'),
   },
   addresses,
-  onStart: () => {},
+  onStart: () => { },
 };
