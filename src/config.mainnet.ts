@@ -10,7 +10,7 @@ import {
 
 import {
   vatCombineTransformer,
-  vatMoveTransformer,
+  vatMoveEventsTransformer,
   vatRawMoveTransformer,
   vatTransformer,
 } from './borrow/transformers/vatTransformer';
@@ -19,6 +19,12 @@ import { AbiInfo, makeRowEventBasedOnDSNoteTopic } from './borrow/customExtracto
 import { flipNoteTransformer, flipTransformer } from './borrow/transformers/flipperTransformer';
 import { getIlkInfo } from './borrow/services/getIlkInfo';
 import { getUrnForCdp } from './borrow/services/getUrnForCdp';
+import {
+  auctionLiq2Transformer,
+  dogTransformer,
+  getDogTransformerName,
+} from './borrow/transformers/dogTransformer';
+import { clipperTransformer } from './borrow/transformers/clipperTransformer';
 
 const GENESIS = 8928152;
 
@@ -42,6 +48,21 @@ const cats = [
   {
     address: '0xa5679C04fc3d9d8b0AaB1F0ab83555b301cA70Ea',
     startingBlock: 10742907,
+  },
+];
+
+const dogs = [
+  {
+    address: '0x135954d155898d42c90d2a57824c690e0c7bef1b',
+    startingBlock: 12246358,
+  },
+];
+
+const clippers = [
+  {
+    name: 'clipper',
+    abi: require('../abis/clipper.json'),
+    startingBlock: 24136159,
   },
 ];
 
@@ -72,25 +93,30 @@ const addresses = {
 };
 
 export const config: UserProvidedSpockConfig = {
-  startingBlock: 11719481, //GENESIS,
+  startingBlock: GENESIS,
   extractors: [
     ...makeRawLogExtractors(cdpManagers),
     ...makeRawLogExtractors(cats),
+    ...makeRawLogExtractors(dogs),
     ...makeRawLogExtractors([vat]),
     ...makeRawEventBasedOnTopicExtractor(flipper),
     ...makeRowEventBasedOnDSNoteTopic(flipperNotes),
+    ...makeRawEventBasedOnTopicExtractor(clippers),
   ],
   transformers: [
     ...openCdpTransformer(cdpManagers, { getUrnForCdp }),
     ...managerGiveTransformer(cdpManagers),
     ...catTransformer(cats),
     ...auctionTransformer(cats, { getIlkInfo }),
+    ...dogTransformer(dogs),
+    ...auctionLiq2Transformer(dogs, { getIlkInfo }),
     vatTransformer(vat),
     vatCombineTransformer(vat),
-    vatMoveTransformer(vat),
+    vatMoveEventsTransformer(vat),
     vatRawMoveTransformer(vat),
     flipTransformer(),
     flipNoteTransformer(),
+    clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),

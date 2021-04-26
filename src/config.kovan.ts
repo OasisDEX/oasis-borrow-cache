@@ -10,7 +10,7 @@ import {
 
 import {
   vatCombineTransformer,
-  vatMoveTransformer,
+  vatMoveEventsTransformer,
   vatRawMoveTransformer,
   vatTransformer,
 } from './borrow/transformers/vatTransformer';
@@ -112,7 +112,7 @@ export const config: UserProvidedSpockConfig = {
     ...auctionLiq2Transformer(dogs, { getIlkInfo }),
     vatTransformer(vat),
     vatCombineTransformer(vat),
-    vatMoveTransformer(vat),
+    vatMoveEventsTransformer(vat),
     vatRawMoveTransformer(vat),
     flipTransformer(),
     flipNoteTransformer(),

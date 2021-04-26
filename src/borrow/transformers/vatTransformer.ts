@@ -229,7 +229,7 @@ const moveEventsHandlers: DsNoteHandlers = {
         .toString(),
       transfer_from: note.params.src.toLowerCase(),
       transfer_to: note.params.dst.toLowerCase(),
-      rate: rate.toString(),
+      rate: rate.div(ray).toString(),
 
       timestamp: timestamp.timestamp,
       log_index: log.log_index,
@@ -358,7 +358,7 @@ export const vatRawMoveTransformer: (
   const deps = normalizeAddressDefinition(addresses);
 
   return {
-    name: `vatMoveTransformer-${deps.address}`,
+    name: `vatRawMoveTransformer-${deps.address}`,
     dependencies: [getExtractorName(deps.address)],
     startingBlock: deps.startingBlock,
     transform: async (services, logs) => {
@@ -367,18 +367,17 @@ export const vatRawMoveTransformer: (
   };
 };
 
-export const vatMoveTransformer: (
+export const vatMoveEventsTransformer: (
   addresses: string | SimpleProcessorDefinition,
 ) => BlockTransformer = addresses => {
   const deps = normalizeAddressDefinition(addresses);
 
   return {
-    name: `vatMoveTransformer-${deps.address}`,
+    name: `vatMoveEventsTransformer-${deps.address}`,
     dependencies: [getExtractorName(deps.address)],
     startingBlock: deps.startingBlock,
     transformerDependencies: [`vatTransformer-${deps.address}`],
     transform: async (services, logs) => {
-      await handleDsNoteEvents(services, vatAbi, flatten(logs), rawMoveHandlers, 2);
       await handleDsNoteEvents(services, vatAbi, flatten(logs), moveEventsHandlers, 2);
     },
   };
