@@ -201,8 +201,6 @@ const handlers = {
   },
 };
 
-export const clipperTransformerName = 'clipperTransformer';
-
 async function filterClipperLogs(
   services: LocalServices,
   logs: PersistedLog[],
@@ -212,14 +210,15 @@ async function filterClipperLogs(
   }
 
   const clippers = await services.tx.manyOrNone(`SELECT DISTINCT clip FROM dog.bark`);
-  const clippersAddresses = clippers.map((result: { clip: string }) => result.clip);
+  const clippersAddresses = clippers.map((result: { clip: string }) => result.clip.toLowerCase());
 
   if (clippersAddresses.length === 0) {
     return [];
   }
-  return logs.filter(log => clippersAddresses.includes(log.address));
+  return logs.filter(log => clippersAddresses.includes(log.address.toLowerCase()));
 }
 
+export const clipperTransformerName = 'clipperTransformerV2';
 export const clipperTransformer: (
   transformerDependencies: string[],
 ) => BlockTransformer = transformerDependencies => {
