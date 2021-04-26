@@ -8,7 +8,7 @@ import {
   openCdpTransformer,
 } from './borrow/transformers/cdpManagerTransformer';
 
-import { vatCombineTransformer, vatTransformer } from './borrow/transformers/vatTransformer';
+import { vatCombineTransformer, vatMoveEventsTransformer, vatRawMoveTransformer, vatTransformer } from './borrow/transformers/vatTransformer';
 import { auctionTransformer, catTransformer } from './borrow/transformers/catTransformer';
 import { AbiInfo, makeRowEventBasedOnDSNoteTopic } from './borrow/customExtractor';
 import { flipNoteTransformer, flipTransformer } from './borrow/transformers/flipperTransformer';
@@ -105,6 +105,8 @@ export const config: UserProvidedSpockConfig = {
     ...auctionLiq2Transformer(dogs, { getIlkInfo }),
     vatTransformer(vat),
     vatCombineTransformer(vat),
+    vatMoveEventsTransformer(vat),
+    vatRawMoveTransformer(vat),
     flipTransformer(),
     flipNoteTransformer(),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
@@ -113,5 +115,5 @@ export const config: UserProvidedSpockConfig = {
     borrow: join(__dirname, './borrow/migrations'),
   },
   addresses,
-  onStart: () => {},
+  onStart: () => { },
 };
