@@ -15,9 +15,11 @@ import { flipNoteTransformer, flipTransformer } from './borrow/transformers/flip
 import { getIlkInfo } from './borrow/services/getIlkInfo';
 import { getUrnForCdp } from './borrow/services/getUrnForCdp';
 
+const GENESIS = 8928152;
+
 const vat = {
   address: '0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b',
-  startingBlock: 8928152,
+  startingBlock: GENESIS,
 };
 
 const cdpManagers = [
@@ -42,7 +44,7 @@ const flipper = [
   {
     name: 'flipper',
     abi: require('../abis/flipper.json'),
-    startingBlock: 8928152,
+    startingBlock: GENESIS,
   },
 ];
 
@@ -55,7 +57,7 @@ const flipperNotes: AbiInfo[] = [
       'deal(uint256)',
     ],
     abi: require('../abis/flipper.json'),
-    startingBlock: 8928152,
+    startingBlock: GENESIS,
   },
 ];
 
@@ -65,7 +67,7 @@ const addresses = {
 };
 
 export const config: UserProvidedSpockConfig = {
-  startingBlock: 8928152,
+  startingBlock: 11719481, //GENESIS,
   extractors: [
     ...makeRawLogExtractors(cdpManagers),
     ...makeRawLogExtractors(cats),

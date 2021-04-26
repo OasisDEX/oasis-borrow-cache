@@ -21,9 +21,11 @@ import {
 } from './borrow/transformers/dogTransformer';
 import { clipperTransformer } from './borrow/transformers/clipperTransformer';
 
+const GENESIS = 14764534;
+
 const vat = {
   address: '0xba987bdb501d131f766fee8180da5d81b34b69d9',
-  startingBlock: 14764534,
+  startingBlock: GENESIS,
 };
 
 const cdpManagers = [
@@ -55,7 +57,7 @@ const flippers = [
   {
     name: 'flipper',
     abi: require('../abis/flipper.json'),
-    startingBlock: 14764534,
+    startingBlock: GENESIS,
   },
 ];
 
@@ -76,7 +78,7 @@ const flipperNotes: AbiInfo[] = [
       'deal(uint256)',
     ],
     abi: require('../abis/flipper.json'),
-    startingBlock: 14764534,
+    startingBlock: GENESIS,
   },
 ];
 
@@ -86,7 +88,7 @@ const addresses = {
 };
 
 export const config: UserProvidedSpockConfig = {
-  startingBlock: 14764534,
+  startingBlock: GENESIS,
   extractors: [
     ...makeRawLogExtractors(cdpManagers),
     ...makeRawLogExtractors(cats),
