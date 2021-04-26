@@ -140,7 +140,7 @@ const handlersLiq2 = (dependencies: auctionsTransformerDependencies) => ({
 });
 
 export const getAuctionTransformerName = (address: string) =>
-  `auctionTransformer-lig2.0-${address}`;
+  `auctionTransformer-V2-lig2.0-${address}`;
 
 export const auctionLiq2Transformer: (
   addresses: (string | SimpleProcessorDefinition)[],
