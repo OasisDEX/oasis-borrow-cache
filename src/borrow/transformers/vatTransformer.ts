@@ -213,7 +213,9 @@ const moveEventsHandlers: DsNoteHandlers = {
       SELECT COALESCE(sum(f.rate), 0) AS rate 
         FROM vat.fold f 
           WHERE f.i = '${parseBytes32String(note.params.ilk)}'
-            AND (${log.block_id} < f.block_id OR ${log.block_id} = f.block_id AND ${log.log_index} <= f.log_index);
+            AND (${log.block_id} < f.block_id OR ${log.block_id} = f.block_id AND ${
+        log.log_index
+      } <= f.log_index);
       `,
     );
     const rate = new BigNumber(ray).plus(new BigNumber(folds.rate));
@@ -227,7 +229,7 @@ const moveEventsHandlers: DsNoteHandlers = {
         .toString(),
       transfer_from: note.params.src.toLowerCase(),
       transfer_to: note.params.dst.toLowerCase(),
-      rate: rate.toString(),
+      rate: rate.div(ray).toString(),
 
       timestamp: timestamp.timestamp,
       log_index: log.log_index,
