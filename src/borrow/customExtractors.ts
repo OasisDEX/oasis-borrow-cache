@@ -114,7 +114,7 @@ async function extractRawLogsOnTopicIgnoreConflicts(
     const query =
       services.pg.helpers.insert(logsToInsert, services.columnSets['extracted_logs']) +
       ' ON CONFLICT ON CONSTRAINT logs_log_index_tx_id_key DO NOTHING RETURNING *';
-    insertedLogs = await services.tx.many(query);
+    insertedLogs = await services.tx.manyOrNone(query);
     addingLogs();
   }
   return insertedLogs;
