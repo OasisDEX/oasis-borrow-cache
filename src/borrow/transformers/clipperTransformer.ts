@@ -2,12 +2,12 @@ import { flatten } from 'lodash';
 
 import { handleEvents, FullEventInfo } from '@oasisdex/spock-utils/dist/transformers/common';
 import { PersistedLog } from '@oasisdex/spock-utils/dist/extractors/rawEventDataExtractor';
-import { getExtractorName as getExtractorNameBasedOnTopic } from '@oasisdex/spock-utils/dist/extractors/rawEventBasedOnTopicExtractor';
 import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
 import { Dictionary } from 'ts-essentials';
 import BigNumber from 'bignumber.js';
 import { rad, ray, wad } from '../../utils/precision';
+import { getCustomExtractorNameBasedOnDSNoteTopicIgnoreConflicts } from '../customExtractors';
 
 const clipperAbi = require('../../../abis/clipper.json');
 
@@ -218,13 +218,13 @@ async function filterClipperLogs(
   return logs.filter(log => clippersAddresses.includes(log.address.toLowerCase()));
 }
 
-export const clipperTransformerName = 'clipperTransformerV2';
+export const clipperTransformerName = 'clipperTransformerV3';
 export const clipperTransformer: (
   transformerDependencies: string[],
 ) => BlockTransformer = transformerDependencies => {
   return {
     name: clipperTransformerName,
-    dependencies: [getExtractorNameBasedOnTopic('clipper')],
+    dependencies: [getCustomExtractorNameBasedOnDSNoteTopicIgnoreConflicts('clipper')],
     transformerDependencies,
     transform: async (services, logs) => {
       const allowedLogs = await filterClipperLogs(services, flatten(logs));

@@ -54,24 +54,6 @@ const dogHandlers = {
   },
 };
 
-export const getDogTransformerName = (address: string) => `dogTransformer-${address}`;
-export const dogTransformer: (
-  addresses: (string | SimpleProcessorDefinition)[],
-) => BlockTransformer[] = addresses => {
-  return addresses.map(_deps => {
-    const deps = normalizeAddressDefinition(_deps);
-
-    return {
-      name: getDogTransformerName(deps.address),
-      dependencies: [getExtractorName(deps.address)],
-      startingBlock: deps.startingBlock,
-      transform: async (services, logs) => {
-        await handleEvents(services, dogAbi, flatten(logs), dogHandlers);
-      },
-    };
-  });
-};
-
 async function handleLiq2AuctionStarted(
   params: Dictionary<any>,
   log: PersistedLog,
@@ -139,8 +121,26 @@ const handlersLiq2 = (dependencies: auctionsTransformerDependencies) => ({
   },
 });
 
+export const getDogTransformerName = (address: string) => `dogTransformer-${address}`;
+export const dogTransformer: (
+  addresses: (string | SimpleProcessorDefinition)[],
+) => BlockTransformer[] = addresses => {
+  return addresses.map(_deps => {
+    const deps = normalizeAddressDefinition(_deps);
+
+    return {
+      name: getDogTransformerName(deps.address),
+      dependencies: [getExtractorName(deps.address)],
+      startingBlock: deps.startingBlock,
+      transform: async (services, logs) => {
+        await handleEvents(services, dogAbi, flatten(logs), dogHandlers);
+      },
+    };
+  });
+};
+
 export const getAuctionTransformerName = (address: string) =>
-  `auctionTransformer-V2-lig2.0-${address}`;
+  `auctionTransformer-V3-lig2.0-${address}`;
 
 export const auctionLiq2Transformer: (
   addresses: (string | SimpleProcessorDefinition)[],
