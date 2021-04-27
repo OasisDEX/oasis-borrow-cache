@@ -6,10 +6,10 @@ import {
   getLogsBasedOnTopics,
   getPersistedLogsByTopic,
 } from '@oasisdex/spock-utils/dist/extractors/rawEventBasedOnTopicExtractor';
-import { timer } from '@oasisdex/spock-etl/dist/utils/timer'
+import { timer } from '@oasisdex/spock-etl/dist/utils/timer';
 import { getOrCreateTx } from '@oasisdex/spock-utils/dist/extractors/common';
 import { ethers } from 'ethers';
-import { groupBy, uniqBy } from 'lodash'
+import { groupBy, uniqBy } from 'lodash';
 import { Log } from 'ethers/providers';
 
 export interface AbiInfo {
@@ -55,7 +55,7 @@ export function getCustomExtractorNameBasedOnDSNoteTopicIgnoreConflicts(name: st
 export function makeRawEventExtractorBasedOnTopicIgnoreConflicts(abis: any[]): BlockExtractor[] {
   return abis.map(abi => {
     const iface = new ethers.utils.Interface(abi.abi as any);
-    const allTopics = Object.values(iface.events).map((e) => e.topic);
+    const allTopics = Object.values(iface.events).map(e => e.topic);
 
     return {
       name: getCustomExtractorNameBasedOnDSNoteTopicIgnoreConflicts(abi.name),
@@ -71,32 +71,49 @@ export function makeRawEventExtractorBasedOnTopicIgnoreConflicts(abis: any[]): B
   });
 }
 
-async function extractRawLogsOnTopicIgnoreConflicts(services: TransactionalServices, blocks: BlockModel[], topics: string[]) {
+async function extractRawLogsOnTopicIgnoreConflicts(
+  services: TransactionalServices,
+  blocks: BlockModel[],
+  topics: string[],
+): Promise<any[]> {
   const logs = await getLogsBasedOnTopics(services, blocks, topics);
-  const filteredLogs = logs.filter((log): log is Required<Log> => log.transactionHash !== undefined && log.blockHash !== undefined)
+  const filteredLogs = logs.filter(
+    (log): log is Required<Log> => log.transactionHash !== undefined && log.blockHash !== undefined,
+  );
   const blocksByHash = groupBy(blocks, 'hash');
-  const allTxs = uniqBy(filteredLogs.map((l) => ({ txHash: l.transactionHash, blockHash: l.blockHash })), 'txHash');
-  const allStoredTxs = await Promise.all(allTxs.map((tx) => getOrCreateTx(services, tx.txHash, blocksByHash[tx.blockHash][0])));
+  const allTxs = uniqBy(
+    filteredLogs.map(l => ({ txHash: l.transactionHash, blockHash: l.blockHash })),
+    'txHash',
+  );
+  const allStoredTxs = await Promise.all(
+    allTxs.map(tx => getOrCreateTx(services, tx.txHash, blocksByHash[tx.blockHash][0])),
+  );
   const allStoredTxsByTxHash = groupBy(allStoredTxs, 'hash');
-  const logsToInsert = (await Promise.all(filteredLogs.map(async (log) => {
-    const _block = blocksByHash[log.blockHash];
-    if (!_block) {
-      return;
-    }
-    const block = _block[0];
-    const storedTx = allStoredTxsByTxHash[log.transactionHash][0];
-    return {
-      ...log,
-      address: log.address.toLowerCase(),
-      log_index: log.logIndex,
-      block_id: block.id,
-      tx_id: storedTx.id,
-    };
-  }))).filter((log) => !!log);
+  const logsToInsert = (
+    await Promise.all(
+      filteredLogs.map(async log => {
+        const _block = blocksByHash[log.blockHash];
+        if (!_block) {
+          return;
+        }
+        const block = _block[0];
+        const storedTx = allStoredTxsByTxHash[log.transactionHash][0];
+        return {
+          ...log,
+          address: log.address.toLowerCase(),
+          log_index: log.logIndex,
+          block_id: block.id,
+          tx_id: storedTx.id,
+        };
+      }),
+    )
+  ).filter(log => !!log);
   let insertedLogs = [];
   if (logsToInsert.length !== 0) {
     const addingLogs = timer(`adding-logs`, `with: ${logsToInsert.length} logs`);
-    const query = services.pg.helpers.insert(logsToInsert, services.columnSets['extracted_logs']) + 'ON CONFLICT ON CONSTRAIN logs_log_index_tx_id_key DO NOTHING RETURNING *';
+    const query =
+      services.pg.helpers.insert(logsToInsert, services.columnSets['extracted_logs']) +
+      'ON CONFLICT ON CONSTRAIN logs_log_index_tx_id_key DO NOTHING RETURNING *';
     insertedLogs = await services.tx.many(query);
     addingLogs();
   }

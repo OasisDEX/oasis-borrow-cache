@@ -15,7 +15,11 @@ import {
   vatTransformer,
 } from './borrow/transformers/vatTransformer';
 import { auctionTransformer, catTransformer } from './borrow/transformers/catTransformer';
-import { AbiInfo, makeRawEventExtractorBasedOnTopicIgnoreConflicts, makeRowEventBasedOnDSNoteTopic } from './borrow/customExtractors';
+import {
+  AbiInfo,
+  makeRawEventExtractorBasedOnTopicIgnoreConflicts,
+  makeRowEventBasedOnDSNoteTopic,
+} from './borrow/customExtractors';
 import { flipNoteTransformer, flipTransformer } from './borrow/transformers/flipperTransformer';
 import { getIlkInfo } from './borrow/services/getIlkInfo';
 import { getUrnForCdp } from './borrow/services/getUrnForCdp';
@@ -122,5 +126,5 @@ export const config: UserProvidedSpockConfig = {
     borrow: join(__dirname, './borrow/migrations'),
   },
   addresses,
-  onStart: () => { },
+  onStart: () => {},
 };
