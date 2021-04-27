@@ -8,6 +8,7 @@ import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
 import { Dictionary } from 'ts-essentials';
 import BigNumber from 'bignumber.js';
 import { rad, ray, wad } from '../../utils/precision';
+import { getCustomExtractorNameBasedOnDSNoteTopicIgnoreConflicts } from '../customExtractor';
 
 const clipperAbi = require('../../../abis/clipper.json');
 
@@ -224,7 +225,7 @@ export const clipperTransformer: (
 ) => BlockTransformer = transformerDependencies => {
   return {
     name: clipperTransformerName,
-    dependencies: [getExtractorNameBasedOnTopic('clipper')],
+    dependencies: [getCustomExtractorNameBasedOnDSNoteTopicIgnoreConflicts('clipper')],
     transformerDependencies,
     transform: async (services, logs) => {
       const allowedLogs = await filterClipperLogs(services, flatten(logs));
