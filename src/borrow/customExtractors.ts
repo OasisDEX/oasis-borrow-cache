@@ -96,7 +96,7 @@ async function extractRawLogsOnTopicIgnoreConflicts(services: TransactionalServi
   let insertedLogs = [];
   if (logsToInsert.length !== 0) {
     const addingLogs = timer(`adding-logs`, `with: ${logsToInsert.length} logs`);
-    const query = services.pg.helpers.insert(logsToInsert, services.columnSets['extracted_logs']) + 'ON CONFLICT DO NOTHING RETURNING *';
+    const query = services.pg.helpers.insert(logsToInsert, services.columnSets['extracted_logs']) + 'ON CONFLICT ON CONSTRAIN logs_log_index_tx_id_key DO NOTHING RETURNING *';
     insertedLogs = await services.tx.many(query);
     addingLogs();
   }

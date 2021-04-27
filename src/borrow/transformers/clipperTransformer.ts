@@ -8,7 +8,7 @@ import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
 import { Dictionary } from 'ts-essentials';
 import BigNumber from 'bignumber.js';
 import { rad, ray, wad } from '../../utils/precision';
-import { getCustomExtractorNameBasedOnDSNoteTopicIgnoreConflicts } from '../customExtractor';
+import { getCustomExtractorNameBasedOnDSNoteTopicIgnoreConflicts } from '../customExtractors';
 
 const clipperAbi = require('../../../abis/clipper.json');
 
