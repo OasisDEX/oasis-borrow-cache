@@ -219,7 +219,7 @@ async function filterClipperLogs(
   return logs.filter(log => clippersAddresses.includes(log.address.toLowerCase()));
 }
 
-export const clipperTransformerName = 'clipperTransformerV2';
+export const clipperTransformerName = 'clipperTransformerV3';
 export const clipperTransformer: (
   transformerDependencies: string[],
 ) => BlockTransformer = transformerDependencies => {

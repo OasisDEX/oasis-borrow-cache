@@ -52,7 +52,7 @@ export function getCustomExtractorNameBasedOnDSNoteTopicIgnoreConflicts(name: st
   return `raw_log_ds_note_topic_ignore_conflicts_${name}_extractor`;
 }
 
-export function makeCustomRawEventExtractor(abis: any[]): BlockExtractor[] {
+export function makeRawEventExtractorBasedOnTopicIgnoreConflicts(abis: any[]): BlockExtractor[] {
   return abis.map(abi => {
     const iface = new ethers.utils.Interface(abi.abi as any);
     const allTopics = Object.values(iface.events).map((e) => e.topic);
