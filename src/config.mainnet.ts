@@ -126,5 +126,5 @@ export const config: UserProvidedSpockConfig = {
     borrow: join(__dirname, './borrow/migrations'),
   },
   addresses,
-  onStart: () => { },
+  onStart: () => {},
 };

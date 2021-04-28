@@ -215,7 +215,8 @@ const moveEventsHandlers: DsNoteHandlers = {
           WHERE f.i = '${parseBytes32String(note.params.ilk)}'
             AND (
               f.block_id < ${log.block_id}
-              OR ${log.block_id} = f.block_id AND f.log_index <= ${log.log_index});
+              OR ${log.block_id} = f.block_id AND f.log_index <= ${log.log_index}
+            );
       `,
     );
     const rate = new BigNumber(ray).plus(new BigNumber(folds.rate));
