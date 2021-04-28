@@ -213,9 +213,9 @@ const moveEventsHandlers: DsNoteHandlers = {
       SELECT COALESCE(sum(f.rate), 0) AS rate 
         FROM vat.fold f 
           WHERE f.i = '${parseBytes32String(note.params.ilk)}'
-            AND (${log.block_id} < f.block_id OR ${log.block_id} = f.block_id AND ${
-        log.log_index
-      } <= f.log_index);
+            AND (
+              f.block_id < ${log.block_id}
+              OR ${log.block_id} = f.block_id AND f.log_index <= ${log.log_index});
       `,
     );
     const rate = new BigNumber(ray).plus(new BigNumber(folds.rate));
@@ -373,7 +373,7 @@ export const vatMoveEventsTransformer: (
   const deps = normalizeAddressDefinition(addresses);
 
   return {
-    name: `vatMoveEventsTransformer-${deps.address}`,
+    name: `vatMoveEventsTransformerV2-${deps.address}`,
     dependencies: [getExtractorName(deps.address)],
     startingBlock: deps.startingBlock,
     transformerDependencies: [`vatTransformer-${deps.address}`],
