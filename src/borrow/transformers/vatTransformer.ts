@@ -109,7 +109,7 @@ export const vatCombineTransformer: (
   const deps = normalizeAddressDefinition(addresses);
 
   return {
-    name: `vatCombineTransformer-${deps.address}`,
+    name: `vatCombineTransformerV2-${deps.address}`,
     dependencies: [getExtractorName(deps.address)],
     transformerDependencies: [`vatTransformer-${deps.address}`],
     startingBlock: deps.startingBlock,
