@@ -89,6 +89,7 @@ describe('CdpManagerTransformer', () => {
         liq_penalty: null,
         remaining_collateral: null,
         remaining_debt: null,
+        ilk: null,
       },
     ]);
   });
@@ -158,6 +159,7 @@ describe('CdpMigrationTransformer', () => {
         liq_penalty: null,
         remaining_collateral: null,
         remaining_debt: null,
+        ilk: null,
       },
     ]);
   });
@@ -201,6 +203,7 @@ describe('CdpMigrationTransformer', () => {
         liq_penalty: null,
         remaining_collateral: null,
         remaining_debt: null,
+        ilk: null,
       },
     ]);
   });
