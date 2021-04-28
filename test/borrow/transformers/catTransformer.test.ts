@@ -92,6 +92,7 @@ describe('catTransformer', () => {
         liq_penalty: null,
         remaining_collateral: null,
         remaining_debt: null,
+        ilk: null,
         timestamp: new Date('2019-07-02T11:18:01.000Z'),
         log_index: 1,
         tx_id: 1,

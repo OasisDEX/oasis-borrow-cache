@@ -132,6 +132,7 @@ describe('Vat combine transformer', () => {
         liq_penalty: null,
         remaining_collateral: null,
         remaining_debt: null,
+        ilk: null,
       },
     ]);
   });
@@ -171,6 +172,7 @@ describe('Vat combine transformer', () => {
         liq_penalty: null,
         remaining_collateral: null,
         remaining_debt: null,
+        ilk: null,
       },
     ]);
   });
@@ -201,7 +203,7 @@ describe('Vat combine transformer', () => {
         block_id: 1,
         auction_id: null,
         collateral: null,
-        dai_amount: '811.344795256768841439',
+        dai_amount: '811.344795256768841437',
         transfer_to: null,
         rate: '1.000005709754190194',
         collateral_price: null,
@@ -210,6 +212,7 @@ describe('Vat combine transformer', () => {
         liq_penalty: null,
         remaining_collateral: null,
         remaining_debt: null,
+        ilk: null,
       },
     ]);
   });
@@ -249,6 +252,7 @@ describe('Vat combine transformer', () => {
         liq_penalty: null,
         remaining_collateral: null,
         remaining_debt: null,
+        ilk: null,
       },
     ]);
   });
@@ -288,6 +292,7 @@ describe('Vat combine transformer', () => {
         liq_penalty: null,
         remaining_collateral: null,
         remaining_debt: null,
+        ilk: null,
       },
     ]);
   });
@@ -308,7 +313,7 @@ describe('Vat combine transformer', () => {
         id: 1,
         cdp_id: null,
         collateral_amount: '-8.405434718355618834',
-        dai_amount: '-574.626696106628942493',
+        dai_amount: '-574.626696106628942496',
         urn: '0x92560fe2271d403c56bd975e047511d29e193452',
         transfer_from: null,
         timestamp: new Date('2019-07-02T11:18:02.000Z'),
@@ -327,6 +332,7 @@ describe('Vat combine transformer', () => {
         liq_penalty: null,
         remaining_collateral: null,
         remaining_debt: null,
+        ilk: null,
       },
     ]);
   });
