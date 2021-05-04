@@ -72,7 +72,7 @@ const handleAuctionTake = async (
   services: LocalServices,
 ) => {
   const bark = await services.tx.oneOrNone(`
-        SELECT * FROM dog.bark WHERE auction_id = '${params.id.toString()}';
+        SELECT * FROM dog.bark WHERE auction_id = '${params.id.toString()}' AND clip = '${log.address.toLowerCase()}';
     `);
   const timestamp = await services.tx.oneOrNone(
     `SELECT timestamp FROM vulcan2x.block WHERE id = \${block_id}`,
