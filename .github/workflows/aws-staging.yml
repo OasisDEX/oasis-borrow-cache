@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AWS_REGION: eu-central-1
+      ECR_REPO_NAME: stagingcache-staging
       SERVICE_NAME: stagingcache-staging
       CLUSTER_NAME: oasis-borrow-cache-staging
 
@@ -34,23 +35,23 @@ jobs:
       env:
         SHA_TAG: ${{ github.sha }}
         LATEST_TAG: latest
+        ENVIRONMENT_TAG: staging
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       run: |
         # Build a docker container and
         # push it to ECR so that it can
         # be deployed to ECS.
-        docker build -t $ECR_REGISTRY/$SERVICE_NAME:$SHA_TAG -t $ECR_REGISTRY/$SERVICE_NAME:$LATEST_TAG .
-        docker push $ECR_REGISTRY/$SERVICE_NAME:$SHA_TAG
-        docker push $ECR_REGISTRY/$SERVICE_NAME:$LATEST_TAG
+        docker build -t $ECR_REGISTRY/$ECR_REPO_NAME:$SHA_TAG -t $ECR_REGISTRY/$ECR_REPO_NAME:$LATEST_TAG -t $ECR_REGISTRY/$ECR_REPO_NAME:$ENVIRONMENT_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPO_NAME --all-tags
 
     - name: Update ${{ env.SERVICE_NAME }}-etl ECS service with latest Docker image
       id: service-update-etl
       run: |
-        aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.SERVICE_NAME }}-etl --force-new-deployment  --endpoint https://ecs.eu-central-1.amazonaws.com --region $AWS_REGION
+        aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.SERVICE_NAME }}-etl --force-new-deployment --region $AWS_REGION
         aws ecs wait services-stable --cluster $CLUSTER_NAME --service ${{ env.SERVICE_NAME }}-etl
 
     - name: Update ${{ env.SERVICE_NAME }}-api ECS service with latest Docker image
       id: service-update-api
       run: |
-        aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.SERVICE_NAME }}-api --force-new-deployment  --endpoint https://ecs.eu-central-1.amazonaws.com --region $AWS_REGION
+        aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.SERVICE_NAME }}-api --force-new-deployment --region $AWS_REGION
         aws ecs wait services-stable --cluster $CLUSTER_NAME --service ${{ env.SERVICE_NAME }}-api
