@@ -49,7 +49,7 @@ jobs:
         aws ecs wait services-stable --cluster $CLUSTER_NAME --service ${{ env.SERVICE_NAME }}-etl
 
     - name: Update ${{ env.SERVICE_NAME }}-api ECS service with latest Docker image
-      id: service-update
+      id: service-update-api
       run: |
         aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.SERVICE_NAME }}-api --force-new-deployment  --endpoint https://ecs.eu-central-1.amazonaws.com --region $AWS_REGION
         aws ecs wait services-stable --cluster $CLUSTER_NAME --service ${{ env.SERVICE_NAME }}-api
