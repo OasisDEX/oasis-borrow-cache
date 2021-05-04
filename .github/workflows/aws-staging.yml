@@ -41,6 +41,7 @@ jobs:
         # be deployed to ECS.
         docker build -t $ECR_REGISTRY/$SERVICE_NAME:$SHA_TAG -t $ECR_REGISTRY/$SERVICE_NAME:$LATEST_TAG .
         docker push $ECR_REGISTRY/$SERVICE_NAME:$SHA_TAG
+        docker push $ECR_REGISTRY/$SERVICE_NAME:$LATEST_TAG
 
     - name: Update ${{ env.SERVICE_NAME }}-etl ECS service with latest Docker image
       id: service-update-etl
