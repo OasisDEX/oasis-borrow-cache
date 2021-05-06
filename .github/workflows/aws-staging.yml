@@ -48,10 +48,14 @@ jobs:
       id: service-update-etl
       run: |
         aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.SERVICE_NAME }}-etl --force-new-deployment --region $AWS_REGION
-        aws ecs wait services-stable --cluster $CLUSTER_NAME --service ${{ env.SERVICE_NAME }}-etl
 
     - name: Update ${{ env.SERVICE_NAME }}-api ECS service with latest Docker image
       id: service-update-api
       run: |
         aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.SERVICE_NAME }}-api --force-new-deployment --region $AWS_REGION
-        aws ecs wait services-stable --cluster $CLUSTER_NAME --service ${{ env.SERVICE_NAME }}-api
+
+    - name: Wait for all services to become stable
+      uses: oryanmoshe/ecs-wait-action@v1.3
+      with:
+        ecs-cluster: $CLUSTER_NAME
+        ecs-services: '[${{ env.SERVICE_NAME }}-etl, ${{ env.SERVICE_NAME }}-api]'
