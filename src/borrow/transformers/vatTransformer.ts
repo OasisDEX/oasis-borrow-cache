@@ -1,4 +1,4 @@
-import { flatten } from 'lodash';
+import { flatten, max, maxBy, min, minBy } from 'lodash';
 import { parseBytes32String } from 'ethers/utils';
 import {
   handleDsNoteEvents,
@@ -103,6 +103,36 @@ export const vatTransformer: (
   };
 };
 
+interface Fold {
+    id: number,
+    i: string,
+    rate: string,
+    u: string,
+    log_index: number,
+    tx_id: number,
+    block_id: number,
+    timestamp: Date,
+}
+
+interface Frob {
+    id: number,
+    dart: string,
+    dink: string,
+    ilk: string,
+    u: string,
+    v: string,
+    w: string,
+    log_index: 2,
+    tx_id: 4,
+    block_id: 2,
+    timestamp: Date,
+}
+
+interface Rate {
+  ilk: string,
+  rate: string,
+}
+
 export const vatCombineTransformer: (
   addresses: string | SimpleProcessorDefinition,
 ) => BlockTransformer = addresses => {
@@ -120,51 +150,66 @@ export const vatCombineTransformer: (
       }
       const blocks = Array.from(new Set(logs.map(log => log.block_id)));
 
-      const frobs = await services.tx.multi(
+      const minBlock = min(blocks)
+      const maxBlock = max(blocks)
+
+      const frobs = flatten(await services.tx.multi<Frob>(
         `
-                select 
-                    frob.*, (
-                        select COALESCE(sum(rate), 0)
-                        from vat.fold 
-                        where 
-                            i = frob.ilk and (
-                                block_id < frob.block_id or 
-                                block_id = frob.block_id  and log_index <= frob.log_index
-                            )
-                    ) rate 
-                from vat.frob frob
-                where frob.block_id in (\$1:csv)
-            `,
+        select *
+        from vat.frob
+        where block_id >= ${minBlock} and block_id <= ${maxBlock};
+        `,
         [blocks],
-      );
+      ));
 
-      const events = flatten(frobs)
-        .map(frob => {
-          const dink = new BigNumber(frob.dink).div(wad);
-          const dart = new BigNumber(frob.dart).div(wad);
-          const rate = new BigNumber(ray).plus(new BigNumber(frob.rate)).div(ray);
+      const folds = flatten(await services.tx.multi<Fold>(
+        `
+        select *
+        from vat.fold
+        where block_id >= ${minBlock} and block_id <= ${maxBlock};
+        `,
+        [blocks],
+      ));
 
-          if (frob.rate === null) {
-            throw new Error('RATE SHOULD NOT BE NULL');
-          }
-          return {
-            kind: [
-              !dink.isZero() && `${dink.gt(0) ? 'DEPOSIT' : 'WITHDRAW'}`,
-              !dart.isZero() && `${dart.gt(0) ? 'GENERATE' : 'PAYBACK'}`,
-            ]
-              .filter(x => !!x)
-              .join('-'),
-            rate: rate.toString(),
-            collateral_amount: dink.toString(),
-            dai_amount: dart.times(rate).toString(),
-            urn: frob.u,
-            timestamp: frob.timestamp,
-            tx_id: frob.tx_id,
-            block_id: frob.block_id,
-            log_index: frob.log_index,
-          };
-        })
-        .filter(event => event.kind !== '');
+      const rates = flatten(await services.tx.multi<Rate>(
+        `
+        select i ilk, sum(rate) rate 
+        from vat.fold f 
+        where block_id < ${minBlock}
+        group by i;
+        `,
+        [blocks],
+      ));
+
+      const events = frobs.map(frob => {
+        const rateFromBatch = folds
+          .filter(fold => fold.block_id < frob.block_id || (fold.block_id === frob.block_id && fold.log_index < frob.log_index))
+          .reduce((rate, fold) => rate.plus(fold.rate), new BigNumber(0))
+
+        const rateBeforeBatch = rates.find(rate => rate.ilk === frob.ilk)
+
+        const rate = rateFromBatch.plus(rateBeforeBatch?.rate || 0).plus(ray).div(ray)
+
+        const dink = new BigNumber(frob.dink).div(wad);
+        const dart = new BigNumber(frob.dart).div(wad);
+
+        return {
+          kind: [
+            !dink.isZero() && `${dink.gt(0) ? 'DEPOSIT' : 'WITHDRAW'}`,
+            !dart.isZero() && `${dart.gt(0) ? 'GENERATE' : 'PAYBACK'}`,
+          ]
+            .filter(x => !!x)
+            .join('-'),
+          rate: rate.toString(),
+          collateral_amount: dink.toString(),
+          dai_amount: dart.times(rate).toString(),
+          urn: frob.u,
+          timestamp: frob.timestamp,
+          tx_id: frob.tx_id,
+          block_id: frob.block_id,
+          log_index: frob.log_index,
+        };
+      }).filter(event => event.kind !== '');
 
       if (events.length === 0) {
         return;
