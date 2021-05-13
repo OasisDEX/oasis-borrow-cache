@@ -1,4 +1,4 @@
-import { flatten, max, maxBy, min, minBy } from 'lodash';
+import { flatten, max, min } from 'lodash';
 import { parseBytes32String } from 'ethers/utils';
 import {
   handleDsNoteEvents,
@@ -104,33 +104,33 @@ export const vatTransformer: (
 };
 
 interface Fold {
-    id: number,
-    i: string,
-    rate: string,
-    u: string,
-    log_index: number,
-    tx_id: number,
-    block_id: number,
-    timestamp: Date,
+  id: number;
+  i: string;
+  rate: string;
+  u: string;
+  log_index: number;
+  tx_id: number;
+  block_id: number;
+  timestamp: Date;
 }
 
 interface Frob {
-    id: number,
-    dart: string,
-    dink: string,
-    ilk: string,
-    u: string,
-    v: string,
-    w: string,
-    log_index: 2,
-    tx_id: 4,
-    block_id: 2,
-    timestamp: Date,
+  id: number;
+  dart: string;
+  dink: string;
+  ilk: string;
+  u: string;
+  v: string;
+  w: string;
+  log_index: 2;
+  tx_id: 4;
+  block_id: 2;
+  timestamp: Date;
 }
 
 interface Rate {
-  ilk: string,
-  rate: string,
+  ilk: string;
+  rate: string;
 }
 
 export const vatCombineTransformer: (
@@ -150,66 +150,81 @@ export const vatCombineTransformer: (
       }
       const blocks = Array.from(new Set(logs.map(log => log.block_id)));
 
-      const minBlock = min(blocks)
-      const maxBlock = max(blocks)
+      const minBlock = min(blocks);
+      const maxBlock = max(blocks);
 
-      const frobs = flatten(await services.tx.multi<Frob>(
-        `
+      const frobs = flatten(
+        await services.tx.multi<Frob>(
+          `
         select *
         from vat.frob
         where block_id >= ${minBlock} and block_id <= ${maxBlock};
         `,
-        [blocks],
-      ));
+          [blocks],
+        ),
+      );
 
-      const folds = flatten(await services.tx.multi<Fold>(
-        `
+      const folds = flatten(
+        await services.tx.multi<Fold>(
+          `
         select *
         from vat.fold
         where block_id >= ${minBlock} and block_id <= ${maxBlock};
         `,
-        [blocks],
-      ));
+          [blocks],
+        ),
+      );
 
-      const rates = flatten(await services.tx.multi<Rate>(
-        `
+      const rates = flatten(
+        await services.tx.multi<Rate>(
+          `
         select i ilk, sum(rate) rate 
         from vat.fold f 
         where block_id < ${minBlock}
         group by i;
         `,
-        [blocks],
-      ));
+          [blocks],
+        ),
+      );
 
-      const events = frobs.map(frob => {
-        const rateFromBatch = folds
-          .filter(fold => fold.block_id < frob.block_id || (fold.block_id === frob.block_id && fold.log_index < frob.log_index))
-          .reduce((rate, fold) => rate.plus(fold.rate), new BigNumber(0))
+      const events = frobs
+        .map(frob => {
+          const rateFromBatch = folds
+            .filter(
+              fold =>
+                fold.block_id < frob.block_id ||
+                (fold.block_id === frob.block_id && fold.log_index < frob.log_index),
+            )
+            .reduce((rate, fold) => rate.plus(fold.rate), new BigNumber(0));
 
-        const rateBeforeBatch = rates.find(rate => rate.ilk === frob.ilk)
+          const rateBeforeBatch = rates.find(rate => rate.ilk === frob.ilk);
 
-        const rate = rateFromBatch.plus(rateBeforeBatch?.rate || 0).plus(ray).div(ray)
+          const rate = rateFromBatch
+            .plus(rateBeforeBatch?.rate || 0)
+            .plus(ray)
+            .div(ray);
 
-        const dink = new BigNumber(frob.dink).div(wad);
-        const dart = new BigNumber(frob.dart).div(wad);
+          const dink = new BigNumber(frob.dink).div(wad);
+          const dart = new BigNumber(frob.dart).div(wad);
 
-        return {
-          kind: [
-            !dink.isZero() && `${dink.gt(0) ? 'DEPOSIT' : 'WITHDRAW'}`,
-            !dart.isZero() && `${dart.gt(0) ? 'GENERATE' : 'PAYBACK'}`,
-          ]
-            .filter(x => !!x)
-            .join('-'),
-          rate: rate.toString(),
-          collateral_amount: dink.toString(),
-          dai_amount: dart.times(rate).toString(),
-          urn: frob.u,
-          timestamp: frob.timestamp,
-          tx_id: frob.tx_id,
-          block_id: frob.block_id,
-          log_index: frob.log_index,
-        };
-      }).filter(event => event.kind !== '');
+          return {
+            kind: [
+              !dink.isZero() && `${dink.gt(0) ? 'DEPOSIT' : 'WITHDRAW'}`,
+              !dart.isZero() && `${dart.gt(0) ? 'GENERATE' : 'PAYBACK'}`,
+            ]
+              .filter(x => !!x)
+              .join('-'),
+            rate: rate.toString(),
+            collateral_amount: dink.toString(),
+            dai_amount: dart.times(rate).toString(),
+            urn: frob.u,
+            timestamp: frob.timestamp,
+            tx_id: frob.tx_id,
+            block_id: frob.block_id,
+            log_index: frob.log_index,
+          };
+        })
+        .filter(event => event.kind !== '');
 
       if (events.length === 0) {
         return;
