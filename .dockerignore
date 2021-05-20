@@ -1,4 +1,11 @@
+.git
+.github
+.gitignore
+.pre-commit*
+docker-compose.yaml
 .circleci
 lib
 node_modules
 **/node_modules
+test/
+scripts/

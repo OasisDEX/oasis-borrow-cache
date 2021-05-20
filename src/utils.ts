@@ -1,5 +1,8 @@
 import { SimpleProcessorDefinition } from '@oasisdex/spock-utils/dist/extractors/rawEventDataExtractor';
+import { SpockConfig } from '@oasisdex/spock-etl/dist/services/config';
 
+import config from './config';
+import { Dictionary } from 'ts-essentials';
 export function normalizeAddressDefinition(
   def: string | SimpleProcessorDefinition,
 ): SimpleProcessorDefinition {
@@ -13,4 +16,8 @@ export function normalizeAddressDefinition(
     address: def.address,
     startingBlock: def.startingBlock,
   };
+}
+
+export function getAddressesFromConfig(services: { config: SpockConfig }): Dictionary<string> {
+  return ((services.config as any) as typeof config).addresses;
 }
