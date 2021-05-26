@@ -1,5 +1,7 @@
 # Oasis Borrow cache 
-This package parses blockchain data and builds comprehensive data set about Maker Vaults used by Oasis Borrow. To gether live data project utilizes [Spock 🖖](https://github.com/OasisDEX/spock).
+This package parses blockchain data and builds comprehensive data set about Maker Vaults used by Oasis Borrow. To build most up to date live data project utilizes [Spock 🖖](https://github.com/OasisDEX/spock).
+
+<REFERENCE HERE SPOCK LEARNING MATERIALS>
 
 ## Project brake down
 - `etl` process handles fetching data from blockchain, processes it and saves to data base.
@@ -47,15 +49,45 @@ Requirements:
     ```
     yarn start-api
     ```
+## Database structure
 
+### Schema: `cat` [contract source](https://github.com/makerdao/dss/blob/master/src/cat.sol)
+- `bite` - Holds pure Bite events emitted by Cat.
+### Schema: `clipper` [contract source](https://github.com/makerdao/dss/blob/master/src/clip.sol)
+- `kick` - Holds pure Kick events emitted by clippers. Event starting vault auction.
+- `redo` - Holds pure Redo events emitted by clippers. Event restarting auction.
+- `take` - Holds pure Take events emitted by clippers. Event when collateral is bought at the auction.
+- `yank` - Holds pure Yank events emitted by clippers.
 
+### Schema: `dog` [contract source](https://github.com/makerdao/dss/blob/master/src/dog.sol)
+- `bark` - Holds pure Bark events emitted by Dog
 
-Notes:
+### Schema: `flipper` [contract source](https://github.com/makerdao/dss/blob/master/src/flip.sol)
+- `kick` - Holds pure kick function calls on flippers.
+- `deal` - Holds pure deal function calls on flippers.
+- `dent` - Holds pure dent function calls on flippers.
+- `tend` - Holds pure tend function calls on flippers.
+
+### Schema: `manager` [contract source](https://github.com/makerdao/dss-cdp-manager/blob/master/src/DssCdpManager.sol)
+- `cdp` - Holds information about vaults open via cdp manager.
+
+### Schema: `vat` [contract source](https://github.com/makerdao/dss/blob/master/src/vat.sol)
+- `fold` - Holds pure fold function calls on vat.
+- `fork` - Holds pure fork function calls on vat.
+- `frob` - Holds pure frob function calls on vat.
+- `grab` - Holds pure grab function calls on vat.
+
+### Schema: `vault`
+- `events` - Aggregated events for vaults. Transformed from events or function calls. The values stored here are normalized.
+
+Note: values saved from pure events or function calls are not normalized, they need to be divided by `wad` `rad` or `ray`. [Read more](https://docs.makerdao.com/other-documentation/system-glossary)
+
+## Development notes
 - Every bit of information saved to db needs to be referenced by block and transaction so when the reorg happens spock can remove such data from database
     ```
     tx_id                   integer not null REFERENCES vulcan2x.transaction(id) ON DELETE CASCADE,
     block_id                integer not null REFERENCES vulcan2x.block(id) ON DELETE CASCADE,
     ```
-
+- Remember to lowercase all addresses when saving them. 
 
 
