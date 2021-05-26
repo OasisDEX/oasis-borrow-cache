@@ -82,6 +82,10 @@ Requirements:
 
 Note: values saved from pure events or function calls are not normalized, they need to be divided by `wad` `rad` or `ray`. [Read more](https://docs.makerdao.com/other-documentation/system-glossary)
 
+## Unit tests
+
+<DESCRIBE UNIT TESTS>
+
 ## Development notes
 - Every bit of information saved to db needs to be referenced by block and transaction so when the reorg happens spock can remove such data from database
     ```
