@@ -39,6 +39,8 @@ from
 	from vat.fold group by i) as r
 where l.ilk = r.ilk;
 
+select * from maciejk_tests.ilks i;
+
 -- urns
 create or replace view maciejk_tests.urns as 
 select
@@ -46,7 +48,10 @@ select
 	u.urn,
 	u.ink collateral,
 	u.art * i.rate debt,
-	(u.art * i.rate * i.liquidation_ratio) / u.ink liqudation_price
+	(case u.ink > 0 and u.art * i.rate > 0
+		when true then (u.art * i.rate * i.liquidation_ratio) / u.ink 
+		else null end
+	) liqudation_price
 from 
 	(
 		select ilk, urn, sum(dart)/10^18 art, sum(dink)/10^18 ink
@@ -64,6 +69,11 @@ from
 	maciejk_tests.ilks i
 where
 	u.ilk = i.ilk;
+
+select * 
+from maciejk_tests.urns u 
+where ilk = 'ETH-A' and liqudation_price is not null 
+order by ilk, liqudation_price desc;
 
 -- urns with cdp_id
 create or replace view maciejk_tests.urns_with_cdp_id as
@@ -89,6 +99,7 @@ from
 		select
 			max(block_id) block_id,
 			auction_id, usr urn, 
+			min(price)/10^27 price,
 			sum(owe)/10^45 tab, sum((owe/price))/10^18 lot, 
 			min(tab)/10^45 remaining_tab, min(lot)/10^18 remainging_lot
 		from clipper.take
