@@ -1,4 +1,4 @@
-query VaultEvents($urn: String) {
+query vaultEvents($urn: String) {
     allVaultEvents(
         filter: { urn: { equalTo: $urn }, kind: { notEqualTo: "TAKE" } }
         orderBy: [TIMESTAMP_DESC, LOG_INDEX_DESC]
