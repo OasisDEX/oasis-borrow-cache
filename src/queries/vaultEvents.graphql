@@ -1,9 +1,9 @@
 query vaultEvents($urn: String) {
     allVaultEvents(
-        filter: { urn: { equalTo: $urn }, kind: { notEqualTo: "TAKE" } }
-        orderBy: [TIMESTAMP_DESC, LOG_INDEX_DESC]
+      filter: { urn: { equalTo: $urn }, kind: { notEqualTo: "TAKE" } }
+      orderBy: [TIMESTAMP_DESC, LOG_INDEX_DESC]
     ) {
-        nodes {
+      nodes {
         kind
         collateralAmount
         daiAmount
@@ -20,6 +20,6 @@ query vaultEvents($urn: String) {
         hash
         logIndex
         auctionId
-        }
+      }
     }
-}
+  }
