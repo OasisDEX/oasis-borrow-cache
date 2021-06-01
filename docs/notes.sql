@@ -1,3 +1,4 @@
+
 -- ilk with rate
 create or replace view maciejk_tests.ilks as
 select l.ilk, l.liquidation_ratio, r.rate 
@@ -49,7 +50,7 @@ select
 	u.ink collateral,
 	u.art * i.rate debt,
 	(case u.ink > 0 and u.art * i.rate > 0
-		when true then (u.art * i.rate * i.liquidation_ratio) / u.ink 
+		when true then (u.art * i.rate * i.liquidation_ratio) / u.ink  
 		else null end
 	) liqudation_price
 from 
@@ -70,10 +71,24 @@ from
 where
 	u.ilk = i.ilk;
 
+-- https://oasis.app/borrow/8489
+-- vault 8489, current state 
+select * from maciejk_tests.urns u where urn = '0x9c14acfa9505062891b1bddfb15c7f228e5a2626';
+-- vault 8489, history 
+select * from vault.events e where urn = '0x9c14acfa9505062891b1bddfb15c7f228e5a2626' order by tx_id ;
+
+-- ETH-A vaults
 select * 
 from maciejk_tests.urns u 
 where ilk = 'ETH-A' and liqudation_price is not null 
 order by ilk, liqudation_price desc;
+
+-- ETH-A liquidation price histogram
+select round(cast(liqudation_price as numeric), -2), count(*), sum(collateral)
+from maciejk_tests.urns u
+where ilk = 'ETH-A' and liqudation_price is not null
+group by round(cast(liqudation_price as numeric), -2)
+order by round(cast(liqudation_price as numeric), -2) desc;
 
 -- urns with cdp_id
 create or replace view maciejk_tests.urns_with_cdp_id as
@@ -82,6 +97,14 @@ from maciejk_tests.urns u
 left join manager.cdp c
 on u.urn = c.urn;
 
+-- ETH-A vaults with cdp_id
+select * 
+from maciejk_tests.urns_with_cdp_id u 
+where ilk = 'ETH-A' and liqudation_price is not null 
+order by ilk, liqudation_price desc;
+
+
+drop view maciejk_tests.urns_with_cdp_id;
 
 -- liquidations
 select 
@@ -112,3 +135,4 @@ where
  	k.usr = u.urn and 
  	k.auction_id = t.auction_id
 order by bs.timestamp desc;
+
