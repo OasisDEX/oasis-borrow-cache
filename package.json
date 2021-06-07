@@ -2,7 +2,7 @@
   "name": "cache",
   "version": "0.0.1",
   "private": true,
-  "license": "MIT",
+  "license": "Apache-2.0",
   "scripts": {
     "typecheck": "tsc --noEmit",
     "format": "prettier --config ./.prettierrc --ignore-path ./.prettierignore --list-different '**/*.{ts,json,md,gql}'",
