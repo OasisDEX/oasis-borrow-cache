@@ -52,7 +52,7 @@ export function getCustomExtractorNameBasedOnDSNoteTopicIgnoreConflicts(name: st
   return `raw_log_ds_note_topic_ignore_conflicts_${name}_extractor`;
 }
 
-export function makeRawEventExtractorBasedOnTopicIgnoreConflicts(abis: any[]): BlockExtractor[] {
+export function makeRawEventExtractorBasedOnTopicIgnoreConflicts(abis: any[], ignoredAddresses: string[] = []): BlockExtractor[] {
   return abis.map(abi => {
     const iface = new ethers.utils.Interface(abi.abi as any);
     const allTopics = Object.values(iface.events).map(e => e.topic);
@@ -62,7 +62,7 @@ export function makeRawEventExtractorBasedOnTopicIgnoreConflicts(abis: any[]): B
       startingBlock: abi.startingBlock,
       address: abi,
       extract: async (services, blocks) => {
-        await extractRawLogsOnTopicIgnoreConflicts(services, blocks, allTopics);
+        await extractRawLogsOnTopicIgnoreConflicts(services, blocks, allTopics, ignoredAddresses);
       },
       async getData(services: LocalServices, blocks: BlockModel[]): Promise<any> {
         return await getPersistedLogsByTopic(services, allTopics, blocks);
@@ -75,11 +75,14 @@ async function extractRawLogsOnTopicIgnoreConflicts(
   services: TransactionalServices,
   blocks: BlockModel[],
   topics: string[],
+  ignoredAddresses: string[]
 ): Promise<any[]> {
   const logs = await getLogsBasedOnTopics(services, blocks, topics);
   const filteredLogs = logs.filter(
     (log): log is Required<Log> => log.transactionHash !== undefined && log.blockHash !== undefined,
-  );
+  ).filter(
+    log => !ignoredAddresses.includes(log.address.toLowerCase())
+  )
   const blocksByHash = groupBy(blocks, 'hash');
   const allTxs = uniqBy(
     filteredLogs.map(l => ({ txHash: l.transactionHash, blockHash: l.blockHash })),
