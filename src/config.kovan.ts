@@ -105,7 +105,7 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors([vat]),
     ...makeRawEventBasedOnTopicExtractor(flippers),
     ...makeRowEventBasedOnDSNoteTopic(flipperNotes),
-    ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(clippers),
+    ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(clippers, dogs.map(dog => dog.address.toLowerCase())),
   ],
   transformers: [
     ...openCdpTransformer(cdpManagers, { getUrnForCdp }),
