@@ -11,9 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AWS_REGION: us-east-1
-      ECR_REPO_NAME: borrow-cache-prod
-      SERVICE_NAME: borrow-cache-mainnet-prod
-      CLUSTER_NAME: oasis-borrow-cache-prod
+      ECR_REPO_NAME: oazo-bcache-prod
+      ETL_SERVICE_NAME: oazo-bcache-etl-mainnet-prod
+      API_SERVICE_NAME: oazo-bcache-api-mainnet-prod
+      CLUSTER_NAME: oazo-bcache-prod
 
     steps:
     - name: Checkout
@@ -53,18 +54,18 @@ jobs:
                      .
         docker push $ECR_REGISTRY/$ECR_REPO_NAME --all-tags
 
-    - name: Update ${{ env.SERVICE_NAME }}-etl ECS service with latest Docker image
+    - name: Update ${{ env.ETL_SERVICE_NAME }} ECS service with latest Docker image
       id: service-update-etl
       run: |
-        aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.SERVICE_NAME }}-etl --force-new-deployment --region $AWS_REGION
+        aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.ETL_SERVICE_NAME }} --force-new-deployment --region $AWS_REGION
 
-    - name: Update ${{ env.SERVICE_NAME }}-api ECS service with latest Docker image
+    - name: Update ${{ env.API_SERVICE_NAME }} ECS service with latest Docker image
       id: service-update-api
       run: |
-        aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.SERVICE_NAME }}-api --force-new-deployment --region $AWS_REGION
+        aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.API_SERVICE_NAME }} --force-new-deployment --region $AWS_REGION
 
     - name: Wait for all services to become stable
       uses: oryanmoshe/ecs-wait-action@v1.3
       with:
         ecs-cluster: ${{ env.CLUSTER_NAME }}
-        ecs-services: '["${{ env.SERVICE_NAME }}-etl", "${{ env.SERVICE_NAME }}-api"]'
+        ecs-services: '["${{ env.ETL_SERVICE_NAME }}", "${{ env.API_SERVICE_NAME }}"]'
