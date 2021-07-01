@@ -12,8 +12,8 @@ jobs:
     env:
       AWS_REGION: eu-central-1
       ECR_REPO_NAME: oazo-bcache-staging
-      ETL_SERVICE_NAME: oazo-bcache-etl-mainnet-staging
-      API_SERVICE_NAME: oazo-bcache-api-mainnet-staging
+      ETL_SERVICE_NAME: oazo-bcache-etl-kovan-staging
+      API_SERVICE_NAME: oazo-bcache-api-kovan-staging
       CLUSTER_NAME: oazo-bcache-staging
 
     steps:
