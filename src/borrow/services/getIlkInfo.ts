@@ -23,6 +23,6 @@ async function getIlkInfo_(ilk: string, services: LocalServices): Promise<Ilk> {
     (services as any).provider,
   );
 
-  return ilkRegistry.ilkData(ilk);
+  return ilkRegistry.info(ilk);
 }
 export const getIlkInfo = memoize(getIlkInfo_);

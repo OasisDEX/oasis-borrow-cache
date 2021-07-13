@@ -15,7 +15,7 @@ import { Ilk } from '../services/getIlkInfo';
 import BigNumber from 'bignumber.js';
 import { clipperTransformerName } from './clipperTransformer';
 import { rad, wad } from '../../utils/precision';
-import { cleanUpString } from 'src/utils/cleanUpString';
+import { cleanUpString } from '../../utils/cleanUpString';
 
 const dogAbi = require('../../../abis/dog.json');
 async function handleBark(
