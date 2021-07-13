@@ -13,8 +13,10 @@ import { normalizeAddressDefinition } from '../../utils';
 import { parseBytes32String } from 'ethers/utils';
 import BigNumber from 'bignumber.js';
 import { Ilk } from '../services/getIlkInfo';
+import { cleanUpString } from '../../utils/cleanUpString';
 
 const catAbi = require('../../../abis/cat.json');
+
 async function handleBite(
   params: Dictionary<any>,
   log: PersistedLog,
@@ -61,9 +63,10 @@ async function handleAuctionStarted(
 
   const ilkData = await dependencies.getIlkInfo(params.ilk, services);
 
+
   const event = {
     kind: 'AUCTION_STARTED',
-    collateral: ilkData.symbol,
+    collateral: cleanUpString(ilkData.symbol),
     collateral_amount: new BigNumber(params.ink).div(new BigNumber(10).pow(18)).toString(),
     dai_amount: new BigNumber(params.art).div(new BigNumber(10).pow(18)).toString(),
     auction_id: params.id.toString(),
@@ -75,16 +78,30 @@ async function handleAuctionStarted(
     block_id: log.block_id,
   };
 
-  await services.tx.none(
-    `INSERT INTO vault.events(
-          kind, collateral, collateral_amount, dai_amount, timestamp, auction_id, urn,
-          log_index, tx_id, block_id
-        ) VALUES (
-          \${kind}, \${collateral}, \${collateral_amount}, \${dai_amount}, \${timestamp}, \${auction_id}, \${urn},
-          \${log_index}, \${tx_id}, \${block_id}
-        );`,
-    event,
+  const cs = new services.pg.helpers.ColumnSet(
+    [
+      'kind',
+      'collateral',
+      'collateral_amount',
+      'dai_amount',
+      'timestamp',
+      'urn',
+      'auction_id',
+      'log_index',
+      'tx_id',
+      'block_id',
+    ],
+    {
+      table: {
+        table: 'events',
+        schema: 'vault',
+      },
+    },
   );
+
+  const query = services.pg.helpers.insert(event, cs);
+
+  await services.tx.none(query);
 }
 
 const catHandlers = {

@@ -14,6 +14,7 @@ export interface Ilk {
   pos: string;
   symbol: string;
 }
+
 async function getIlkInfo_(ilk: string, services: LocalServices): Promise<Ilk> {
   const addresses = getAddressesFromConfig(services);
   const ilkRegistry = new ethers.Contract(
