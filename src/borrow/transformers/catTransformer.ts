@@ -63,7 +63,6 @@ async function handleAuctionStarted(
 
   const ilkData = await dependencies.getIlkInfo(params.ilk, services);
 
-
   const event = {
     kind: 'AUCTION_STARTED',
     collateral: cleanUpString(ilkData.symbol),
