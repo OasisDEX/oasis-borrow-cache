@@ -93,7 +93,7 @@ const flipperNotes: AbiInfo[] = [
 
 const addresses = {
   MIGRATION: '0xc73e0383f3aff3215e6f04b0331d58cecf0ab849',
-  ILK_REGISTRY: '0x8b4ce5dcbb01e0e1f0521cd8dcfb31b308e52c24',
+  ILK_REGISTRY: '0x5a464C28D19848f44199D003BeF5ecc87d090F87',
 };
 
 export const config: UserProvidedSpockConfig = {
@@ -105,7 +105,10 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors([vat]),
     ...makeRawEventBasedOnTopicExtractor(flipper),
     ...makeRowEventBasedOnDSNoteTopic(flipperNotes),
-    ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(clippers, dogs.map(dog => dog.address.toLowerCase())), // ignore dogs addresses because event name conflict 
+    ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(
+      clippers,
+      dogs.map(dog => dog.address.toLowerCase()),
+    ), // ignore dogs addresses because event name conflict
   ],
   transformers: [
     ...openCdpTransformer(cdpManagers, { getUrnForCdp }),
