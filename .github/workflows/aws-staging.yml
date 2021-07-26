@@ -57,22 +57,22 @@ jobs:
         docker push $ECR_REGISTRY/$ECR_REPO_NAME --all-tags
 
     - name: Update ${{ env.KOVAN_ETL_SERVICE_NAME }} ECS service with latest Docker image
-      id: service-update-etl
+      id: service-update-kovan-etl
       run: |
         aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.KOVAN_ETL_SERVICE_NAME }} --force-new-deployment --region $AWS_REGION
 
     - name: Update ${{ env.KOVAN_API_SERVICE_NAME }} ECS service with latest Docker image
-      id: service-update-api
+      id: service-update-kovan-api
       run: |
         aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.KOVAN_API_SERVICE_NAME }} --force-new-deployment --region $AWS_REGION
 
     - name: Update ${{ env.MAINNET_ETL_SERVICE_NAME }} ECS service with latest Docker image
-      id: service-update-etl
+      id: service-update-mainnet-etl
       run: |
         aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.MAINNET_ETL_SERVICE_NAME }} --force-new-deployment --region $AWS_REGION
 
     - name: Update ${{ env.MAINNET_API_SERVICE_NAME }} ECS service with latest Docker image
-      id: service-update-api
+      id: service-update-mainnet-api
       run: |
         aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.MAINNET_API_SERVICE_NAME }} --force-new-deployment --region $AWS_REGION
 
