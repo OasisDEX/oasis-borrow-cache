@@ -30,7 +30,12 @@ import {
 } from './borrow/transformers/dogTransformer';
 import { clipperTransformer } from './borrow/transformers/clipperTransformer';
 
-const GENESIS = 8928152;
+import { getOraclesAddresses } from "./utils/addresses";
+import { oraclesTransformer } from './borrow/transformers/oraclesTransformer';
+
+const mainnetAddresses = require('./addresses/mainnet.json')
+
+const GENESIS = 13103600//8928152;
 
 const vat = {
   address: '0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b',
@@ -78,6 +83,14 @@ const flipper = [
   },
 ];
 
+const oracle = [
+  {
+    name: 'oracle',
+    abi: require('../abis/oracle.json'),
+    startingBlock: GENESIS,
+  },
+];
+
 const flipperNotes: AbiInfo[] = [
   {
     name: 'flipper',
@@ -96,14 +109,21 @@ const addresses = {
   ILK_REGISTRY: '0x8b4ce5dcbb01e0e1f0521cd8dcfb31b308e52c24',
 };
 
+const oracles = getOraclesAddresses(mainnetAddresses).map(description => ({
+  ...description,
+  startingBlock: GENESIS,
+}))
+
 export const config: UserProvidedSpockConfig = {
   startingBlock: GENESIS,
   extractors: [
     ...makeRawLogExtractors(cdpManagers),
     ...makeRawLogExtractors(cats),
     ...makeRawLogExtractors(dogs),
+    ...makeRawLogExtractors(oracles),
     ...makeRawLogExtractors([vat]),
     ...makeRawEventBasedOnTopicExtractor(flipper),
+    ...makeRawEventBasedOnTopicExtractor(oracle),
     ...makeRowEventBasedOnDSNoteTopic(flipperNotes),
     ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(clippers, dogs.map(dog => dog.address.toLowerCase())), // ignore dogs addresses because event name conflict 
   ],
@@ -121,6 +141,7 @@ export const config: UserProvidedSpockConfig = {
     flipTransformer(),
     flipNoteTransformer(),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
+    ...oraclesTransformer(oracles),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),
