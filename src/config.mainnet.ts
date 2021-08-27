@@ -32,6 +32,7 @@ import { clipperTransformer } from './borrow/transformers/clipperTransformer';
 
 import { getOraclesAddresses } from "./utils/addresses";
 import { oraclesTransformer } from './borrow/transformers/oraclesTransformer';
+import { eventEnhancerTransformer } from './borrow/transformers/eventEnhancer';
 
 const mainnetAddresses = require('./addresses/mainnet.json')
 
@@ -143,6 +144,7 @@ export const config: UserProvidedSpockConfig = {
     flipNoteTransformer(),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
     oraclesTransformer(),
+    eventEnhancerTransformer(vat.address, GENESIS)
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),
