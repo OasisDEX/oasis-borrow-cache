@@ -5,66 +5,83 @@ import {
   FullEventInfo,
 } from '@oasisdex/spock-utils/dist/transformers/common';
 import { getExtractorName, PersistedLog } from '@oasisdex/spock-utils/dist/extractors/rawEventDataExtractor';
+import { getExtractorName as getExtractorNameBasedOnTopic } from '@oasisdex/spock-utils/dist/extractors/rawEventBasedOnTopicExtractor';
+
 import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
 
+import config from '../../config';
 import { Dictionary } from 'ts-essentials';
 import BigNumber from 'bignumber.js';
 import { wad } from '../../utils/precision';
+import { getTokensForOracle } from '../../utils/addresses';
 
 const oracleAbi = require('../../../abis/oracle.json');
 
-const handleLogValue = async (params: Dictionary<any>, log: PersistedLog, services: LocalServices, token: string) => {
+const handleLogValue = async (params: Dictionary<any>, log: PersistedLog, services: LocalServices) => {
 const timestamp = await services.tx.oneOrNone(
     `SELECT timestamp FROM vulcan2x.block WHERE id = \${block_id}`,
     {
         block_id: log.block_id,
     },
     );
-  
+  const tokens = getTokensForOracle(log.address, ((services.config as any).addresses as typeof config))
   const price = new BigNumber(params.val).div(wad)
 
-  await services.tx.none(
-    `INSERT INTO oracles.prices(
-          price, token, timestamp,
-          log_index, tx_id, block_id
-        ) VALUES (
-          \${price}, \${token}, \${timestamp},
-          \${log_index}, \${tx_id}, \${block_id}
-        );`,
+  const prices = tokens.length > 0 
+  ? tokens.map(token => ({
+    price: price.toString(),
+    token,
+    timestamp: timestamp.timestamp,
+    osm_address: log.address,
+    log_index: log.log_index,
+    tx_id: log.tx_id,
+    block_id: log.block_id,
+  })) : [{
+    price: price.toString(),
+    token: "UNKNOWN_OSM_FEED",
+    timestamp: timestamp.timestamp,
+    osm_address: log.address,
+    log_index: log.log_index,
+    tx_id: log.tx_id,
+    block_id: log.block_id,
+  }]
+
+  const cs = new services.pg.helpers.ColumnSet(
+    [
+      'price',
+      'token',
+      'timestamp',
+      'osm_address',
+      'tx_id',
+      'block_id',
+      'log_index',
+    ],
     {
-        price: price.toString(),
-        token,
-        timestamp: timestamp.timestamp,
-        log_index: log.log_index,
-        tx_id: log.tx_id,
-        block_id: log.block_id,
+      table: {
+          schema: 'oracles',
+          table: 'prices',
+      },
     },
   );
+
+  const query = services.pg.helpers.insert(prices, cs);
+  await services.tx.none(query);
 };
 
-const handlers = (token: string) => ({
+const handlers = {
   async LogValue(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
-    await handleLogValue(event.params, log, services, token);
+    await handleLogValue(event.params, log, services);
   },
-})
-
-function getDogTransformerName(address: string) {
-    return `oracle_transformer_${address}`
 }
 
-export const oraclesTransformer: (
-    deps: {address: string, token: string, startingBlock: number}[],
-  ) => BlockTransformer[] = deps => {
-    return deps.map(dep => {
-      
-      return {
-        name: getDogTransformerName(dep.address),
-        dependencies: [getExtractorName(dep.address)],
-        startingBlock: dep.startingBlock,
+export const oraclesTransformer: () => BlockTransformer = () => {return {
+        name: 'oracles_transformer',
+        dependencies: [getExtractorNameBasedOnTopic('oracle')],
         transform: async (services, logs) => {
-          await handleEvents(services, oracleAbi, flatten(logs), handlers(dep.token));
+          await handleEvents(services, oracleAbi, flatten(logs), handlers);
         },
-      };
-    });
-  };
+    }
+};
+
+

@@ -105,6 +105,7 @@ const flipperNotes: AbiInfo[] = [
 ];
 
 const addresses = {
+  ...mainnetAddresses,
   MIGRATION: '0xc73e0383f3aff3215e6f04b0331d58cecf0ab849',
   ILK_REGISTRY: '0x8b4ce5dcbb01e0e1f0521cd8dcfb31b308e52c24',
 };
@@ -120,12 +121,12 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors(cdpManagers),
     ...makeRawLogExtractors(cats),
     ...makeRawLogExtractors(dogs),
-    ...makeRawLogExtractors(oracles),
+    // ...makeRawLogExtractors(oracles),
     ...makeRawLogExtractors([vat]),
     ...makeRawEventBasedOnTopicExtractor(flipper),
-    ...makeRawEventBasedOnTopicExtractor(oracle),
     ...makeRowEventBasedOnDSNoteTopic(flipperNotes),
     ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(clippers, dogs.map(dog => dog.address.toLowerCase())), // ignore dogs addresses because event name conflict 
+    ...makeRawEventBasedOnTopicExtractor(oracle),
   ],
   transformers: [
     ...openCdpTransformer(cdpManagers, { getUrnForCdp }),
@@ -141,7 +142,7 @@ export const config: UserProvidedSpockConfig = {
     flipTransformer(),
     flipNoteTransformer(),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
-    ...oraclesTransformer(oracles),
+    oraclesTransformer(),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),
