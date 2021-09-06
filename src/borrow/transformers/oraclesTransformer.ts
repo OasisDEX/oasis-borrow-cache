@@ -5,7 +5,6 @@ import {
   FullEventInfo,
 } from '@oasisdex/spock-utils/dist/transformers/common';
 import { PersistedLog, SimpleProcessorDefinition } from '@oasisdex/spock-utils/dist/extractors/rawEventDataExtractor';
-import { getExtractorName as getExtractorNameBasedOnTopic } from '@oasisdex/spock-utils/dist/extractors/rawEventBasedOnTopicExtractor';
 
 import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
@@ -14,29 +13,33 @@ import { Dictionary } from 'ts-essentials';
 import BigNumber from 'bignumber.js';
 import { wad } from '../../utils/precision';
 import { normalizeAddressDefinition } from '../../utils';
+import { getCustomExtractorNameBasedOnDSNoteTopicIgnoreConflicts } from '../customExtractors';
 
 const oracleAbi = require('../../../abis/oracle.json');
+const lpOracleAbi = require('../../../abis/lp-oracle.json');
 
-const handleLogValue = async (params: Dictionary<any>, log: PersistedLog, services: LocalServices, token: string) => {
+interface Price {
+  price: string
+  token: string
+  timestamp: string,
+  osm_address: string,
+  log_index: number,
+  tx_id: number,
+  block_id: number,
+}
 
-const timestamp = await services.tx.oneOrNone(
+async function getTimeStamp(services: LocalServices, block_id: number): Promise<string> {
+  const value = await services.tx.oneOrNone(
     `SELECT timestamp FROM vulcan2x.block WHERE id = \${block_id}`,
     {
-        block_id: log.block_id,
+        block_id: block_id,
     },
-    );
-  const price = new BigNumber(params.val).div(wad)
+  )
 
-  const row = {
-    price: price.toString(),
-    token,
-    timestamp: timestamp.timestamp,
-    osm_address: log.address,
-    log_index: log.log_index,
-    tx_id: log.tx_id,
-    block_id: log.block_id,
-  }
+  return value.timestamp
+}
 
+async function savePriceToDb(services: LocalServices, row: Price) {
   const cs = new services.pg.helpers.ColumnSet(
     [
       'price',
@@ -57,11 +60,39 @@ const timestamp = await services.tx.oneOrNone(
 
   const query = services.pg.helpers.insert([row], cs);
   await services.tx.none(query);
+}
+
+const savePrice = async (services: LocalServices, log: PersistedLog, price: BigNumber, token: string) => {
+  const timestamp = await getTimeStamp(services, log.block_id)
+  const row = {
+    price: price.toString(),
+    token,
+    timestamp: timestamp,
+    osm_address: log.address,
+    log_index: log.log_index,
+    tx_id: log.tx_id,
+    block_id: log.block_id,
+  }
+  await savePriceToDb(services, row)
+}
+
+const handleLogValue = async (params: Dictionary<any>, log: PersistedLog, services: LocalServices, token: string) => {
+  const price = new BigNumber(params.val).div(wad)
+  await savePrice(services, log, price, token)
+};
+
+const handleValue = async (params: Dictionary<any>, log: PersistedLog, services: LocalServices, token: string) => {
+  const price = new BigNumber(params.curVal).div(wad)
+  await savePrice(services, log, price, token)
 };
 
 const handlers = (token: string) => ({
   async LogValue(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
     await handleLogValue(event.params, log, services, token);
+    
+  },
+  async Value(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
+    await handleValue(event.params, log, services, token)
   },
 })
 
@@ -77,11 +108,12 @@ export const oraclesTransformer: (
 
     return {
       name: getOracleTransformerName(_deps),
-      dependencies: [getExtractorNameBasedOnTopic('oracle')],
+      dependencies: [getCustomExtractorNameBasedOnDSNoteTopicIgnoreConflicts('oracle'), getCustomExtractorNameBasedOnDSNoteTopicIgnoreConflicts('lp-oracle')],
       startingBlock: deps.startingBlock,
       transform: async (services, logs) => {
         const logsFromOSM = flatten(logs).filter(log => log.address.toLowerCase() === _deps.address.toLowerCase())
-        await handleEvents(services, oracleAbi, logsFromOSM, handlers(_deps.token));
+        const abi = _deps.token.startsWith('UNIV2') ? lpOracleAbi : oracleAbi;
+        await handleEvents(services, abi, logsFromOSM, handlers(_deps.token));
       },
     };
   });

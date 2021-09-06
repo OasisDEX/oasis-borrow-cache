@@ -1,5 +1,4 @@
 import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
-import { groupBy, uniq } from 'lodash';
 import {
   getExtractorName,
 } from '@oasisdex/spock-utils/dist/extractors/rawEventDataExtractor';

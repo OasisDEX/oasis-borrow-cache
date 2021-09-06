@@ -90,6 +90,11 @@ const oracle = [
     abi: require('../abis/oracle.json'),
     startingBlock: GENESIS,
   },
+  {
+    name: 'lp-oracle',
+    abi: require('../abis/lp-oracle.json'),
+    startingBlock: GENESIS,
+  },
 ];
 
 const flipperNotes: AbiInfo[] = [
@@ -128,7 +133,7 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawEventBasedOnTopicExtractor(flipper),
     ...makeRowEventBasedOnDSNoteTopic(flipperNotes),
     ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(clippers, dogs.map(dog => dog.address.toLowerCase())), // ignore dogs addresses because event name conflict 
-    ...makeRawEventBasedOnTopicExtractor(oracle),
+    ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(oracle),
   ],
   transformers: [
     ...openCdpTransformer(cdpManagers, { getUrnForCdp }),
