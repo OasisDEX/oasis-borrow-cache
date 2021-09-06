@@ -128,6 +128,12 @@ export const config: UserProvidedSpockConfig = {
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),
   },
+  api: {
+    whitelisting: {
+      enabled: true,
+      whitelistedQueriesDir: './queries',
+    },
+  },
   addresses,
   onStart: () => {},
 };

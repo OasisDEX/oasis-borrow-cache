@@ -1,0 +1,25 @@
+query vaultEvents($urn: String) {
+    allVaultEvents(
+      filter: { urn: { equalTo: $urn }, kind: { notEqualTo: "TAKE" } }
+      orderBy: [TIMESTAMP_DESC, LOG_INDEX_DESC]
+    ) {
+      nodes {
+        kind
+        collateralAmount
+        daiAmount
+        vaultCreator
+        cdpId
+        transferFrom
+        transferTo
+        collateralTaken
+        coveredDebt
+        remainingCollateral
+        timestamp
+        id
+        urn
+        hash
+        logIndex
+        auctionId
+      }
+    }
+  }
