@@ -9,7 +9,6 @@ import { PersistedLog, SimpleProcessorDefinition } from '@oasisdex/spock-utils/d
 import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
 
-import { Dictionary } from 'ts-essentials';
 import BigNumber from 'bignumber.js';
 import { wad } from '../../utils/precision';
 import { normalizeAddressDefinition } from '../../utils';
@@ -26,6 +25,10 @@ interface Price {
   log_index: number,
   tx_id: number,
   block_id: number,
+}
+
+function isLPToken(token: string) {
+  return token.startsWith('UNIV2')
 }
 
 async function getTimeStamp(services: LocalServices, block_id: number): Promise<string> {
@@ -76,23 +79,14 @@ const savePrice = async (services: LocalServices, log: PersistedLog, price: BigN
   await savePriceToDb(services, row)
 }
 
-const handleLogValue = async (params: Dictionary<any>, log: PersistedLog, services: LocalServices, token: string) => {
-  const price = new BigNumber(params.val).div(wad)
-  await savePrice(services, log, price, token)
-};
-
-const handleValue = async (params: Dictionary<any>, log: PersistedLog, services: LocalServices, token: string) => {
-  const price = new BigNumber(params.curVal).div(wad)
-  await savePrice(services, log, price, token)
-};
-
 const handlers = (token: string) => ({
   async LogValue(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
-    await handleLogValue(event.params, log, services, token);
-    
+    const price = new BigNumber(event.params.val).div(wad)
+    await savePrice(services, log, price, token)
   },
   async Value(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
-    await handleValue(event.params, log, services, token)
+    const price = new BigNumber(event.params.curVal).div(wad)
+    await savePrice(services, log, price, token)
   },
 })
 
@@ -108,11 +102,14 @@ export const oraclesTransformer: (
 
     return {
       name: getOracleTransformerName(_deps),
-      dependencies: [getCustomExtractorNameBasedOnDSNoteTopicIgnoreConflicts('oracle'), getCustomExtractorNameBasedOnDSNoteTopicIgnoreConflicts('lp-oracle')],
+      dependencies: [
+        getCustomExtractorNameBasedOnDSNoteTopicIgnoreConflicts('oracle'), 
+        getCustomExtractorNameBasedOnDSNoteTopicIgnoreConflicts('lp-oracle')
+      ],
       startingBlock: deps.startingBlock,
       transform: async (services, logs) => {
         const logsFromOSM = flatten(logs).filter(log => log.address.toLowerCase() === _deps.address.toLowerCase())
-        const abi = _deps.token.startsWith('UNIV2') ? lpOracleAbi : oracleAbi;
+        const abi = isLPToken(_deps.token) ? lpOracleAbi : oracleAbi;
         await handleEvents(services, abi, logsFromOSM, handlers(_deps.token));
       },
     };
