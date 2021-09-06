@@ -29,8 +29,10 @@ import {
   getDogTransformerName,
 } from './borrow/transformers/dogTransformer';
 import { clipperTransformer } from './borrow/transformers/clipperTransformer';
+import { multiplyTransformer } from './borrow/transformers/multiply';
+import { exchangeTransformer } from './borrow/transformers/exchange';
 
-const GENESIS = 8928152;
+const GENESIS = 13171500//8928152;
 
 const vat = {
   address: '0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b',
@@ -96,6 +98,20 @@ const addresses = {
   ILK_REGISTRY: '0x8b4ce5dcbb01e0e1f0521cd8dcfb31b308e52c24',
 };
 
+const multiply = [
+  {
+    address: '0xeae4061009f0b804aafc76f3ae67567d0abe9c27',
+    startingBlock: 13140365,
+  },
+];
+
+const exchange = [
+  {
+    address: '0xb5eb8cb6ced6b6f8e13bcd502fb489db4a726c7b',
+    startingBlock: 13140368,
+  }
+]
+
 export const config: UserProvidedSpockConfig = {
   startingBlock: GENESIS,
   extractors: [
@@ -106,6 +122,8 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawEventBasedOnTopicExtractor(flipper),
     ...makeRowEventBasedOnDSNoteTopic(flipperNotes),
     ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(clippers, dogs.map(dog => dog.address.toLowerCase())), // ignore dogs addresses because event name conflict 
+    ...makeRawLogExtractors(multiply),
+    ...makeRawLogExtractors(exchange),
   ],
   transformers: [
     ...openCdpTransformer(cdpManagers, { getUrnForCdp }),
@@ -121,6 +139,8 @@ export const config: UserProvidedSpockConfig = {
     flipTransformer(),
     flipNoteTransformer(),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
+    ...multiplyTransformer(multiply),
+    ...exchangeTransformer(exchange)
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),

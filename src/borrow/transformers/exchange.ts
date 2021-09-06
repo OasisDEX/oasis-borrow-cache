@@ -37,10 +37,60 @@ const handleAssetSwap = async (params: Dictionary<any>, log: PersistedLog, servi
   );
 };
 
+const handleFeePaid = async (params: Dictionary<any>, log: PersistedLog, services: LocalServices) => {
+  const values = {
+    beneficiary: params.beneficiary,
+    amount: params.amount.toString(),
+    
+    log_index: log.log_index,
+    tx_id: log.tx_id,
+    block_id: log.block_id,
+  };
+
+  await services.tx.none(
+    `INSERT INTO exchange.fee_paid(
+          beneficiary, amount,
+          log_index, tx_id, block_id
+        ) VALUES (
+          \${beneficiary}, \${amount},
+          \${log_index}, \${tx_id}, \${block_id}
+        );`,
+    values,
+  );
+};
+
+const handleSlippageSaved = async (params: Dictionary<any>, log: PersistedLog, services: LocalServices) => {
+  const values = {
+    minimumPossible: params.minimumPossible.toString(),
+    actualAmount: params.actualAmount.toString(),
+    
+    log_index: log.log_index,
+    tx_id: log.tx_id,
+    block_id: log.block_id,
+  };
+
+  await services.tx.none(
+    `INSERT INTO exchange.slippage_saved(
+          minimum_possible, actual_amount,
+          log_index, tx_id, block_id
+        ) VALUES (
+          \${minimumPossible}, \${actualAmount},
+          \${log_index}, \${tx_id}, \${block_id}
+        );`,
+    values,
+  );
+};
+
 const handlers = {
   async AssetSwap(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
     await handleAssetSwap(event.params, log, services);
   },
+  async FeePaid(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
+    await handleFeePaid(event.params, log, services);
+  },
+  async SlippageSaved(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
+    await handleSlippageSaved(event.params, log, services);
+  }
 };
 
 export const exchangeTransformer: (
