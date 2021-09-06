@@ -113,7 +113,7 @@ const flipperNotes: AbiInfo[] = [
 const addresses = {
   ...mainnetAddresses,
   MIGRATION: '0xc73e0383f3aff3215e6f04b0331d58cecf0ab849',
-  ILK_REGISTRY: '0x8b4ce5dcbb01e0e1f0521cd8dcfb31b308e52c24',
+  ILK_REGISTRY: '0x5a464C28D19848f44199D003BeF5ecc87d090F87',
 };
 
 const oracles = getOraclesAddresses(mainnetAddresses).map(description => ({
@@ -154,6 +154,12 @@ export const config: UserProvidedSpockConfig = {
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),
+  },
+  api: {
+    whitelisting: {
+      enabled: true,
+      whitelistedQueriesDir: './queries',
+    },
   },
   addresses,
   onStart: () => {},
