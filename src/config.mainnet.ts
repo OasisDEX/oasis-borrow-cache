@@ -31,12 +31,12 @@ import {
 import { clipperTransformer } from './borrow/transformers/clipperTransformer';
 
 import { getOraclesAddresses } from "./utils/addresses";
-import { oraclesTransformer } from './borrow/transformers/oraclesTransformer';
+import { getOracleTransformerName, oraclesTransformer } from './borrow/transformers/oraclesTransformer';
 import { eventEnhancerTransformer } from './borrow/transformers/eventEnhancer';
 
 const mainnetAddresses = require('./addresses/mainnet.json')
 
-const GENESIS = 13103600//8928152;
+const GENESIS = 13097057//8928152;
 
 const vat = {
   address: '0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b',
@@ -116,13 +116,14 @@ const oracles = getOraclesAddresses(mainnetAddresses).map(description => ({
   startingBlock: GENESIS,
 }))
 
+const oraclesTransformers = oracles.map(getOracleTransformerName)
+
 export const config: UserProvidedSpockConfig = {
   startingBlock: GENESIS,
   extractors: [
     ...makeRawLogExtractors(cdpManagers),
     ...makeRawLogExtractors(cats),
     ...makeRawLogExtractors(dogs),
-    // ...makeRawLogExtractors(oracles),
     ...makeRawLogExtractors([vat]),
     ...makeRawEventBasedOnTopicExtractor(flipper),
     ...makeRowEventBasedOnDSNoteTopic(flipperNotes),
@@ -143,8 +144,8 @@ export const config: UserProvidedSpockConfig = {
     flipTransformer(),
     flipNoteTransformer(),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
-    oraclesTransformer(),
-    eventEnhancerTransformer(vat.address, GENESIS)
+    ...oraclesTransformer(oracles),
+    eventEnhancerTransformer(vat.address, GENESIS, oraclesTransformers)
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),
