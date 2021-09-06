@@ -16,3 +16,11 @@ CREATE TABLE oracles.prices (
 CREATE INDEX oracles_prices_index ON oracles.prices(token,block_id);
 
 ALTER TABLE vault.events ADD oracle_price decimal(78,18) NULL;
+
+DROP VIEW api.vault_events;
+CREATE VIEW api.vault_events AS (
+    SELECT e.*, t.hash
+    FROM vault.events e 
+    JOIN vulcan2x.transaction t ON e.tx_id = t.id
+    ORDER BY timestamp ASC, block_id ASC, log_index ASC
+);
