@@ -13,11 +13,12 @@ function ilkToToken(ilk: string): string {
 export const eventEnhancerTransformer: (
     vatAddress: string,
     startingBlock: number,
-  ) => BlockTransformer = (vatAddress, startingBlock) => {
+    oraclesTransformers: string[]
+  ) => BlockTransformer = (vatAddress, startingBlock, oraclesTransformers) => {
     return {
       name: `event-enhancer-transformer`,
       dependencies: [getExtractorName(vatAddress)],
-      transformerDependencies: [`vatCombineTransformerV2-${vatAddress}`, 'oracles_transformer', `vatMoveEventsTransformerV2-${vatAddress}`],
+      transformerDependencies: [`vatCombineTransformerV2-${vatAddress}`, `vatMoveEventsTransformerV2-${vatAddress}`, ...oraclesTransformers],
       startingBlock: startingBlock,
       transform: async (services, _logs) => {
         const logs = flatten(_logs);
@@ -28,17 +29,7 @@ export const eventEnhancerTransformer: (
   
         const minBlock = min(blocks);
         const maxBlock = max(blocks);
-        const events_ = flatten(
-          await services.tx.multi(
-            `
-            SELECT e.*, f.ilk as frob_ilk from (
-              SELECT * from vault.events e 
-                WHERE block_id >= ${minBlock} AND block_id <= ${maxBlock}) e 
-              LEFT JOIN vat.frob f ON e.tx_id = f.tx_id AND e.block_id = f.block_id AND e.log_index = f.log_index;
-            `,
-          ),
-        )
-
+        
         const events = flatten(
           await services.tx.multi(
             `
@@ -76,7 +67,7 @@ export const eventEnhancerTransformer: (
         const updateValues = eventToPrice.map(({id,price }) => `(${price},${id})`).join(',')
         await services.tx.none(
           `
-          UPDATE vault.events SET collateral_price = c.price
+          UPDATE vault.events SET oracle_price = c.price
           FROM (values${updateValues}) AS c(price, id) 
           WHERE c.id = vault.events.id;
           `

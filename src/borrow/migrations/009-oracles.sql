@@ -15,4 +15,4 @@ CREATE TABLE oracles.prices (
 
 CREATE INDEX oracles_prices_index ON oracles.prices(token,block_id);
 
-ALTER TABLE vault.events ADD collateral_price decimal(78,18) NULL;
+ALTER TABLE vault.events ADD oracle_price decimal(78,18) NULL;
