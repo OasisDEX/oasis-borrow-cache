@@ -16,7 +16,7 @@
     "tsBuildInfoFile": ".build-cache/cache.tsbuildinfo",
     "outDir": "./lib",
     "rootDir": "./src",
-    "baseUrl": "."
+    "baseUrl": ".",
   },
   "include": ["src"]
 }

@@ -15,6 +15,7 @@ import { Ilk } from '../services/getIlkInfo';
 import BigNumber from 'bignumber.js';
 import { clipperTransformerName } from './clipperTransformer';
 import { rad, wad } from '../../utils/precision';
+import { cleanUpString } from '../../utils/cleanUpString';
 
 const dogAbi = require('../../../abis/dog.json');
 async function handleBark(
@@ -83,7 +84,7 @@ async function handleLiq2AuctionStarted(
 
   const event = {
     kind: 'AUCTION_STARTED_V2',
-    collateral: ilkData.symbol,
+    collateral: cleanUpString(ilkData.symbol),
     collateral_amount: new BigNumber(params.ink).div(wad).toString(),
     dai_amount: new BigNumber(kick.tab).div(rad).toString(),
     auction_id: params.id.toString(),
