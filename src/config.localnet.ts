@@ -115,8 +115,7 @@ const addresses = {
 };
 
 export const config: UserProvidedSpockConfig = {
-  // DEV NOTE: set to the any block that you are forking from
-  startingBlock: 13100220,//GENESIS,
+  startingBlock: GENESIS,
   extractors: [
     ...makeRawLogExtractors(cdpManagers),
     ...makeRawLogExtractors(cats),
