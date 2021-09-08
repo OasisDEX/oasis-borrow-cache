@@ -11,7 +11,7 @@ import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
 import { normalizeAddressDefinition } from '../../utils';
 import { parseBytes32String } from 'ethers/utils';
-import { Ilk } from '../services/getIlkInfo';
+import { Ilk } from '../dependencies/getIlkInfo';
 import BigNumber from 'bignumber.js';
 import { clipperTransformerName } from './clipperTransformer';
 import { rad, wad } from '../../utils/precision';
