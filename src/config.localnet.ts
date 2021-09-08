@@ -21,8 +21,10 @@ import {
   makeRowEventBasedOnDSNoteTopic,
 } from './borrow/customExtractors';
 import { flipNoteTransformer, flipTransformer } from './borrow/transformers/flipperTransformer';
-import { getIlkInfo } from './borrow/services/getIlkInfo';
-import { getUrnForCdp } from './borrow/services/getUrnForCdp';
+import { getIlkInfo } from './borrow/dependencies/getIlkInfo';
+import { getUrnForCdp } from './borrow/dependencies/getUrnForCdp';
+import { getLiquidationRatio } from './borrow/dependencies/getLiquidationRatio'
+import { getIlkForCdp } from './borrow/dependencies/getIlkForCdp'
 import {
   auctionLiq2Transformer,
   dogTransformer,
@@ -31,6 +33,13 @@ import {
 import { clipperTransformer } from './borrow/transformers/clipperTransformer';
 import { multiplyTransformer } from './borrow/transformers/multiply';
 import { exchangeTransformer } from './borrow/transformers/exchange';
+
+import { getOraclesAddresses } from "./utils/addresses";
+import { getOracleTransformerName, oraclesTransformer } from './borrow/transformers/oraclesTransformer';
+import { eventEnhancerTransformer } from './borrow/transformers/eventEnhancer';
+
+
+const mainnetAddresses = require('./addresses/mainnet.json')
 
 const GENESIS = 8928152;
 
@@ -72,26 +81,23 @@ const clippers = [
   },
 ];
 
-// DEV NOTE: make sure the address is correct 
-const multiply = [
-  {
-    address: '0x2bdCC0de6bE1f7D2ee689a0342D76F52E8EFABa3',
-    startingBlock: 13093130,
-  },
-];
-
-// DEV NOTE: make sure the address is correct 
-const exchange = [
-  {
-    address: '0xc351628EB244ec633d5f21fBD6621e1a683B1181',
-    startingBlock: 13093130,
-  }
-]
-
 const flipper = [
   {
     name: 'flipper',
     abi: require('../abis/flipper.json'),
+    startingBlock: GENESIS,
+  },
+];
+
+const oracle = [
+  {
+    name: 'oracle',
+    abi: require('../abis/oracle.json'),
+    startingBlock: GENESIS,
+  },
+  {
+    name: 'lp-oracle',
+    abi: require('../abis/lp-oracle.json'),
     startingBlock: GENESIS,
   },
 ];
@@ -110,9 +116,30 @@ const flipperNotes: AbiInfo[] = [
 ];
 
 const addresses = {
+  ...mainnetAddresses,
   MIGRATION: '0xc73e0383f3aff3215e6f04b0331d58cecf0ab849',
-  ILK_REGISTRY: '0x8b4ce5dcbb01e0e1f0521cd8dcfb31b308e52c24',
+  ILK_REGISTRY: '0x5a464C28D19848f44199D003BeF5ecc87d090F87',
 };
+
+const multiply = [
+  {
+    address: '0xeae4061009f0b804aafc76f3ae67567d0abe9c27',
+    startingBlock: 13140365,
+  },
+];
+
+const exchange = [
+  {
+    address: '0xb5eb8cb6ced6b6f8e13bcd502fb489db4a726c7b',
+    startingBlock: 13140368,
+  }
+]
+const oracles = getOraclesAddresses(mainnetAddresses).map(description => ({
+  ...description,
+  startingBlock: GENESIS,
+}))
+
+const oraclesTransformers = oracles.map(getOracleTransformerName)
 
 export const config: UserProvidedSpockConfig = {
   startingBlock: GENESIS,
@@ -126,6 +153,7 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(clippers, dogs.map(dog => dog.address.toLowerCase())), // ignore dogs addresses because event name conflict 
     ...makeRawLogExtractors(multiply),
     ...makeRawLogExtractors(exchange),
+    ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(oracle),
   ],
   transformers: [
     ...openCdpTransformer(cdpManagers, { getUrnForCdp }),
@@ -141,11 +169,19 @@ export const config: UserProvidedSpockConfig = {
     flipTransformer(),
     flipNoteTransformer(),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
-    ...multiplyTransformer(multiply),
-    ...exchangeTransformer(exchange)
+    ...multiplyTransformer(multiply, { cdpManager: cdpManagers[0].address, vat: vat.address, getIlkForCdp, getLiquidationRatio }),
+    ...exchangeTransformer(exchange),
+    ...oraclesTransformer(oracles),
+    eventEnhancerTransformer(vat.address, GENESIS, oraclesTransformers)
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),
+  },
+  api: {
+    whitelisting: {
+      enabled: false,
+      whitelistedQueriesDir: './queries',
+    },
   },
   addresses,
   onStart: () => {},

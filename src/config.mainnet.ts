@@ -21,8 +21,10 @@ import {
   makeRowEventBasedOnDSNoteTopic,
 } from './borrow/customExtractors';
 import { flipNoteTransformer, flipTransformer } from './borrow/transformers/flipperTransformer';
-import { getIlkInfo } from './borrow/services/getIlkInfo';
-import { getUrnForCdp } from './borrow/services/getUrnForCdp';
+import { getIlkInfo } from './borrow/dependencies/getIlkInfo';
+import { getUrnForCdp } from './borrow/dependencies/getUrnForCdp';
+import { getLiquidationRatio } from './borrow/dependencies/getLiquidationRatio'
+import { getIlkForCdp } from './borrow/dependencies/getIlkForCdp'
 import {
   auctionLiq2Transformer,
   dogTransformer,
@@ -36,9 +38,10 @@ import { getOraclesAddresses } from "./utils/addresses";
 import { getOracleTransformerName, oraclesTransformer } from './borrow/transformers/oraclesTransformer';
 import { eventEnhancerTransformer } from './borrow/transformers/eventEnhancer';
 
+
 const mainnetAddresses = require('./addresses/mainnet.json')
 
-const GENESIS = 8928152;
+const GENESIS = 13170000//8928152;
 
 const vat = {
   address: '0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b',
@@ -166,7 +169,7 @@ export const config: UserProvidedSpockConfig = {
     flipTransformer(),
     flipNoteTransformer(),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
-    ...multiplyTransformer(multiply),
+    ...multiplyTransformer(multiply, { cdpManager: cdpManagers[0].address, vat: vat.address, getIlkForCdp, getLiquidationRatio }),
     ...exchangeTransformer(exchange),
     ...oraclesTransformer(oracles),
     eventEnhancerTransformer(vat.address, GENESIS, oraclesTransformers)
