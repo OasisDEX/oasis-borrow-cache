@@ -4,7 +4,8 @@ CREATE TABLE multiply.method_called (
     id                          serial primary key,
     method_name                 character varying(32) not null,
     cdp_id                      character varying(66) not null,
-    urn                         character varying(66) not null,
+    ilk                         character varying(32) not null,
+    liquidation_ratio           decimal(4,2) not null,
     
     swap_min_amount             decimal(78,0) not null,
     swap_optimist_amount        decimal(78,0) not null,
