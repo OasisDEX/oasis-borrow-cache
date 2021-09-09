@@ -63,7 +63,11 @@ export const eventEnhancerTransformer: (
           ),
         )
 
-        const updateValues = eventToPrice.map(({id,price }) => `(${price},${id})`).join(',')
+        const updateValues = eventToPrice
+          .map(({price, id}) => ({id, price: price || 0}))
+          .map(({id,price }) => `(${price},${id})`)
+          .join(',')
+        
         await services.tx.none(
           `
           UPDATE vault.events SET oracle_price = c.price
