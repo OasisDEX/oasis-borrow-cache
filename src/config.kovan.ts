@@ -21,8 +21,8 @@ import {
   makeRowEventBasedOnDSNoteTopic,
 } from './borrow/customExtractors';
 import { flipNoteTransformer, flipTransformer } from './borrow/transformers/flipperTransformer';
-import { getIlkInfo } from './borrow/services/getIlkInfo';
-import { getUrnForCdp } from './borrow/services/getUrnForCdp';
+import { getIlkInfo } from './borrow/dependencies/getIlkInfo';
+import { getUrnForCdp } from './borrow/dependencies/getUrnForCdp';
 import {
   auctionLiq2Transformer,
   dogTransformer,

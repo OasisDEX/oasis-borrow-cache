@@ -12,7 +12,7 @@ import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
 import { normalizeAddressDefinition } from '../../utils';
 import { parseBytes32String } from 'ethers/utils';
 import BigNumber from 'bignumber.js';
-import { Ilk } from '../services/getIlkInfo';
+import { Ilk } from '../dependencies/getIlkInfo';
 import { cleanUpString } from '../../utils/cleanUpString';
 
 const catAbi = require('../../../abis/cat.json');
