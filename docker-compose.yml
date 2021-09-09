@@ -7,7 +7,7 @@ services:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
       - POSTGRES_HOST=localhost
-      - POSTGRES_PORT=5433
+      - POSTGRES_PORT=5432
       - POSTGRES_DB=database
     ports:
-      - "5433:5432"
+      - "5432:5432"
