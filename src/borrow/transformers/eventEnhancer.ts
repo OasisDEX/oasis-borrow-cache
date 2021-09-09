@@ -64,8 +64,9 @@ export const eventEnhancerTransformer: (
         )
 
         const updateValues = eventToPrice
-        .map(({price, id}) => ({id, price: price || 0}))
-        .map(({id,price }) => `(${price},${id})`)
+          .map(({price, id}) => ({id, price: price || 0}))
+          .map(({id,price }) => `(${price},${id})`)
+          .join(',')
         
         await services.tx.none(
           `
