@@ -1,108 +1,186 @@
-import { makeRawLogExtractors } from '@oasisdex/spock-utils/dist//extractors//rawEventDataExtractor';
+import { makeRawLogExtractors } from '@oasisdex/spock-utils/dist/extractors/rawEventDataExtractor';
 import { makeRawEventBasedOnTopicExtractor } from '@oasisdex/spock-utils/dist/extractors/rawEventBasedOnTopicExtractor';
+import { join } from 'path';
 
-import { values } from 'lodash';
-import { Addresses, makeToken, lowercaseValues } from './addresses-utils';
 import { UserProvidedSpockConfig } from '@oasisdex/spock-etl/dist/services/config';
+import {
+  managerGiveTransformer,
+  openCdpTransformer,
+} from './borrow/transformers/cdpManagerTransformer';
 
-const oasisContracts = ['0x177b74CB6679C145Bb428Cc3E16F4a3d3ED905a3'];
-const cat = '0x4a81317A82Fc95f5180B827Ed3EBAe838Ad6BD1B';
-const flippers = {
-  WETH: '0x76fdFbdBaF5Ef599FBD6565e998D20A0C838d950',
-  DGD: '0x6814473cB539B21E8bE07dd8e04D70c79c1dD13F',
+import {
+  vatCombineTransformer,
+  vatMoveEventsTransformer,
+  vatRawMoveTransformer,
+  vatTransformer,
+} from './borrow/transformers/vatTransformer';
+import { auctionTransformer, catTransformer } from './borrow/transformers/catTransformer';
+import {
+  AbiInfo,
+  makeRawEventExtractorBasedOnTopicIgnoreConflicts,
+  makeRowEventBasedOnDSNoteTopic,
+} from './borrow/customExtractors';
+import { flipNoteTransformer, flipTransformer } from './borrow/transformers/flipperTransformer';
+import { getIlkInfo } from './borrow/dependencies/getIlkInfo';
+import { getUrnForCdp } from './borrow/dependencies/getUrnForCdp';
+import { getLiquidationRatio } from './borrow/dependencies/getLiquidationRatio'
+import { getIlkForCdp } from './borrow/dependencies/getIlkForCdp'
+import {
+  auctionLiq2Transformer,
+  dogTransformer,
+  getDogTransformerName,
+} from './borrow/transformers/dogTransformer';
+import { clipperTransformer } from './borrow/transformers/clipperTransformer';
+import { multiplyTransformer } from './borrow/transformers/multiply';
+import { exchangeTransformer } from './borrow/transformers/exchange';
+
+import { getOraclesAddresses } from "./utils/addresses";
+import { getOracleTransformerName, oraclesTransformer } from './borrow/transformers/oraclesTransformer';
+import { eventEnhancerTransformer } from './borrow/transformers/eventEnhancer';
+
+
+const mainnetAddresses = require('./addresses/mainnet.json')
+
+const GENESIS = 8928152;
+
+const vat = {
+  address: '0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b',
+  startingBlock: GENESIS,
 };
-const mcdContracts = [cat, ...values(flippers)];
-const cdpManager = ['0xAFe25DF80A6Ce0890d1742767Fd6424bF845F39d'];
 
-const proxyFactory = ['0xF52071224Fe0Ecd1E9776815CCc151fa4B79a16c']; // oasisProxyFactory
-const proxyActionsAbis = [
+const cdpManagers = [
   {
-    name: 'oasis-multiply-proxy-actions',
-    abi: require('../abis/oasis-multiply-proxy-actions.json'),
+    address: '0x5ef30b9986345249bc32d8928B7ee64DE9435E39',
+    startingBlock: 8928198,
   },
 ];
 
-const addresses: Addresses = {
-  tokens: makeToken([
-    // mcd dai
-    {
-      key: '0xafaa69de13bd8766d9d47c9205439b9b06e533c6',
-      symbol: 'DAI',
-      decimals: 18,
-    },
-    {
-      key: '0x3a21ab4539e11f0c06b583796f3f0fd274efc369',
-      symbol: 'MKR',
-      decimals: 18,
-    },
-    {
-      key: '0x200938bf7ff25ecf2eb7bc08e18b0892ed34c846',
-      symbol: 'WETH',
-      decimals: 18,
-    },
-    {
-      key: '0xe8d4c2ab5782c697f06f17610cc03068180d0fac',
-      symbol: 'REP',
-      decimals: 18,
-    },
-    {
-      key: '0x2c60cf08c07c212e21e6e2ee4626c478bace092a',
-      symbol: 'ZRX',
-      decimals: 18,
-    },
-    {
-      key: '0xd80110e3c107eb206b556871cfe2532ec7d05e47',
-      symbol: 'BAT',
-      decimals: 18,
-    },
-    {
-      key: '0x76c37e57a1438e2a0ac7fec8a552cdd569b2cafb',
-      symbol: 'DGD',
-      decimals: 18,
-    },
-  ]),
-  markets: [
-    ['WETH', 'DAI'],
-    ['MKR', 'DAI'],
-    ['MKR', 'WETH'],
-    ['ZRX', 'DAI'],
-    ['BAT', 'DAI'],
-    ['REP', 'DAI'],
-  ],
-  contracts: lowercaseValues({
-    makerOtc: oasisContracts[0],
-    makerOtcSupport: '0xee9F9B08E2eBc68e88c0e207A09EbaaeF4e5d94E',
-    vat: '0xBD96b03c371380FB916a6789BDa6AFf170E65c5f',
-    pot: '0x0', // not deployed on localnode
-  }),
-  ilks: {
-    DAI: 'DAI',
-    ETH: 'WETH',
-    DGD: 'DGD',
-    ZRX: 'ZRX',
-    BAT: 'BAT',
-    REP: 'REP',
+const cats = [
+  {
+    address: '0x78F2c2AF65126834c51822F56Be0d7469D7A523E',
+    startingBlock: 9638144,
   },
+  {
+    address: '0xa5679C04fc3d9d8b0AaB1F0ab83555b301cA70Ea',
+    startingBlock: 10742907,
+  },
+];
+
+const dogs = [
+  {
+    address: '0x135954d155898d42c90d2a57824c690e0c7bef1b',
+    startingBlock: 12246358,
+  },
+];
+
+const clippers = [
+  {
+    name: 'clipper',
+    abi: require('../abis/clipper.json'),
+    startingBlock: 24136159,
+  },
+];
+
+const flipper = [
+  {
+    name: 'flipper',
+    abi: require('../abis/flipper.json'),
+    startingBlock: GENESIS,
+  },
+];
+
+const oracle = [
+  {
+    name: 'oracle',
+    abi: require('../abis/oracle.json'),
+    startingBlock: GENESIS,
+  },
+  {
+    name: 'lp-oracle',
+    abi: require('../abis/lp-oracle.json'),
+    startingBlock: GENESIS,
+  },
+];
+
+const flipperNotes: AbiInfo[] = [
+  {
+    name: 'flipper',
+    functionNames: [
+      'tend(uint256,uint256,uint256)',
+      'dent(uint256,uint256,uint256)',
+      'deal(uint256)',
+    ],
+    abi: require('../abis/flipper.json'),
+    startingBlock: GENESIS,
+  },
+];
+
+const addresses = {
+  ...mainnetAddresses,
+  MIGRATION: '0xc73e0383f3aff3215e6f04b0331d58cecf0ab849',
+  ILK_REGISTRY: '0x5a464C28D19848f44199D003BeF5ecc87d090F87',
 };
 
+const multiply = [
+  {
+    address: '0xeae4061009f0b804aafc76f3ae67567d0abe9c27',
+    startingBlock: 13140365,
+  },
+];
+
+const exchange = [
+  {
+    address: '0xb5eb8cb6ced6b6f8e13bcd502fb489db4a726c7b',
+    startingBlock: 13140368,
+  }
+]
+const oracles = getOraclesAddresses(mainnetAddresses).map(description => ({
+  ...description,
+  startingBlock: GENESIS,
+}))
+
+const oraclesTransformers = oracles.map(getOracleTransformerName)
+
 export const config: UserProvidedSpockConfig = {
-  startingBlock: 1,
+  startingBlock: GENESIS,
   extractors: [
-    ...makeRawLogExtractors(oasisContracts),
-    ...makeRawLogExtractors(mcdContracts),
-    ...makeRawLogExtractors(proxyFactory),
-    ...makeRawLogExtractors(cdpManager),
-    ...makeRawEventBasedOnTopicExtractor(proxyActionsAbis),
+    ...makeRawLogExtractors(cdpManagers),
+    ...makeRawLogExtractors(cats),
+    ...makeRawLogExtractors(dogs),
+    ...makeRawLogExtractors([vat]),
+    ...makeRawEventBasedOnTopicExtractor(flipper),
+    ...makeRowEventBasedOnDSNoteTopic(flipperNotes),
+    ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(clippers, dogs.map(dog => dog.address.toLowerCase())), // ignore dogs addresses because event name conflict 
+    ...makeRawLogExtractors(multiply),
+    ...makeRawLogExtractors(exchange),
+    ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(oracle),
   ],
-  transformers: [],
-  migrations: {},
+  transformers: [
+    ...openCdpTransformer(cdpManagers, { getUrnForCdp }),
+    ...managerGiveTransformer(cdpManagers),
+    ...catTransformer(cats),
+    ...auctionTransformer(cats, { getIlkInfo }),
+    ...dogTransformer(dogs),
+    ...auctionLiq2Transformer(dogs, { getIlkInfo }),
+    vatTransformer(vat),
+    vatCombineTransformer(vat),
+    vatMoveEventsTransformer(vat),
+    vatRawMoveTransformer(vat),
+    flipTransformer(),
+    flipNoteTransformer(),
+    clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
+    ...multiplyTransformer(multiply, { cdpManager: cdpManagers[0].address, vat: vat.address, getIlkForCdp, getLiquidationRatio }),
+    ...exchangeTransformer(exchange),
+    ...oraclesTransformer(oracles),
+    eventEnhancerTransformer(vat.address, GENESIS, oraclesTransformers)
+  ],
+  migrations: {
+    borrow: join(__dirname, './borrow/migrations'),
+  },
   api: {
     whitelisting: {
       enabled: false,
       whitelistedQueriesDir: './queries',
-    },
-    responseCaching: {
-      enabled: false,
     },
   },
   addresses,

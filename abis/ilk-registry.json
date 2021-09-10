@@ -8,6 +8,11 @@
       },
       {
         "internalType": "address",
+        "name": "dog_",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
         "name": "cat_",
         "type": "address"
       },
@@ -44,6 +49,100 @@
       }
     ],
     "name": "Deny",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "what",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "data",
+        "type": "address"
+      }
+    ],
+    "name": "File",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "ilk",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "what",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "data",
+        "type": "address"
+      }
+    ],
+    "name": "File",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "ilk",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "what",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "data",
+        "type": "uint256"
+      }
+    ],
+    "name": "File",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "ilk",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "what",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "data",
+        "type": "string"
+      }
+    ],
+    "name": "File",
     "type": "event"
   },
   {
@@ -138,6 +237,25 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "ilk",
+        "type": "bytes32"
+      }
+    ],
+    "name": "class",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "count",
     "outputs": [
@@ -183,6 +301,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "dog",
+    "outputs": [
+      {
+        "internalType": "contract DogLike",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "bytes32",
@@ -267,25 +398,6 @@
     "name": "file",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "ilk",
-        "type": "bytes32"
-      }
-    ],
-    "name": "flip",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -327,7 +439,6 @@
     "type": "function"
   },
   {
-    "constant": true,
     "inputs": [
       {
         "internalType": "bytes32",
@@ -336,21 +447,12 @@
       }
     ],
     "name": "ilkData",
+    "constant": true,
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "uint96",
         "name": "pos",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "gem",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "pip",
-        "type": "address"
+        "type": "uint96"
       },
       {
         "internalType": "address",
@@ -359,13 +461,28 @@
       },
       {
         "internalType": "address",
-        "name": "flip",
+        "name": "gem",
         "type": "address"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint8",
         "name": "dec",
-        "type": "uint256"
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint96",
+        "name": "class",
+        "type": "uint96"
+      },
+      {
+        "internalType": "address",
+        "name": "pip",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "xlip",
+        "type": "address"
       },
       {
         "internalType": "string",
@@ -390,6 +507,7 @@
       }
     ],
     "name": "info",
+    "constant": true,
     "outputs": [
       {
         "internalType": "string",
@@ -400,6 +518,11 @@
         "internalType": "string",
         "name": "symbol",
         "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "class",
+        "type": "uint256"
       },
       {
         "internalType": "uint256",
@@ -423,7 +546,7 @@
       },
       {
         "internalType": "address",
-        "name": "flip",
+        "name": "xlip",
         "type": "address"
       }
     ],
@@ -546,6 +669,59 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "_ilk",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "_join",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_gem",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_dec",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_class",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_pip",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_xlip",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "_name",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_symbol",
+        "type": "string"
+      }
+    ],
+    "name": "put",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "usr",
         "type": "address"
@@ -654,6 +830,25 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "ilk",
+        "type": "bytes32"
+      }
+    ],
+    "name": "xlip",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",

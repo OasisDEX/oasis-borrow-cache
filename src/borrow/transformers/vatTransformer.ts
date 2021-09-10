@@ -190,6 +190,7 @@ export const vatCombineTransformer: (
       const events = frobs
         .map(frob => {
           const rateFromBatch = folds
+            .filter(fold => fold.i === frob.ilk)
             .filter(
               fold =>
                 fold.block_id < frob.block_id ||
@@ -218,6 +219,7 @@ export const vatCombineTransformer: (
             collateral_amount: dink.toString(),
             dai_amount: dart.times(rate).toString(),
             urn: frob.u,
+            ilk: frob.ilk,
             timestamp: frob.timestamp,
             tx_id: frob.tx_id,
             block_id: frob.block_id,
@@ -241,6 +243,7 @@ export const vatCombineTransformer: (
           'block_id',
           'log_index',
           'rate',
+          'ilk',
         ],
         {
           table: {

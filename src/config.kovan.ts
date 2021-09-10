@@ -21,8 +21,8 @@ import {
   makeRowEventBasedOnDSNoteTopic,
 } from './borrow/customExtractors';
 import { flipNoteTransformer, flipTransformer } from './borrow/transformers/flipperTransformer';
-import { getIlkInfo } from './borrow/services/getIlkInfo';
-import { getUrnForCdp } from './borrow/services/getUrnForCdp';
+import { getIlkInfo } from './borrow/dependencies/getIlkInfo';
+import { getUrnForCdp } from './borrow/dependencies/getUrnForCdp';
 import {
   auctionLiq2Transformer,
   dogTransformer,
@@ -62,7 +62,7 @@ const dogs = [
   },
 ];
 
-const flippers = [
+const flipper = [
   {
     name: 'flipper',
     abi: require('../abis/flipper.json'),
@@ -93,7 +93,7 @@ const flipperNotes: AbiInfo[] = [
 
 const addresses = {
   MIGRATION: '0x411B2Faa662C8e3E5cF8f01dFdae0aeE482ca7b0',
-  ILK_REGISTRY: '0xedE45A0522CA19e979e217064629778d6Cc2d9Ea',
+  ILK_REGISTRY: '0xc3F42deABc0C506e8Ae9356F2d4fc1505196DCDB',
 };
 
 export const config: UserProvidedSpockConfig = {
@@ -103,9 +103,12 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors(cats),
     ...makeRawLogExtractors(dogs),
     ...makeRawLogExtractors([vat]),
-    ...makeRawEventBasedOnTopicExtractor(flippers),
+    ...makeRawEventBasedOnTopicExtractor(flipper),
     ...makeRowEventBasedOnDSNoteTopic(flipperNotes),
-    ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(clippers, dogs.map(dog => dog.address.toLowerCase())),
+    ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(
+      clippers,
+      dogs.map(dog => dog.address.toLowerCase()),
+    ), // ignore dogs addresses because event name conflict
   ],
   transformers: [
     ...openCdpTransformer(cdpManagers, { getUrnForCdp }),
@@ -124,6 +127,12 @@ export const config: UserProvidedSpockConfig = {
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),
+  },
+  api: {
+    whitelisting: {
+      enabled: true,
+      whitelistedQueriesDir: './queries',
+    },
   },
   addresses,
   onStart: () => {},
