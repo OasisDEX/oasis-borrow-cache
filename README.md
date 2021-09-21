@@ -87,12 +87,12 @@ Requirements:
 
 - `cdp` - Holds information about vaults open via cdp manager.
 
-### Schema: `vat` [contract source](https://github.com/makerdao/dss/blob/master/src/vat.sol)
+### Schema: `vat` [contract source](https://github.com/makerdao/dss/blob/master/src/vat.sol) [MakerDAO docs](https://docs.makerdao.com/smart-contract-modules/core-module/vat-detailed-documentation)
 
-- `fold` - Holds pure fold function calls on vat.
-- `fork` - Holds pure fork function calls on vat.
-- `frob` - Holds pure frob function calls on vat.
-- `grab` - Holds pure grab function calls on vat.
+- `fold` - Holds pure fold function calls on vat. Updates rates for ilk.
+- `fork` - Holds pure fork function calls on vat. Moves collateral and debt between vaults.
+- `frob` - Holds pure frob function calls on vat. This call does debt and collateral changes on vault. 
+- `grab` - Holds pure grab function calls on vat. Confiscates vault on liquidation.
 
 ### Schema: `vault`
 
@@ -104,6 +104,7 @@ Note: values saved from pure events or function calls are not normalized, they n
 
 ## Unit tests
 
+- For running tests you also need node v12
 <DESCRIBE UNIT TESTS>
 
 ## Development notes

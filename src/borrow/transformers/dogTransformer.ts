@@ -140,8 +140,8 @@ export const dogTransformer: (
   });
 };
 
-export const getAuctionTransformerName = (address: string) =>
-  `auctionTransformer-V3-lig2.0-${address}`;
+export const getAuctions2TransformerName = (deps: SimpleProcessorDefinition) =>
+  `auctionTransformer-V3-lig2.0-${deps.address}`;
 
 export const auctionLiq2Transformer: (
   addresses: (string | SimpleProcessorDefinition)[],
@@ -151,7 +151,7 @@ export const auctionLiq2Transformer: (
     const deps = normalizeAddressDefinition(_deps);
 
     return {
-      name: getAuctionTransformerName(deps.address),
+      name: getAuctions2TransformerName(deps),
       dependencies: [getExtractorName(deps.address)],
       startingBlock: deps.startingBlock,
       transformerDependencies: [getDogTransformerName(deps.address), clipperTransformerName],
