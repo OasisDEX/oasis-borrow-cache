@@ -15,7 +15,7 @@ const config = (() => {
       return goerliConfig;
     default:
       throw new Error(
-        `Please select network from (mainnet, kovan, localnet). Was ${process.env.VL_CHAIN_NAME}`,
+        `Please select network from (mainnet, goerli, kovan, localnet). Was ${process.env.VL_CHAIN_NAME}`,
       );
   }
 })();
