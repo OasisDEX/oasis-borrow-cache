@@ -52,7 +52,7 @@ const cdpManagers = [
     startingBlock: 5273301,
   },
 ];
-//
+
 const cats = [
   {
     address: goerliAddresses.MCD_CAT,
@@ -139,7 +139,9 @@ export const config: UserProvidedSpockConfig = {
       clippers,
       dogs.map(dog => dog.address.toLowerCase()),
     ), // ignore dogs addresses because event name conflict
-    ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(oracle),
+    ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(
+        oracle,
+        dogs.map(dog => dog.address.toLowerCase())),
   ],
   transformers: [
     ...openCdpTransformer(cdpManagers, { getUrnForCdp }),
