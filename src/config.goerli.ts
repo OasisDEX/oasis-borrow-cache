@@ -131,7 +131,9 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors(cats),
     ...makeRawLogExtractors(dogs),
     ...makeRawLogExtractors([vat]),
-    ...makeRawEventBasedOnTopicExtractor(flipper),
+    ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(
+        flipper,
+        dogs.map(dog => dog.address.toLowerCase())),
     ...makeRowEventBasedOnDSNoteTopic(flipperNotes),
     ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(
       clippers,
