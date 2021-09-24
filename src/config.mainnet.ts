@@ -37,11 +37,12 @@ import { exchangeTransformer } from './borrow/transformers/exchange';
 import { getOraclesAddresses } from "./utils/addresses";
 import { getOracleTransformerName, oraclesTransformer } from './borrow/transformers/oraclesTransformer';
 import { eventEnhancerTransformer } from './borrow/transformers/eventEnhancer';
+import { multiplyHistoryTransformer } from './borrow/transformers/multiplyHisotry';
 
 
 const mainnetAddresses = require('./addresses/mainnet.json')
 
-const GENESIS = 8928152;
+const GENESIS = 13171661//8928152;
 
 const vat = {
   address: '0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b',
@@ -126,6 +127,9 @@ const multiply = [
     address: '0x33b4be1b67c49125c1524777515e4034e04dff58',
     startingBlock: 13184929,
   },
+  {
+    address: '0xeae4061009f0b804aafc76f3ae67567d0abe9c27',
+  },
 ];
 
 const exchange = [
@@ -172,7 +176,11 @@ export const config: UserProvidedSpockConfig = {
     ...multiplyTransformer(multiply, { cdpManager: cdpManagers[0].address, vat: vat.address, getIlkForCdp, getLiquidationRatio }),
     ...exchangeTransformer(exchange),
     ...oraclesTransformer(oracles),
-    eventEnhancerTransformer(vat.address, GENESIS, oraclesTransformers)
+    eventEnhancerTransformer(vat.address, GENESIS, oraclesTransformers),
+    multiplyHistoryTransformer(vat.address, {
+      dogs,
+      multiplyProxyActionsAddress: multiply,
+    }),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),

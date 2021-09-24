@@ -1,14 +1,9 @@
-import BigNumber from 'bignumber.js';
 
-interface HistoryEventBase {
+
+export interface HistoryEventBase {
   hash: string
-  timestamp: string
-  id: string
-  isMultiply?: boolean
-  isHidden?: boolean
-  oraclePrice: BigNumber
-  rate: BigNumber
-  liquidationRatio: BigNumber
+  timestamp: Date
+  id: number
   urn: string
   log_index: number,
   tx_id: number,
@@ -17,99 +12,114 @@ interface HistoryEventBase {
 
 interface VaultOpenedEvent extends HistoryEventBase {
   kind: 'OPEN'
-  vaultCreator: string
-  cdpId: string
+  vault_creator: string
+  cdp_id: string
 }
 
 interface DepositEvent extends HistoryEventBase {
   kind: 'DEPOSIT'
-  collateralAmount: BigNumber
+  dai_amount: string
+  collateral_amount: string
+  oracle_price: string
+  rate: string
 }
 
 interface WithdrawEvent extends HistoryEventBase {
   kind: 'WITHDRAW'
-  collateralAmount: BigNumber
+  dai_amount: string
+  collateral_amount: string
+  oracle_price: string
+  rate: string
 }
 
 interface GenerateEvent extends HistoryEventBase {
   kind: 'GENERATE'
-  daiAmount: BigNumber
+  dai_amount: string
+  collateral_amount: string
+  rate: string
+  oracle_price: string
 }
 
 interface PaybackEvent extends HistoryEventBase {
   kind: 'PAYBACK'
-  daiAmount: BigNumber
-  rate: BigNumber
+  dai_amount: string
+  collateral_amount: string
+  rate: string
+  oracle_price: string
 }
 
 interface DepositGenerateEvent extends HistoryEventBase {
   kind: 'DEPOSIT-GENERATE'
-  daiAmount: BigNumber
-  rate: BigNumber
-  collateralAmount: BigNumber
+  dai_amount: string
+  rate: string
+  collateral_amount: string
+  oracle_price: string
 }
 
 interface WithdrawPaybackEvent extends HistoryEventBase {
   kind: 'WITHDRAW-PAYBACK'
-  daiAmount: BigNumber
-  rate: BigNumber
-  collateralAmount: BigNumber
+  dai_amount: string
+  rate: string
+  collateral_amount: string
+  oracle_price: string
 }
 
 interface AuctionStartedEvent extends HistoryEventBase {
   kind: 'AUCTION_STARTED'
-  collateralAmount: BigNumber
-  daiAmount: BigNumber
-  rate: BigNumber
-  auctionId: string
+  collateral_amount: string
+  dai_amount: string
+  rate: string
+  auction_id: string
 }
 
 interface AuctionStartedV2Event extends HistoryEventBase {
   kind: 'AUCTION_STARTED_V2'
-  auctionId: string
-  collateralAmount: BigNumber
-  daiAmount: BigNumber
-  rate: BigNumber
-  liqPenalty: BigNumber
+  auction_id: string
+  collateral_amount: string
+  dai_amount: string
+  rate: string
+  liqPenalty: string
 }
 
 interface AuctionFinishedV2Event extends HistoryEventBase {
   kind: 'AUCTION_FINISHED_V2'
-  auctionId: string
-  remainingDebt: BigNumber
-  remainingCollateral: BigNumber
+  auction_id: string
+  remaining_debt: string
+  remaining_collateral: string
 }
 
 interface TakeEvent extends HistoryEventBase {
   kind: 'TAKE'
-  auctionId: string
-  remainingDebt: BigNumber
-  remainingCollateral: BigNumber
-  collateralPrice: BigNumber
-  coveredDebt: BigNumber
-  collateralTaken: BigNumber
+  auction_id: string
+  remaining_debt: string
+  remaining_collateral: string
+  collateral_price: string
+  covered_debt: string
+  collateral_taken: string
 }
 
 interface VaultTransferredEvent extends HistoryEventBase {
   kind: 'TRANSFER'
-  transferFrom: string
-  transferTo: string
+  transfer_from: string
+  transfer_to: string
 }
 
 interface MoveSrcEvent extends HistoryEventBase {
   kind: 'MOVE_SRC'
-  transferFrom: string
-  transferTo: string
-  collateralAmount: BigNumber
-  daiAmount: BigNumber
+  transfer_from: string
+  transfer_to: string
+  collateral_amount: string
+  dai_amount: string
+  rate: string
 }
 
 interface MoveDestEvent extends HistoryEventBase {
   kind: 'MOVE_DESC'
-  transferFrom: string
-  transferTo: string
-  collateralAmount: BigNumber
-  daiAmount: BigNumber
+  transfer_from: string
+  transfer_to: string
+  collateral_amount: string
+  dai_amount: string
+  rate: string
 }
 
 interface MigrateEvent extends HistoryEventBase {
@@ -131,3 +141,4 @@ export type Event =
 | AuctionStartedEvent 
 | WithdrawPaybackEvent
 | DepositGenerateEvent
+| PaybackEvent
