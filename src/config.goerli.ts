@@ -112,6 +112,7 @@ const flipperNotes: AbiInfo[] = [
 const addresses = {
   ...goerliAddresses,
   MIGRATION: '',
+  ILK_REGISTRY: '0x525FaC4CEc48a4eF2FBb0A72355B6255f8D5f79e',
 };
 
 const oracles = getOraclesAddresses(goerliAddresses).map(description => ({
