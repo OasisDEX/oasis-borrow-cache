@@ -52,7 +52,7 @@ const flipperTransformer = 'flipperTransformer';
 export const flipTransformer: () => BlockTransformer = () => {
   return {
     name: flipperTransformer,
-    dependencies: [getCustomExtractorNameBasedOnDSNoteTopicIgnoreConflicts('flipper')],
+    dependencies: [getExtractorNameBasedOnTopic('flipper')],
     transform: async (services, logs) => {
       await handleEvents(services, flipAbi, flatten(logs), handlers);
     },
