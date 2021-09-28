@@ -10,7 +10,7 @@ import { PersistedLog } from '@oasisdex/spock-utils/dist/extractors/rawEventData
 import { getExtractorName as getExtractorNameBasedOnTopic } from '@oasisdex/spock-utils/dist/extractors/rawEventBasedOnTopicExtractor';
 import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
-import { getCustomExtractorNameBasedOnDSNoteTopicIgnoreConflicts, getExtractorNameBasedOnDSNoteTopic } from '../customExtractors';
+import { getExtractorNameBasedOnDSNoteTopic } from '../customExtractors';
 import { Dictionary } from 'ts-essentials';
 
 const flipAbi = require('../../../abis/flipper.json');
