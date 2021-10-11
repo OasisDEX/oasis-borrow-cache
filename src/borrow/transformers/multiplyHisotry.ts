@@ -81,22 +81,25 @@ function parseMultiplyEvent(multiplyEvent: MultiplyDbEvent, vaultEvents: Aggrega
   const collateralChange = new BigNumber(lastEvent.collateral_amount)
   
   const oraclePrice = new BigNumber(lastEvent.oracle_price)
+  //find proper divider
   const oazoFee = new BigNumber(multiplyEvent.amount).div(wad)
   const loanFee = new BigNumber(multiplyEvent.due).minus(multiplyEvent.borrowed).div(wad)
   const gasFee = new BigNumber(0)
   const liquidationRatio = new BigNumber(multiplyEvent.liquidation_ratio)
   const marketPrice = 
     multiplyEvent.method_name === 'increaseMultiple' || multiplyEvent.method_name === 'openMultiplyVault' 
-    ? new BigNumber(multiplyEvent.amount_in).div(multiplyEvent.amount_out)
-    : new BigNumber(multiplyEvent.amount_out).div(multiplyEvent.amount_in)
+      ? new BigNumber(multiplyEvent.amount_in).div(multiplyEvent.amount_out)
+      : new BigNumber(multiplyEvent.amount_out).div(multiplyEvent.amount_in)
 
-  const bought = multiplyEvent.method_name === 'increaseMultiple' || multiplyEvent.method_name === 'openMultiplyVault' 
-    ? new BigNumber(multiplyEvent.amount_out).div(wad)
-    : zero
+  const bought = 
+    multiplyEvent.method_name === 'increaseMultiple' || multiplyEvent.method_name === 'openMultiplyVault' 
+      ? new BigNumber(multiplyEvent.amount_out).div(wad)
+      : zero
   
-  const sold = multiplyEvent.method_name === 'increaseMultiple' || multiplyEvent.method_name === 'openMultiplyVault'
-    ? new BigNumber(multiplyEvent.amount_in).div(wad)
-    : zero
+  const sold = 
+    multiplyEvent.method_name === 'decreaseMultiple' || multiplyEvent.method_name === 'closeVaultExitCollateral' || multiplyEvent.method_name === 'closeVaultExitDai'
+      ? new BigNumber(multiplyEvent.amount_in).div(wad)
+      : zero
 
   const common: CommonEvent = {
     marketPrice,
@@ -128,7 +131,7 @@ function parseMultiplyEvent(multiplyEvent: MultiplyDbEvent, vaultEvents: Aggrega
     case 'openMultiplyVault':
       return {
         kind: 'OPEN_MULTIPLY_VAULT',
-        bought: bought,
+        bought,
         deposit: collateralChange.minus(bought),
         ...common,
       }
@@ -149,7 +152,7 @@ function parseMultiplyEvent(multiplyEvent: MultiplyDbEvent, vaultEvents: Aggrega
     case 'closeVaultExitCollateral':
       return {
         kind: 'CLOSE_VAULT_TO_COLLATERAL',
-        sold: collateralChange.minus(sold),
+        sold: sold,
         exitCollateral: new BigNumber(multiplyEvent.collateral_left),
         ...common,
       }
