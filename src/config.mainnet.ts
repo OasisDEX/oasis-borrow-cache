@@ -42,7 +42,7 @@ import { multiplyHistoryTransformer } from './borrow/transformers/multiplyHisotr
 
 const mainnetAddresses = require('./addresses/mainnet.json')
 
-const GENESIS = 13171661//8928152;
+const GENESIS = 13171061//8928152;
 
 const vat = {
   address: '0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b',

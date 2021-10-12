@@ -29,7 +29,7 @@ function getCollateralizationRatio(debt: BigNumber, collateral: BigNumber, osmPr
 }
 
 function getLiquidationPrice(debt: BigNumber, collateral: BigNumber, liquidationRatio: BigNumber) {
-  if (debt.eq(zero)) {
+  if (collateral.eq(zero)) {
     return zero
   }
   return liquidationRatio.times(debt).div(collateral)
@@ -73,7 +73,7 @@ async function parseMultiplyEvent(
   const collateralChange = new BigNumber(lastEvent.collateral_amount)
   
   const oraclePrice = new BigNumber(lastEvent.oracle_price)
-  const oazoFee = new BigNumber(multiplyEvent.amount).div(wad)
+  const oazoFee = new BigNumber(multiplyEvent.oazo_fee).div(wad)
   const loanFee = new BigNumber(multiplyEvent.due).minus(multiplyEvent.borrowed).div(wad)
   const liquidationRatio = new BigNumber(multiplyEvent.liquidation_ratio)
   const collateralTokenAddress = multiplyEvent.method_name === 'increaseMultiple' || multiplyEvent.method_name === 'openMultiplyVault' 
@@ -94,7 +94,7 @@ async function parseMultiplyEvent(
     : new BigNumber(multiplyEvent.amount_out).div(wad)
 
   const depositDai = multiplyEvent.method_name === 'increaseMultiple' || multiplyEvent.method_name === 'openMultiplyVault' 
-   ? daiFromExchange.minus(new BigNumber(multiplyEvent.borrowed).div(wad))
+   ? daiFromExchange.minus(new BigNumber(multiplyEvent.borrowed).div(wad)).minus(oazoFee)
    : zero
 
   const marketPrice = daiFromExchange.div(collateralFromExchange)
@@ -238,7 +238,7 @@ export function aggregateVaultParams(events: Event[], eventsBefore: Event[]): Ag
 function getEventsFromBlockRange(services: LocalServices, start: number, end: number): Promise<Event[]> {
   return services.tx.manyOrNone(
     `
-    SELECT * FROM vault.events WHERE block_id >= ${start} AND block_id <= ${end}
+    SELECT * FROM vault.events WHERE block_id >= ${start} AND block_id <= ${end} AND kind !== 'TAKE'
     `
   )
 }
@@ -277,9 +277,19 @@ export const multiplyHistoryTransformer: (
 
         const multiplyEvents: MultiplyDbEvent[] = await services.tx.manyOrNone(
           `
-          SELECT m.*, l.*, s.*, f.*, sl.*, ma.urn FROM multiply.method_called m
+          SELECT 
+          m.method_name, m.cdp_id, m.ilk, 
+          m.liquidation_ratio, m.swap_min_amount, m.swap_optimist_amount,
+          m.collateral_left, m.dai_left, 
+          m.log_index, m.tx_id, m.block_id,
+          l.borrowed, l.due,
+          a.asset_in, a.asset_out, a.amount_in, a.amount_out,
+          f.beneficiary, f.amount as oazo_fee,
+          sl.minimum_possible, sl.actual_amount,
+          ma.urn
+          FROM multiply.method_called m
             JOIN multiply.flashloan l ON m.tx_id = l.tx_id
-            JOIN exchange.asset_swap s ON m.tx_id = s.tx_id
+            JOIN exchange.asset_swap a ON m.tx_id = a.tx_id
             JOIN exchange.fee_paid f ON m.tx_id = f.tx_id
             JOIN exchange.slippage_saved sl ON m.tx_id = sl.tx_id 
             JOIN manager.cdp ma ON ma.cdp_id = m.cdp_id
@@ -459,9 +469,13 @@ export const multiplyHistoryTransformer: (
             },
           },
         );
-      
+      try {
+
         const query = services.pg.helpers.insert(values, cs);
         await services.tx.none(query);
+      } catch (e) {
+        console.log(e)
+      }
       },
     };
   };
