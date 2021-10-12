@@ -1,5 +1,33 @@
 
 import { BigNumber } from "bignumber.js";
+import { Event } from "./history";
+
+export type Aggregated<T> = T & {
+	beforeDebt: BigNumber,
+	debt: BigNumber,
+	beforeLockedCollateral: BigNumber,
+	lockedCollateral: BigNumber,
+  
+	// liquidationPrice: BigNumber
+	// beforeCollateralizationRatio: BigNumber
+	// collateralizationRatio: BigNumber
+  }
+  
+
+const allowedStandardEvents = ['DEPOSIT', 'DEPOSIT-GENERATE', 'WITHDRAW', 'WITHDRAW-PAYBACK'] as const
+export type AllowedEventsKey = (typeof allowedStandardEvents)[number]
+export type FilterByKind<E extends {kind: string}, K extends string> = E extends any ? E["kind"] extends K ? E : never : never
+export type FrobEvents = FilterByKind<Aggregated<Event>, AllowedEventsKey>
+
+export function isFrobEvent(event: Aggregated<Event>): event is FrobEvents {
+	return allowedStandardEvents.includes(event.kind as any)
+}
+
+export function assertAllowedEvent(event: Aggregated<Event>): asserts event is FrobEvents {
+  if (!allowedStandardEvents.includes(event.kind as any)) {
+    throw new Error(`${event.kind} event cannot be combined with multiplyEvent`)
+  }
+}
 
 export interface CommonEvent {
 	marketPrice: BigNumber
@@ -25,6 +53,7 @@ export interface CommonEvent {
 
 	netValue: BigNumber
 
+	liquidationRatio: BigNumber,
 	beforeLiquidationPrice: BigNumber
 	liquidationPrice: BigNumber
 
@@ -37,19 +66,22 @@ export interface CommonEvent {
 
 interface OpenMultiplyEvent extends CommonEvent {
     kind: 'OPEN_MULTIPLY_VAULT'
-    deposit: BigNumber
+    depositCollateral: BigNumber
+	depositDai: BigNumber
     bought: BigNumber
 }
 
 interface IncreaseMultiplyEvent extends CommonEvent {
     kind: 'INCREASE_MULTIPLY'
-    deposit: BigNumber
+    depositCollateral: BigNumber
+	depositDai: BigNumber
     bought: BigNumber
 }
 
 interface DecreaseMultiplyEvent extends CommonEvent {
     kind: 'DECREASE_MULTIPLY'
-    withdrawn: BigNumber
+    withdrawnCollateral: BigNumber
+	withdrawnDai: BigNumber
     sold: BigNumber
 }
 
@@ -105,6 +137,11 @@ export interface MultiplyDbEvent {
     log_index: number,
     tx_id: number,
     block_id: number,
+}
+
+const buyingCollateralEvents = ['OPEN_MULTIPLY_VAULT','INCREASE_MULTIPLY'] as const
+export function isBuyingCollateral(event: MultiplyEvent): event is FilterByKind<MultiplyEvent, (typeof buyingCollateralEvents)[number]> {
+	return buyingCollateralEvents.includes(event.kind as any)
 }
 
 /*
