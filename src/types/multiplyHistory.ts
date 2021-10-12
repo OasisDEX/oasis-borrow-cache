@@ -129,7 +129,7 @@ export interface MultiplyDbEvent {
     amount_in: number,
     amount_out: number,
     beneficiary: string,
-    amount: number,
+    oazo_fee: number,
     minimum_possible: number,
     urn: string
     actual_amount: number,
