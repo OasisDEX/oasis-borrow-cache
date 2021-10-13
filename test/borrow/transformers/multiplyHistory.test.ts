@@ -1,13 +1,8 @@
 import { expect } from 'earljs';
-import { constants } from 'ethers';
-import { getSQL, destroyTestServices, executeSQL } from '@oasisdex/spock-test-utils';
 
-import { Services, TransactionalServices } from '@oasisdex/spock-etl/dist/services/types';
-import { createServices } from '../../utils/createServices';
+import { aggregateVaultParams  } from '../../../src/utils/aggregateVaultParams'
 
-import { multiplyHistoryTransformer } from '../../../src/borrow/transformers/multiplyHisotry';
 
-import { aggregateVaultParams } from '../../../src/borrow/transformers/multiplyHisotry'
 import { Event } from '../../../src/types/history';
 import BigNumber from 'bignumber.js';
 
@@ -51,7 +46,7 @@ const baseOpenEvent =
     urn: "0xfdd3c93b4d67014681fe95b874bc3647a93b3295",
     cdp_id: "25553",
     timestamp: new Date("Mon Sep 06 2021 12:39:34 GMT+0200 (Central European Summer Time)"),
-    hash: '0xHASH'
+    hash: '0xHASH',
   }
 
 const baseWithdrawEvent = 
@@ -62,7 +57,8 @@ const baseWithdrawEvent =
     urn: "0x7e373237a4a583d111e0b4f84dfc5674062f8610",
     timestamp: new Date("Mon Sep 06 2021 13:18:07 GMT+0200 (Central European Summer Time)"),
     oracle_price: "0.000000000000000000",
-    hash: '0xHASH'
+    hash: '0xHASH',
+    dai_amount: '0',
   }
 
 const baseDepositEvent = 
@@ -73,7 +69,8 @@ const baseDepositEvent =
     urn: "0x81c64839bdf45238c45753fe8bbb37db4d38ffbb",
     timestamp: new Date("Mon Sep 06 2021 12:47:29 GMT+0200 (Central European Summer Time)"),
     oracle_price: "0.000000000000000000",
-    hash: '0xHASH'
+    hash: '0xHASH',
+    dai_amount: '0',
   }
 
 const baseGenerateEvent = {
@@ -81,7 +78,9 @@ const baseGenerateEvent = {
   kind: "GENERATE" as const,
   urn: "0x934c8295b3b449385cbe121242dda1252a7f9b20",
   timestamp: new Date('Mon Sep 06 2021 12:52:30 GMT+0200 (Central European Summer Time)'),
-  hash: '0xHASH'
+  hash: '0xHASH',
+  collateral_amount: '0',
+  oracle_price: '100',
 }
 
 const basePaybackEvent = {
@@ -89,7 +88,9 @@ const basePaybackEvent = {
   kind: "PAYBACK" as const,
   urn: "0x934c8295b3b449385cbe121242dda1252a7f9b20",
   timestamp: new Date('Mon Sep 06 2021 12:52:30 GMT+0200 (Central European Summer Time)'),
-  hash: '0xHASH'
+  hash: '0xHASH',
+  collateral_amount: '0',
+  oracle_price: '100',
 }
 
 const baseWithdrawAndPaybackEvent = {
@@ -97,7 +98,8 @@ const baseWithdrawAndPaybackEvent = {
   kind: "WITHDRAW-PAYBACK" as const,
   urn: "0x934c8295b3b449385cbe121242dda1252a7f9b20",
   timestamp: new Date('Mon Sep 06 2021 12:52:30 GMT+0200 (Central European Summer Time)'),
-  hash: '0xHASH'
+  hash: '0xHASH',
+  oracle_price: '100',
 }
 
 const baseDepositAndGenerateEvent = {
@@ -105,7 +107,8 @@ const baseDepositAndGenerateEvent = {
   kind: "DEPOSIT-GENERATE" as const,
   urn: "0x934c8295b3b449385cbe121242dda1252a7f9b20",
   timestamp: new Date('Mon Sep 06 2021 12:52:30 GMT+0200 (Central European Summer Time)'),
-  hash: '0xHASH'
+  hash: '0xHASH',
+  oracle_price: '100',
 }
 
 const baseMoveDestEvent = {
@@ -558,40 +561,3 @@ describe('aggregateVaultParams', () => {
       expect(aggregated[7].beforeLockedCollateral).toEqual(new BigNumber(10)) 
   })
 });
-
-
-/*
-
-
-let services: Services;
-  let txServices: TransactionalServices;
-
-  beforeEach(async () => {
-    [services, txServices] = await createServices();
-
-    await executeSQL(
-      services.db,
-      `
-      INSERT INTO vulcan2x.block(number, hash, timestamp) VALUES(1, '0x01', '2019-07-02 11:18:01+00');
-      INSERT INTO vulcan2x.block(number, hash, timestamp) VALUES(2, '0x02', '2019-07-02 11:18:02+00');
-      INSERT INTO vulcan2x.transaction (hash, to_address, from_address, block_id, nonce, value, gas_limit, gas_price, data) 
-        VALUES('0x01', '0x01', '0x00', 1, 1, 0, 0, 0, '');
-    `,
-    );
-  });
-
-  afterEach(() => destroyTestServices(services));
-
-  it.skip('combines events into WITHDRAW-PAYBACK event', async () => {
-    const multiplyHistoryTransformerInstance = multiplyHistoryTransformer(constants.AddressZero, 0, {
-        dogAddress: '0x',
-        multiplyProxyActionsAddress: '0x'
-    })
-
-    const data = require('../../fixture/combine-withdraw-payback-log.json');
-   
-    await multiplyHistoryTransformerInstance.transform(txServices, data)
-
-  });
-
-  */
