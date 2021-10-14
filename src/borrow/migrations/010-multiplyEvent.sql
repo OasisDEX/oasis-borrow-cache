@@ -55,7 +55,7 @@ CREATE VIEW api.vault_events AS (
 CREATE VIEW api.vault_multiply_history AS (
     SELECT 
     t.hash as tx_hash, b.timestamp,
-    me.urn, me.kind, me.market_price, me.oracle_price, me.before_collateral as before_locked_collateral,
+    me.id, me.urn, me.kind, me.market_price, me.oracle_price, me.before_collateral as before_locked_collateral,
     me.collateral as locked_collateral, me.before_collateralization_ratio, me.collateralization_ratio, 
     me.before_debt, me.debt, me.before_multiple, me.multiple, me.before_liquidation_price, me.liquidation_price, 
     me.net_value, me.oazo_fee, me.loan_fee, me.gas_fee, me.total_fee, me.bought, me.deposit_collateral, 
