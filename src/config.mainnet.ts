@@ -37,7 +37,7 @@ import { exchangeTransformer } from './borrow/transformers/exchange';
 import { getOraclesAddresses } from "./utils/addresses";
 import { getOracleTransformerName, oraclesTransformer } from './borrow/transformers/oraclesTransformer';
 import { eventEnhancerTransformer } from './borrow/transformers/eventEnhancer';
-import { multiplyHistoryTransformer } from './borrow/transformers/multiplyHisotryTransformer';
+import { multiplyHistoryTransformer } from './borrow/transformers/multiplyHistoryTransformer';
 
 
 const mainnetAddresses = require('./addresses/mainnet.json')
@@ -129,6 +129,7 @@ const multiply = [
   },
   {
     address: '0xeae4061009f0b804aafc76f3ae67567d0abe9c27',
+    
   },
 ];
 
