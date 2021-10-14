@@ -450,7 +450,7 @@ describe('aggregateVaultParams', () => {
       expect(aggregated[0].beforeLockedCollateral).toEqual(new BigNumber(200))
   })
 
-  it.only('Handles different event kinds before batch', () => {
+  it('Handles different event kinds before batch', () => {
     const counter = new Counter()
     const eventsBefore: Event[] = []
 
@@ -520,44 +520,44 @@ describe('aggregateVaultParams', () => {
       const aggregated = aggregateVaultParams(events, eventsBefore)
 
       // DEBT CHECKS
-      expect(aggregated[0].debt).toEqual(new BigNumber(0)) //     OPEN
-      expect(aggregated[1].debt).toEqual(new BigNumber(1000)) //  GENERATE    1000
-      expect(aggregated[2].debt).toEqual(new BigNumber(900)) //   PAYBACK     100
-      expect(aggregated[3].debt).toEqual(new BigNumber(0)) //     AUCTION     900
-      expect(aggregated[4].debt).toEqual(new BigNumber(1000)) //  MOVE DEST   1000
-      expect(aggregated[5].debt).toEqual(new BigNumber(0)) //     AUCTION V2  1000
-      expect(aggregated[6].debt).toEqual(new BigNumber(100)) //   GENERATE    100
-      expect(aggregated[7].debt).toEqual(new BigNumber(0)) //     MOVE SRC    100
+      expect(aggregated[0].debt, {extraMessage: 'Debt on Open'}).toEqual(new BigNumber(0)) 
+      expect(aggregated[1].debt, {extraMessage: 'Debt on Generate'}).toEqual(new BigNumber(1000)) 
+      expect(aggregated[2].debt, {extraMessage: 'Debt on Payback'}).toEqual(new BigNumber(900)) 
+      expect(aggregated[3].debt, {extraMessage: 'Debt on Auction'}).toEqual(new BigNumber(0)) 
+      expect(aggregated[4].debt, {extraMessage: 'Debt on Move dest'}).toEqual(new BigNumber(1000)) 
+      expect(aggregated[5].debt, {extraMessage: 'Debt on Auction V2'}).toEqual(new BigNumber(0))
+      expect(aggregated[6].debt, {extraMessage: 'Debt on Generate'}).toEqual(new BigNumber(100))
+      expect(aggregated[7].debt, {extraMessage: 'Debt on Move src'}).toEqual(new BigNumber(0))
 
 
-      expect(aggregated[0].beforeDebt).toEqual(new BigNumber(0)) 
-      expect(aggregated[1].beforeDebt).toEqual(new BigNumber(0)) 
-      expect(aggregated[2].beforeDebt).toEqual(new BigNumber(1000)) 
-      expect(aggregated[3].beforeDebt).toEqual(new BigNumber(900)) 
-      expect(aggregated[4].beforeDebt).toEqual(new BigNumber(0)) 
-      expect(aggregated[5].beforeDebt).toEqual(new BigNumber(1000)) 
-      expect(aggregated[6].beforeDebt).toEqual(new BigNumber(0)) 
-      expect(aggregated[7].beforeDebt).toEqual(new BigNumber(100)) 
+      expect(aggregated[0].beforeDebt, {extraMessage: 'BeforeDebt on Open'}).toEqual(new BigNumber(0)) 
+      expect(aggregated[1].beforeDebt, {extraMessage: 'BeforeDebt on Generate'}).toEqual(new BigNumber(0)) 
+      expect(aggregated[2].beforeDebt, {extraMessage: 'BeforeDebt on Payback'}).toEqual(new BigNumber(1000)) 
+      expect(aggregated[3].beforeDebt, {extraMessage: 'BeforeDebt on Auction'}).toEqual(new BigNumber(900)) 
+      expect(aggregated[4].beforeDebt, {extraMessage: 'BeforeDebt on Move dest'}).toEqual(new BigNumber(0)) 
+      expect(aggregated[5].beforeDebt, {extraMessage: 'BeforeDebt on Auction V2'}).toEqual(new BigNumber(1000)) 
+      expect(aggregated[6].beforeDebt, {extraMessage: 'BeforeDebt on Generate'}).toEqual(new BigNumber(0)) 
+      expect(aggregated[7].beforeDebt, {extraMessage: 'BeforeDebt on Move src'}).toEqual(new BigNumber(100)) 
 
 
       // COLLATERAL CHECKS
-      expect(aggregated[0].lockedCollateral).toEqual(new BigNumber(0)) //     OPEN
-      expect(aggregated[1].lockedCollateral).toEqual(new BigNumber(1000)) //  DEPOSIT     1000
-      expect(aggregated[2].lockedCollateral).toEqual(new BigNumber(900)) //   WITHDRAW    100
-      expect(aggregated[3].lockedCollateral).toEqual(new BigNumber(0)) //     AUCTION     900
-      expect(aggregated[4].lockedCollateral).toEqual(new BigNumber(2000)) //  MOVE DEST   1000
-      expect(aggregated[5].lockedCollateral).toEqual(new BigNumber(0)) //     AUCTION V2  1000
-      expect(aggregated[6].lockedCollateral).toEqual(new BigNumber(10)) //   DEPOSIT     100
-      expect(aggregated[7].lockedCollateral).toEqual(new BigNumber(0)) //     MOVE SRC    100
+      expect(aggregated[0].lockedCollateral, {extraMessage: 'LockedCollateral on Open'}).toEqual(new BigNumber(0)) //     OPEN
+      expect(aggregated[1].lockedCollateral, {extraMessage: 'LockedCollateral on Generate'}).toEqual(new BigNumber(1000)) //  DEPOSIT     1000
+      expect(aggregated[2].lockedCollateral, {extraMessage: 'LockedCollateral on Payback'}).toEqual(new BigNumber(900)) //   WITHDRAW    100
+      expect(aggregated[3].lockedCollateral, {extraMessage: 'LockedCollateral on Auction'}).toEqual(new BigNumber(0)) //     AUCTION     900
+      expect(aggregated[4].lockedCollateral, {extraMessage: 'LockedCollateral on Move dest'}).toEqual(new BigNumber(2000)) //  MOVE DEST   1000
+      expect(aggregated[5].lockedCollateral, {extraMessage: 'LockedCollateral on Auction V2'}).toEqual(new BigNumber(0)) //     AUCTION V2  1000
+      expect(aggregated[6].lockedCollateral, {extraMessage: 'LockedCollateral on Generate'}).toEqual(new BigNumber(10)) //   DEPOSIT     100
+      expect(aggregated[7].lockedCollateral, {extraMessage: 'LockedCollateral on Move src'}).toEqual(new BigNumber(0)) //     MOVE SRC    100
 
 
-      expect(aggregated[0].beforeLockedCollateral).toEqual(new BigNumber(0)) 
-      expect(aggregated[1].beforeLockedCollateral).toEqual(new BigNumber(0)) 
-      expect(aggregated[2].beforeLockedCollateral).toEqual(new BigNumber(1000)) 
-      expect(aggregated[3].beforeLockedCollateral).toEqual(new BigNumber(900)) 
-      expect(aggregated[4].beforeLockedCollateral).toEqual(new BigNumber(0)) 
-      expect(aggregated[5].beforeLockedCollateral).toEqual(new BigNumber(2000)) 
-      expect(aggregated[6].beforeLockedCollateral).toEqual(new BigNumber(0)) 
-      expect(aggregated[7].beforeLockedCollateral).toEqual(new BigNumber(10)) 
+      expect(aggregated[0].beforeLockedCollateral, {extraMessage: 'BeforeLockedCollateral on Open'}).toEqual(new BigNumber(0)) 
+      expect(aggregated[1].beforeLockedCollateral, {extraMessage: 'BeforeLockedCollateral on Generate'}).toEqual(new BigNumber(0)) 
+      expect(aggregated[2].beforeLockedCollateral, {extraMessage: 'BeforeLockedCollateral on Payback'}).toEqual(new BigNumber(1000)) 
+      expect(aggregated[3].beforeLockedCollateral, {extraMessage: 'BeforeLockedCollateral on Auction'}).toEqual(new BigNumber(900)) 
+      expect(aggregated[4].beforeLockedCollateral, {extraMessage: 'BeforeLockedCollateral on Move dest'}).toEqual(new BigNumber(0)) 
+      expect(aggregated[5].beforeLockedCollateral, {extraMessage: 'BeforeLockedCollateral on Auction V2'}).toEqual(new BigNumber(2000)) 
+      expect(aggregated[6].beforeLockedCollateral, {extraMessage: 'BeforeLockedCollateral on Generate'}).toEqual(new BigNumber(0)) 
+      expect(aggregated[7].beforeLockedCollateral, {extraMessage: 'BeforeLockedCollateral on Move src'}).toEqual(new BigNumber(10)) 
   })
 });

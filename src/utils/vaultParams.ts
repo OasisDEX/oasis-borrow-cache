@@ -1,6 +1,5 @@
 import BigNumber from 'bignumber.js';
-
-const zero = new BigNumber(0)
+import { zero } from './constants';
 
 export function getCollateralizationRatio(debt: BigNumber, collateral: BigNumber, osmPrice: BigNumber) {
   if (debt.eq(zero)) {

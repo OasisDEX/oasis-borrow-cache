@@ -3,219 +3,202 @@ import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
 import {
   getExtractorName, SimpleProcessorDefinition,
 } from '@oasisdex/spock-utils/dist/extractors/rawEventDataExtractor';
-import BigNumber from 'bignumber.js';
-
-
-import { flatten, groupBy, max, min, sortBy } from 'lodash';
-import { Aggregated, assertAllowedEvent, CommonEvent, isBuyingCollateral, isFrobEvent, MultiplyDbEvent, MultiplyEvent } from '../../types/multiplyHistory';
-import { wad } from '../../utils/precision';
+import { flatten, groupBy, max, min } from 'lodash';
+import { Aggregated, isBuyingCollateral, isFrobEvent, MultiplyDbEvent, MultiplyEvent } from '../../types/multiplyHistory';
 import { Event } from '../../types/history';
 import { getAuctions2TransformerName } from './dogTransformer';
 import { eventEnhancerTransformerName } from './eventEnhancer';
 import { getMultiplyTransformerName } from './multiply';
-import { getCollateralizationRatio, getMultiple, getLiquidationPrice, getNetValue } from '../../utils/vaultParams';
 import { getTokenPrecision } from '../../utils/getTokenPrecision';
+import { aggregateVaultParams } from '../../utils/aggregateVaultParams';
+import { parseMultiplyEvent } from '../../utils/parseMultiplyEvent';
+import { getGasFee } from '../../utils/getGasFee';
 
 const multiplyHistoryTransformerName = `multiply-history`
-
-const zero = new BigNumber(0)
-
-interface Dependencies {
-  getTokenPrecision(tokenAddress: string): Promise<number>
-  getGasFee(hash: string): Promise<number>
-}
-
-async function parseMultiplyEvent(
-  multiplyEvent: MultiplyDbEvent, 
-  vaultEvents: Aggregated<Event>[],
-  dependencies: Dependencies,
-  ): Promise<MultiplyEvent> {
-  const lastEvent: Aggregated<Event> = vaultEvents[vaultEvents.length - 1]
-  assertAllowedEvent(lastEvent)
-
-  const collateralChange = new BigNumber(lastEvent.collateral_amount)
-  const debtChange = new BigNumber(lastEvent.dai_amount)
-  
-  const oraclePrice = new BigNumber(lastEvent.oracle_price)
-  const oazoFee = new BigNumber(multiplyEvent.oazo_fee).div(wad)
-  const loanFee = new BigNumber(multiplyEvent.due).minus(multiplyEvent.borrowed).div(wad)
-  const liquidationRatio = new BigNumber(multiplyEvent.liquidation_ratio)
-  const collateralTokenAddress = multiplyEvent.method_name === 'increaseMultiple' || multiplyEvent.method_name === 'openMultiplyVault' 
-    ? multiplyEvent.asset_out
-    : multiplyEvent.asset_out
-  
-  const [gasFee, collateralTokenDecimals] = await Promise.all([
-    dependencies.getGasFee(lastEvent.hash),
-    dependencies.getTokenPrecision(collateralTokenAddress)
-  ])
-
-  const collateralFromExchange = multiplyEvent.method_name === 'increaseMultiple' || multiplyEvent.method_name === 'openMultiplyVault'
-    ? new BigNumber(multiplyEvent.amount_out).div(new BigNumber(10).pow(collateralTokenDecimals))
-    : new BigNumber(multiplyEvent.amount_in).div(new BigNumber(10).pow(collateralTokenDecimals))
-  
-  const daiFromExchange = multiplyEvent.method_name === 'increaseMultiple' || multiplyEvent.method_name === 'openMultiplyVault'
-    ? new BigNumber(multiplyEvent.amount_in).div(wad)
-    : new BigNumber(multiplyEvent.amount_out).div(wad)
-
-    const depositDai = multiplyEvent.method_name === 'increaseMultiple' || multiplyEvent.method_name === 'openMultiplyVault' 
-    ? (daiFromExchange.plus(oazoFee)).minus(new BigNumber(multiplyEvent.borrowed).div(wad))
-    : zero
-
-  const marketPrice = daiFromExchange.div(collateralFromExchange)
-
-  const bought = 
-    multiplyEvent.method_name === 'increaseMultiple' || multiplyEvent.method_name === 'openMultiplyVault' 
-      ? collateralFromExchange
-      : zero
-  
-  const sold = 
-    multiplyEvent.method_name === 'decreaseMultiple' || multiplyEvent.method_name === 'closeVaultExitCollateral' || multiplyEvent.method_name === 'closeVaultExitDai'
-      ? collateralFromExchange
-      : zero
-
-  const common: CommonEvent = {
-    marketPrice,
-    oraclePrice,
-    beforeCollateral: lastEvent.beforeLockedCollateral,
-    collateral: lastEvent.lockedCollateral,
-    beforeCollateralizationRatio: getCollateralizationRatio(lastEvent.beforeDebt, lastEvent.beforeLockedCollateral, oraclePrice),
-    collateralizationRatio: getCollateralizationRatio(lastEvent.debt, lastEvent.lockedCollateral, oraclePrice),
-    beforeDebt: lastEvent.beforeDebt,
-    debt: lastEvent.debt,
-    beforeMultiple: getMultiple(lastEvent.beforeDebt, lastEvent.beforeLockedCollateral, oraclePrice),
-    multiple: getMultiple(lastEvent.debt, lastEvent.lockedCollateral, oraclePrice),
-    beforeLiquidationPrice: getLiquidationPrice(lastEvent.beforeDebt, lastEvent.beforeLockedCollateral, liquidationRatio),
-    liquidationRatio,
-    liquidationPrice: getLiquidationPrice(lastEvent.debt, lastEvent.lockedCollateral, liquidationRatio),
-    netValue: getNetValue(lastEvent.debt, lastEvent.lockedCollateral, oraclePrice),
-    
-    oazoFee,
-    loanFee,
-    gasFee: new BigNumber(gasFee), // in wei
-    totalFee: BigNumber.sum(oazoFee, loanFee),
-
-    tx_id: multiplyEvent.tx_id,
-    log_index: multiplyEvent.tx_id,
-    block_id: multiplyEvent.block_id,
-    urn: multiplyEvent.urn
-  }
-
-  switch (multiplyEvent.method_name) {
-    case 'openMultiplyVault':
-      return {
-        ...common,
-        kind: 'OPEN_MULTIPLY_VAULT',
-        bought,
-        depositCollateral: collateralChange.minus(bought),
-        depositDai,
-      }
-    case 'increaseMultiple':
-      return {
-        ...common,
-        kind: 'INCREASE_MULTIPLY',
-        bought,
-        depositCollateral: collateralChange.minus(bought),
-        depositDai,
-      }
-    case 'decreaseMultiple':
-      return {
-        ...common,
-        kind: 'DECREASE_MULTIPLY',
-        sold,
-        withdrawnCollateral: collateralChange.minus(sold),
-        withdrawnDai: daiFromExchange.plus(debtChange),
-      }
-    case 'closeVaultExitCollateral':
-      return {
-        ...common,
-        kind: 'CLOSE_VAULT_TO_COLLATERAL',
-        sold,
-        exitCollateral: new BigNumber(multiplyEvent.collateral_left), // check it
-        debt: zero,
-        collateral: zero,
-      }
-    case 'closeVaultExitDai':
-      return {
-        ...common,
-        kind: 'CLOSE_VAULT_TO_DAI',
-        sold,
-        exitDai: new BigNumber(multiplyEvent.dai_left),
-        debt: zero,
-        collateral: zero,
-      }
-  }
-}
-
-function sumNormalizedDebt(total: BigNumber, event: Event): BigNumber {
-  switch (event.kind) {
-    case 'GENERATE':
-    case 'PAYBACK':
-    case 'WITHDRAW-PAYBACK':
-    case 'DEPOSIT-GENERATE':
-    case 'MOVE_DESC':
-      return total.plus(new BigNumber(event.dai_amount).div(event.rate))
-    case 'MOVE_SRC':
-    case 'AUCTION_STARTED_V2':
-      return total
-    case 'AUCTION_STARTED':
-      return total.minus(new BigNumber(event.dai_amount).div(event.rate))
-    default:
-      return total;
-  }
-}
-
-function sumCollateral(total: BigNumber, event: Event): BigNumber {
-  switch (event.kind) {
-    case 'DEPOSIT':
-    case 'WITHDRAW':
-    case 'WITHDRAW-PAYBACK':
-    case 'DEPOSIT-GENERATE':
-    case 'MOVE_DESC':
-      return total.plus(event.collateral_amount)
-    case 'MOVE_SRC':
-    case 'AUCTION_STARTED_V2':
-    case 'AUCTION_STARTED':
-      return total.minus(event.collateral_amount)
-    default:
-      return total;
-  }
-}
-
-export function aggregateVaultParams(events: Event[], eventsBefore: Event[]): Aggregated<Event>[] {
-  const debtBeforeBatch = eventsBefore.reduce(sumNormalizedDebt, zero) 
-  const lockedCollateralBeforeBatch = eventsBefore.reduce(sumCollateral, zero)
-
-  const sortedEvents = sortBy(
-    events, 
-    event => event.block_id, 
-    event => event.log_index,
-  )
-
-  return sortedEvents.reduce((acc, event) => {
-    const previousEvent: Aggregated<Event> | undefined = acc[acc.length - 1]
-    const beforeDebt = previousEvent ? previousEvent.debt : debtBeforeBatch
-    const beforeLockedCollateral = previousEvent ? previousEvent.lockedCollateral : lockedCollateralBeforeBatch
-
-    const aggregatedEvent = {
-      ...event, 
-      beforeDebt,
-      debt: sumNormalizedDebt(beforeDebt, event),
-      beforeLockedCollateral,
-      lockedCollateral: sumCollateral(beforeLockedCollateral, event)
-    }
-
-    return [...acc, aggregatedEvent]
-  }, [] as Aggregated<Event>[])
-}
 
 function getEventsFromBlockRange(services: LocalServices, start: number, end: number): Promise<Event[]> {
   return services.tx.manyOrNone(
     `
-    SELECT * FROM vault.events WHERE block_id >= ${start} AND block_id <= ${end} AND kind != 'TAKE'
+    SELECT e.*, t.hash FROM vault.events e
+    JOIN vulcan2x.transaction t ON e.tx_id = t.id
+    WHERE e.block_id >= ${start} AND e.block_id <= ${end} AND e.kind != 'TAKE'
     `
   )
 }
 
+function getCombinedMultiplyEvents(services: LocalServices, start: number, end: number): Promise<MultiplyDbEvent[]> {
+  return services.tx.manyOrNone(
+    `
+    SELECT 
+    m.method_name, m.cdp_id, m.ilk, 
+    m.liquidation_ratio, m.swap_min_amount, m.swap_optimist_amount,
+    m.collateral_left, m.dai_left, 
+    m.log_index, m.tx_id, m.block_id,
+    l.borrowed, l.due,
+    a.asset_in, a.asset_out, a.amount_in, a.amount_out,
+    f.beneficiary, f.amount as oazo_fee,
+    sl.minimum_possible, sl.actual_amount,
+    ma.urn
+    FROM multiply.method_called m
+      JOIN multiply.flashloan l ON m.tx_id = l.tx_id
+      JOIN exchange.asset_swap a ON m.tx_id = a.tx_id
+      JOIN exchange.fee_paid f ON m.tx_id = f.tx_id
+      JOIN exchange.slippage_saved sl ON m.tx_id = sl.tx_id 
+      JOIN manager.cdp ma ON ma.cdp_id = m.cdp_id
+      WHERE m.block_id >= ${start} AND m.block_id <= ${end}
+    `
+  )
+}
+
+async function getEventsForUrnsBeforeBlock(services: LocalServices, blockId: number, urns: string[]): Promise<Event[]> {
+  const values = urns.map(urn => `'${urn}'`).join(',')
+
+ return services.tx.manyOrNone(`
+    SELECT e.*, t.hash FROM vault.events e 
+    JOIN vulcan2x.transaction t ON e.tx_id = t.id
+    WHERE e.block_id < ${blockId} AND e.urn in (${values})
+  `)
+}
+
+function eventToDbFormat(event: (Aggregated<Event> | MultiplyEvent)) {{
+  switch (event.kind) {
+    case 'INCREASE_MULTIPLY':
+    case 'DECREASE_MULTIPLY':
+    case 'OPEN_MULTIPLY_VAULT':
+    case 'CLOSE_VAULT_TO_COLLATERAL':
+    case 'CLOSE_VAULT_TO_DAI':
+      return {
+        kind: event.kind,
+        urn: event.urn,
+        market_price: event.marketPrice.toFixed(18),                
+        oracle_price: event.oraclePrice.toFixed(18),                  
+        before_collateral: event.beforeCollateral.toFixed(18),      
+        collateral: event.collateral.toFixed(18),              
+        before_collateralization_ratio: event.beforeCollateralizationRatio.toFixed(18),
+        collateralization_ratio: event.collateralizationRatio.toFixed(18),
+        before_debt: event.beforeDebt.toFixed(18),           
+        debt: event.debt.toFixed(18),                      
+        before_multiple: event.beforeMultiple.toFixed(18),    
+        multiple: event.multiple.toFixed(18),                      
+        before_liquidation_price: event.beforeLiquidationPrice.toFixed(18),
+        liquidation_price: event.liquidationPrice.toFixed(18),          
+        net_value: event.netValue.toFixed(18),
+        
+        oazo_fee: event.oazoFee.toFixed(18),     
+        loan_fee: event.loanFee.toFixed(18),              
+        gas_fee: event.gasFee.toFixed(18),                      
+        total_fee: event.totalFee.toFixed(18),                   
+
+        bought: isBuyingCollateral(event) ? event.bought.toFixed(18) : null,               
+        deposit_collateral: isBuyingCollateral(event) ? event.depositCollateral.toFixed(18) : null,
+        deposit_dai: isBuyingCollateral(event) ? event.depositDai.toFixed(18) : null,                     
+
+        sold: !isBuyingCollateral(event) ? event.sold.toFixed(18) : null,                         
+        withdrawn_collateral: event.kind === 'DECREASE_MULTIPLY' ? event.withdrawnCollateral.toFixed(18) : null,
+        withdrawn_dai: event.kind === 'DECREASE_MULTIPLY' ? event.withdrawnDai.toFixed(18) : null,    
+
+        exit_collateral: event.kind === 'CLOSE_VAULT_TO_COLLATERAL' ? event.exitCollateral.toFixed(18) : null,
+        exit_dai: event.kind === 'CLOSE_VAULT_TO_DAI' ? event.exitDai.toFixed(18) : null,
+        
+        tx_id: event.tx_id,
+        log_index: event.log_index,
+        block_id: event.block_id,
+
+        standard_event_id: null,
+      }
+    default:
+      return {
+        kind: event.kind,
+        urn: event.urn,
+        standard_event_id: event.id,
+        debt: event.debt.toFixed(18),
+        before_debt: event.beforeDebt.toFixed(18),
+        collateral: event.lockedCollateral.toFixed(18),
+        before_collateral: event.beforeLockedCollateral.toFixed(18),
+        oracle_price: isFrobEvent(event) ? event.oracle_price : 0,
+        tx_id: event.tx_id,
+        log_index: event.log_index,
+        block_id: event.block_id,
+
+        market_price: null,
+        before_collateralization_ratio: null,
+        collateralization_ratio: null,
+        before_multiple: null,
+        multiple: null,
+        before_liquidation_price: null,
+        liquidation_price: null,
+        net_value: null,
+        oazo_fee: null,
+        loan_fee: null,
+        gas_fee: null,
+        total_fee: null,
+        bought: null,
+        deposit_collateral: null,
+        deposit_dai: null,
+        sold: null,
+        withdrawn_collateral: null,
+        withdrawn_dai: null,
+        exit_collateral: null,
+        exit_dai: null,
+      }
+  }
+}
+}
+
+type EventToSave = ReturnType<typeof eventToDbFormat>
+
+async function saveEventsToDb(services: LocalServices, events: EventToSave[]) {
+  const cs = new services.pg.helpers.ColumnSet(
+    [
+      'kind',
+      'urn',
+      'market_price',
+      'oracle_price',
+      'before_collateral',
+      'collateral',
+      'before_collateralization_ratio',
+      'collateralization_ratio',
+      'before_debt',
+      'debt',
+      'before_multiple',
+      'multiple',
+      'before_liquidation_price',
+      'liquidation_price',
+      'net_value',
+      
+      'oazo_fee',
+      'loan_fee',
+      'gas_fee',
+      'total_fee',
+
+      'bought',
+      'deposit_collateral',
+      'deposit_dai',
+
+      'sold',
+      'withdrawn_collateral',
+      'withdrawn_dai',
+
+      'exit_collateral',
+      'exit_dai',
+
+      'standard_event_id',
+
+      'tx_id',
+      'block_id',
+      'log_index',
+    ],
+    {
+      table: {
+          schema: 'vault',
+          table: 'multiply_events',
+      },
+    },
+  );
+
+  const query = services.pg.helpers.insert(events, cs);
+  await services.tx.none(query);
+}
 
 export const multiplyHistoryTransformer: (
     vatAddress: string,
@@ -248,39 +231,14 @@ export const multiplyHistoryTransformer: (
           return;
         }
 
-        const multiplyEvents: MultiplyDbEvent[] = await services.tx.manyOrNone(
-          `
-          SELECT 
-          m.method_name, m.cdp_id, m.ilk, 
-          m.liquidation_ratio, m.swap_min_amount, m.swap_optimist_amount,
-          m.collateral_left, m.dai_left, 
-          m.log_index, m.tx_id, m.block_id,
-          l.borrowed, l.due,
-          a.asset_in, a.asset_out, a.amount_in, a.amount_out,
-          f.beneficiary, f.amount as oazo_fee,
-          sl.minimum_possible, sl.actual_amount,
-          ma.urn
-          FROM multiply.method_called m
-            JOIN multiply.flashloan l ON m.tx_id = l.tx_id
-            JOIN exchange.asset_swap a ON m.tx_id = a.tx_id
-            JOIN exchange.fee_paid f ON m.tx_id = f.tx_id
-            JOIN exchange.slippage_saved sl ON m.tx_id = sl.tx_id 
-            JOIN manager.cdp ma ON ma.cdp_id = m.cdp_id
-            WHERE m.block_id >= ${minBlock} AND m.block_id <= ${maxBlock}
-          `
-        )
+        const multiplyEvents: MultiplyDbEvent[] = await getCombinedMultiplyEvents(services, minBlock, maxBlock)
 
-        const allUrns = Array.from(new Set(events.map(event => event.urn)))
-          .map(urn => `'${urn}'`)
-          .join(',')
+        const uniqueUrns = Array.from(new Set(events.map(event => event.urn)))
 
+        const allEventsBeforeBatch: Event[] = await getEventsForUrnsBeforeBlock(services, minBlock, uniqueUrns)
 
-        const allEventsBeforeBatch: Event[] = await services.tx.manyOrNone(`
-          SELECT * FROM vault.events WHERE block_id < ${minBlock} AND urn in (${allUrns})
-        `)
-
-        const eventsBeforeBatchByUrn = groupBy(allEventsBeforeBatch, 'urn')
         const eventByUrn = groupBy(events, 'urn')
+        const eventsBeforeBatchByUrn = groupBy(allEventsBeforeBatch, 'urn')
         const multiplyEventsByUrn = groupBy(multiplyEvents, 'urn')
 
         const extendedEvents = await Object.entries(eventByUrn).reduce(async (allEvents, [urn, urnEvents]) => {
@@ -302,7 +260,7 @@ export const multiplyHistoryTransformer: (
               const multiplyEvent = txMultiplyEvents[0]
               return [...(await eventsForUrn), await parseMultiplyEvent(multiplyEvent, events, {
                 getTokenPrecision: address => getTokenPrecision(services, address),
-                getGasFee: hash => Promise.resolve(0),
+                getGasFee: hash => getGasFee(services, hash),
               })]
             }
             throw new Error('Two multiply events in one transaction')
@@ -311,144 +269,10 @@ export const multiplyHistoryTransformer: (
           return [...(await allEvents), ...(await result)]
         }, Promise.resolve([]) as Promise<(Aggregated<Event> | MultiplyEvent)[]>)
 
-        const values = extendedEvents.map(event => {
-          switch (event.kind) {
-            case 'INCREASE_MULTIPLY':
-            case 'DECREASE_MULTIPLY':
-            case 'OPEN_MULTIPLY_VAULT':
-            case 'CLOSE_VAULT_TO_COLLATERAL':
-            case 'CLOSE_VAULT_TO_DAI':
-              return {
-                kind: event.kind,
-                urn: event.urn,
-                market_price: event.marketPrice.toFixed(18),                
-                oracle_price: event.oraclePrice.toFixed(18),                  
-                before_collateral: event.beforeCollateral.toFixed(18),      
-                collateral: event.collateral.toFixed(18),              
-                before_collateralization_ratio: event.beforeCollateralizationRatio.toFixed(18),
-                collateralization_ratio: event.collateralizationRatio.toFixed(18),
-                before_debt: event.beforeDebt.toFixed(18),           
-                debt: event.debt.toFixed(18),                      
-                before_multiple: event.beforeMultiple.toFixed(18),    
-                multiple: event.multiple.toFixed(18),                      
-                before_liquidation_price: event.beforeLiquidationPrice.toFixed(18),
-                liquidation_price: event.liquidationPrice.toFixed(18),          
-                net_value: event.netValue.toFixed(18),
-                
-                oazo_fee: event.oazoFee.toFixed(18),     
-                loan_fee: event.loanFee.toFixed(18),              
-                gas_fee: event.gasFee.toFixed(18),                      
-                total_fee: event.totalFee.toFixed(18),                   
+        const values = extendedEvents.map(eventToDbFormat)
 
-                bought: isBuyingCollateral(event) ? event.bought.toFixed(18) : null,               
-                deposit_collateral: isBuyingCollateral(event) ? event.depositCollateral.toFixed(18) : null,
-                deposit_dai: isBuyingCollateral(event) ? event.depositDai.toFixed(18) : null,                     
-
-                sold: !isBuyingCollateral(event) ? event.sold.toFixed(18) : null,                         
-                withdrawn_collateral: event.kind === 'DECREASE_MULTIPLY' ? event.withdrawnCollateral.toFixed(18) : null,
-                withdrawn_dai: event.kind === 'DECREASE_MULTIPLY' ? event.withdrawnDai.toFixed(18) : null,    
-
-                exit_collateral: event.kind === 'CLOSE_VAULT_TO_COLLATERAL' ? event.exitCollateral.toFixed(18) : null,
-                exit_dai: event.kind === 'CLOSE_VAULT_TO_DAI' ? event.exitDai.toFixed(18) : null,
-                
-                tx_id: event.tx_id,
-                log_index: event.log_index,
-                block_id: event.block_id,
-
-                standard_event_id: null,
-              }
-            default:
-              return {
-                kind: event.kind,
-                urn: event.urn,
-                standard_event_id: event.id,
-                debt: event.debt.toFixed(18),
-                before_debt: event.beforeDebt.toFixed(18),
-                collateral: event.lockedCollateral.toFixed(18),
-                before_collateral: event.beforeLockedCollateral.toFixed(18),
-                oracle_price: isFrobEvent(event) ? event.oracle_price : 0,
-                tx_id: event.tx_id,
-                log_index: event.log_index,
-                block_id: event.block_id,
-
-                market_price: null,
-                before_collateralization_ratio: null,
-                collateralization_ratio: null,
-                before_multiple: null,
-                multiple: null,
-                before_liquidation_price: null,
-                liquidation_price: null,
-                net_value: null,
-                oazo_fee: null,
-                loan_fee: null,
-                gas_fee: null,
-                total_fee: null,
-                bought: null,
-                deposit_collateral: null,
-                deposit_dai: null,
-                sold: null,
-                withdrawn_collateral: null,
-                withdrawn_dai: null,
-                exit_collateral: null,
-                exit_dai: null,
-              }
-          }
-        })
-
-        const cs = new services.pg.helpers.ColumnSet(
-          [
-            'kind',
-            'urn',
-            'market_price',
-            'oracle_price',
-            'before_collateral',
-            'collateral',
-            'before_collateralization_ratio',
-            'collateralization_ratio',
-            'before_debt',
-            'debt',
-            'before_multiple',
-            'multiple',
-            'before_liquidation_price',
-            'liquidation_price',
-            'net_value',
-            
-            'oazo_fee',
-            'loan_fee',
-            'gas_fee',
-            'total_fee',
-
-            'bought',
-            'deposit_collateral',
-            'deposit_dai',
-
-            'sold',
-            'withdrawn_collateral',
-            'withdrawn_dai',
-
-            'exit_collateral',
-            'exit_dai',
-
-            'standard_event_id',
-
-            'tx_id',
-            'block_id',
-            'log_index',
-          ],
-          {
-            table: {
-                schema: 'vault',
-                table: 'multiply_events',
-            },
-          },
-        );
-      try {
-
-        const query = services.pg.helpers.insert(values, cs);
-        await services.tx.none(query);
-      } catch (e) {
-        console.log(e)
-      }
+        await saveEventsToDb(services, values)
+   
       },
     };
   };
