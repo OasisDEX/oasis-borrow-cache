@@ -7,19 +7,17 @@ export type Aggregated<T> = T & {
 	debt: BigNumber,
 	beforeLockedCollateral: BigNumber,
 	lockedCollateral: BigNumber,
-  
-	// liquidationPrice: BigNumber
-	// beforeCollateralizationRatio: BigNumber
-	// collateralizationRatio: BigNumber
+	beforeCollateralizationRatio: BigNumber | null
+	collateralizationRatio: BigNumber | null
   }
   
 
-const allowedStandardEvents = ['DEPOSIT', 'DEPOSIT-GENERATE', 'WITHDRAW', 'WITHDRAW-PAYBACK'] as const
+const allowedStandardEvents = ['DEPOSIT', 'DEPOSIT-GENERATE', 'WITHDRAW', 'WITHDRAW-PAYBACK', 'GENERATE', 'PAYBACK'] as const
 export type AllowedEventsKey = (typeof allowedStandardEvents)[number]
 export type FilterByKind<E extends {kind: string}, K extends string> = E extends any ? E["kind"] extends K ? E : never : never
 export type FrobEvents = FilterByKind<Aggregated<Event>, AllowedEventsKey>
 
-export function isFrobEvent(event: Aggregated<Event>): event is FrobEvents {
+export function isFrobEvent<E extends Event>(event: E): event is  FilterByKind<E, AllowedEventsKey> {
 	return allowedStandardEvents.includes(event.kind as any)
 }
 
