@@ -32,10 +32,11 @@ export async function parseMultiplyEvent(
     dependencies.getGasFee(lastEvent.hash),
     dependencies.getTokenPrecision(collateralTokenAddress)
   ]);
+  const collateralPrecision = new BigNumber(10).pow(collateralTokenDecimals)
 
   const collateralFromExchange = multiplyEvent.method_name === 'increaseMultiple' || multiplyEvent.method_name === 'openMultiplyVault'
-    ? new BigNumber(multiplyEvent.amount_out).div(new BigNumber(10).pow(collateralTokenDecimals))
-    : new BigNumber(multiplyEvent.amount_in).div(new BigNumber(10).pow(collateralTokenDecimals));
+    ? new BigNumber(multiplyEvent.amount_out).div(collateralPrecision)
+    : new BigNumber(multiplyEvent.amount_in).div(collateralPrecision);
 
   const daiFromExchange = multiplyEvent.method_name === 'increaseMultiple' || multiplyEvent.method_name === 'openMultiplyVault'
     ? new BigNumber(multiplyEvent.amount_in).div(wad)
@@ -112,7 +113,7 @@ export async function parseMultiplyEvent(
         ...common,
         kind: 'CLOSE_VAULT_TO_COLLATERAL',
         sold,
-        exitCollateral: new BigNumber(multiplyEvent.collateral_left),
+        exitCollateral: new BigNumber(multiplyEvent.collateral_left).div(collateralPrecision),
         debt: zero,
         collateral: zero,
       };
@@ -121,7 +122,7 @@ export async function parseMultiplyEvent(
         ...common,
         kind: 'CLOSE_VAULT_TO_DAI',
         sold,
-        exitDai: new BigNumber(multiplyEvent.dai_left),
+        exitDai: new BigNumber(multiplyEvent.dai_left).div(wad),
         debt: zero,
         collateral: zero,
       };

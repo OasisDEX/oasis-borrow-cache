@@ -1,8 +1,9 @@
 import BigNumber from 'bignumber.js';
 import { sortBy } from 'lodash';
-import { Aggregated } from '../types/multiplyHistory';
+import { Aggregated, isFrobEvent } from '../types/multiplyHistory';
 import { Event } from '../types/history';
 import { zero } from './constants';
+import { getCollateralizationRatio } from './vaultParams';
 
 function sumNormalizedDebt(total: BigNumber, event: Event): BigNumber {
   switch (event.kind) {
@@ -52,13 +53,17 @@ export function aggregateVaultParams(events: Event[], eventsBefore: Event[]): Ag
     const previousEvent: Aggregated<Event> | undefined = acc[acc.length - 1];
     const beforeDebt = previousEvent ? previousEvent.debt : debtBeforeBatch;
     const beforeLockedCollateral = previousEvent ? previousEvent.lockedCollateral : lockedCollateralBeforeBatch;
+    const debt = sumNormalizedDebt(beforeDebt, event)
+    const lockedCollateral = sumCollateral(beforeLockedCollateral, event)
 
     const aggregatedEvent = {
       ...event,
       beforeDebt,
-      debt: sumNormalizedDebt(beforeDebt, event),
+      debt,
       beforeLockedCollateral,
-      lockedCollateral: sumCollateral(beforeLockedCollateral, event)
+      lockedCollateral,
+      beforeCollateralizationRatio: isFrobEvent(event) ? getCollateralizationRatio(beforeDebt, beforeLockedCollateral, new BigNumber(event.oracle_price)) : null,
+      collateralizationRatio: isFrobEvent(event) ? getCollateralizationRatio(debt, lockedCollateral, new BigNumber(event.oracle_price)) : null
     };
 
     return [...acc, aggregatedEvent];
