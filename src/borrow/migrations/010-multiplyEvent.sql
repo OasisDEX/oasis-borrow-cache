@@ -64,7 +64,7 @@ CREATE VIEW api.vault_multiply_history AS (
     b.number as block_number, b.hash as block_hash,
     e.collateral_amount, e.dai_amount, e.rate, e.vault_creator, e.depositor, e.cdp_id, e.transfer_from,
     e.transfer_to, e.collateral, e.auction_id, e.liq_penalty, e.collateral_price, e.covered_debt, 
-    e.remaining_debt, e.remaining_collateral, e.collateral_taken, e.ilk, e.oracle_price
+    e.remaining_debt, e.remaining_collateral, e.collateral_taken, e.ilk, COALESCE(e.oracle_price, me.oracle_price) as oracle_price
     FROM vault.multiply_events me
     JOIN vulcan2x.transaction t ON me.tx_id = t.id
     JOIN vulcan2x.block b ON me.block_id = b.id
