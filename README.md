@@ -91,7 +91,8 @@ Requirements:
 
 - `fold` - Holds pure fold function calls on vat. Updates rates for ilk.
 - `fork` - Holds pure fork function calls on vat. Moves collateral and debt between vaults.
-- `frob` - Holds pure frob function calls on vat. This call does debt and collateral changes on vault. 
+- `frob` - Holds pure frob function calls on vat. This call does debt and collateral changes on
+  vault.
 - `grab` - Holds pure grab function calls on vat. Confiscates vault on liquidation.
 
 ### Schema: `vault`
@@ -104,8 +105,7 @@ Note: values saved from pure events or function calls are not normalized, they n
 
 ## Unit tests
 
-- For running tests you also need node v12
-<DESCRIBE UNIT TESTS>
+- For running tests you also need node v12 <DESCRIBE UNIT TESTS>
 
 ## Development notes
 

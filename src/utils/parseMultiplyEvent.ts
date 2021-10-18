@@ -1,8 +1,19 @@
 import BigNumber from 'bignumber.js';
-import { Aggregated, assertAllowedEvent, CommonEvent, MultiplyDbEvent, MultiplyEvent } from '../types/multiplyHistory';
+import {
+  Aggregated,
+  assertAllowedEvent,
+  CommonEvent,
+  MultiplyDbEvent,
+  MultiplyEvent,
+} from '../types/multiplyHistory';
 import { wad } from './precision';
 import { Event } from '../types/history';
-import { getCollateralizationRatio, getMultiple, getLiquidationPrice, getNetValue } from './vaultParams';
+import {
+  getCollateralizationRatio,
+  getMultiple,
+  getLiquidationPrice,
+  getNetValue,
+} from './vaultParams';
 import { zero } from './constants';
 
 interface Dependencies {
@@ -13,7 +24,8 @@ interface Dependencies {
 export async function parseMultiplyEvent(
   multiplyEvent: MultiplyDbEvent,
   vaultEvents: Aggregated<Event>[],
-  dependencies: Dependencies): Promise<MultiplyEvent> {
+  dependencies: Dependencies,
+): Promise<MultiplyEvent> {
   const lastEvent: Aggregated<Event> = vaultEvents[vaultEvents.length - 1];
   assertAllowedEvent(lastEvent);
 
@@ -24,52 +36,85 @@ export async function parseMultiplyEvent(
   const oazoFee = new BigNumber(multiplyEvent.oazo_fee).div(wad);
   const loanFee = new BigNumber(multiplyEvent.due).minus(multiplyEvent.borrowed).div(wad);
   const liquidationRatio = new BigNumber(multiplyEvent.liquidation_ratio);
-  const collateralTokenAddress = multiplyEvent.method_name === 'increaseMultiple' || multiplyEvent.method_name === 'openMultiplyVault'
-    ? multiplyEvent.asset_out
-    : multiplyEvent.asset_in;
+  const collateralTokenAddress =
+    multiplyEvent.method_name === 'increaseMultiple' ||
+    multiplyEvent.method_name === 'openMultiplyVault'
+      ? multiplyEvent.asset_out
+      : multiplyEvent.asset_in;
 
   const [gasFee, collateralTokenDecimals] = await Promise.all([
     dependencies.getGasFee(lastEvent.hash),
-    dependencies.getTokenPrecision(collateralTokenAddress)
+    dependencies.getTokenPrecision(collateralTokenAddress),
   ]);
-  const collateralPrecision = new BigNumber(10).pow(collateralTokenDecimals)
+  const collateralPrecision = new BigNumber(10).pow(collateralTokenDecimals);
 
-  const collateralFromExchange = multiplyEvent.method_name === 'increaseMultiple' || multiplyEvent.method_name === 'openMultiplyVault'
-    ? new BigNumber(multiplyEvent.amount_out).div(collateralPrecision)
-    : new BigNumber(multiplyEvent.amount_in).div(collateralPrecision);
+  const collateralFromExchange =
+    multiplyEvent.method_name === 'increaseMultiple' ||
+    multiplyEvent.method_name === 'openMultiplyVault'
+      ? new BigNumber(multiplyEvent.amount_out).div(collateralPrecision)
+      : new BigNumber(multiplyEvent.amount_in).div(collateralPrecision);
 
-  const daiFromExchange = multiplyEvent.method_name === 'increaseMultiple' || multiplyEvent.method_name === 'openMultiplyVault'
-    ? new BigNumber(multiplyEvent.amount_in).div(wad)
-    : new BigNumber(multiplyEvent.amount_out).div(wad);
+  const daiFromExchange =
+    multiplyEvent.method_name === 'increaseMultiple' ||
+    multiplyEvent.method_name === 'openMultiplyVault'
+      ? new BigNumber(multiplyEvent.amount_in).div(wad)
+      : new BigNumber(multiplyEvent.amount_out).div(wad);
 
-  const depositDai = multiplyEvent.method_name === 'increaseMultiple' || multiplyEvent.method_name === 'openMultiplyVault'
-    ? (daiFromExchange.plus(oazoFee)).minus(new BigNumber(multiplyEvent.borrowed).div(wad))
-    : zero;
+  const depositDai =
+    multiplyEvent.method_name === 'increaseMultiple' ||
+    multiplyEvent.method_name === 'openMultiplyVault'
+      ? daiFromExchange.plus(oazoFee).minus(new BigNumber(multiplyEvent.borrowed).div(wad))
+      : zero;
 
   const marketPrice = daiFromExchange.div(collateralFromExchange);
 
-  const bought = multiplyEvent.method_name === 'increaseMultiple' || multiplyEvent.method_name === 'openMultiplyVault'
-    ? collateralFromExchange
-    : zero;
+  const bought =
+    multiplyEvent.method_name === 'increaseMultiple' ||
+    multiplyEvent.method_name === 'openMultiplyVault'
+      ? collateralFromExchange
+      : zero;
 
-  const sold = multiplyEvent.method_name === 'decreaseMultiple' || multiplyEvent.method_name === 'closeVaultExitCollateral' || multiplyEvent.method_name === 'closeVaultExitDai'
-    ? collateralFromExchange
-    : zero;
+  const sold =
+    multiplyEvent.method_name === 'decreaseMultiple' ||
+    multiplyEvent.method_name === 'closeVaultExitCollateral' ||
+    multiplyEvent.method_name === 'closeVaultExitDai'
+      ? collateralFromExchange
+      : zero;
 
   const common: CommonEvent = {
     marketPrice,
     oraclePrice,
     beforeCollateral: lastEvent.beforeLockedCollateral,
     collateral: lastEvent.lockedCollateral,
-    beforeCollateralizationRatio: getCollateralizationRatio(lastEvent.beforeDebt, lastEvent.beforeLockedCollateral, oraclePrice),
-    collateralizationRatio: getCollateralizationRatio(lastEvent.debt, lastEvent.lockedCollateral, oraclePrice),
+    beforeCollateralizationRatio: getCollateralizationRatio(
+      lastEvent.beforeDebt,
+      lastEvent.beforeLockedCollateral,
+      oraclePrice,
+    ),
+    collateralizationRatio: getCollateralizationRatio(
+      lastEvent.debt,
+      lastEvent.lockedCollateral,
+      oraclePrice,
+    ),
     beforeDebt: lastEvent.beforeDebt,
     debt: lastEvent.debt,
-    beforeMultiple: getMultiple(lastEvent.beforeDebt, lastEvent.beforeLockedCollateral, oraclePrice),
+    beforeMultiple: getMultiple(
+      lastEvent.beforeDebt,
+      lastEvent.beforeLockedCollateral,
+      oraclePrice,
+    ),
     multiple: getMultiple(lastEvent.debt, lastEvent.lockedCollateral, oraclePrice),
-    beforeLiquidationPrice: getLiquidationPrice(lastEvent.beforeDebt, lastEvent.beforeLockedCollateral, liquidationRatio),
+    beforeLiquidationPrice: getLiquidationPrice(
+      lastEvent.beforeDebt,
+      lastEvent.beforeLockedCollateral,
+      liquidationRatio,
+    ),
     liquidationRatio,
-    liquidationPrice: getLiquidationPrice(lastEvent.debt, lastEvent.lockedCollateral, liquidationRatio),
+    liquidationPrice: getLiquidationPrice(
+      lastEvent.debt,
+      lastEvent.lockedCollateral,
+      liquidationRatio,
+    ),
     netValue: getNetValue(lastEvent.debt, lastEvent.lockedCollateral, oraclePrice),
 
     oazoFee,
@@ -80,7 +125,7 @@ export async function parseMultiplyEvent(
     tx_id: multiplyEvent.tx_id,
     log_index: multiplyEvent.tx_id,
     block_id: multiplyEvent.block_id,
-    urn: multiplyEvent.urn
+    urn: multiplyEvent.urn,
   };
 
   switch (multiplyEvent.method_name) {

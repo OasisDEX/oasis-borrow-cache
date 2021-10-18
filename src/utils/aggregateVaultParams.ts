@@ -46,15 +46,17 @@ export function aggregateVaultParams(events: Event[], eventsBefore: Event[]): Ag
   const sortedEvents = sortBy(
     events,
     event => event.block_id,
-    event => event.log_index
+    event => event.log_index,
   );
 
   return sortedEvents.reduce((acc, event) => {
     const previousEvent: Aggregated<Event> | undefined = acc[acc.length - 1];
     const beforeDebt = previousEvent ? previousEvent.debt : debtBeforeBatch;
-    const beforeLockedCollateral = previousEvent ? previousEvent.lockedCollateral : lockedCollateralBeforeBatch;
-    const debt = sumNormalizedDebt(beforeDebt, event)
-    const lockedCollateral = sumCollateral(beforeLockedCollateral, event)
+    const beforeLockedCollateral = previousEvent
+      ? previousEvent.lockedCollateral
+      : lockedCollateralBeforeBatch;
+    const debt = sumNormalizedDebt(beforeDebt, event);
+    const lockedCollateral = sumCollateral(beforeLockedCollateral, event);
 
     const aggregatedEvent = {
       ...event,
@@ -62,8 +64,16 @@ export function aggregateVaultParams(events: Event[], eventsBefore: Event[]): Ag
       debt,
       beforeLockedCollateral,
       lockedCollateral,
-      beforeCollateralizationRatio: isFrobEvent(event) ? getCollateralizationRatio(beforeDebt, beforeLockedCollateral, new BigNumber(event.oracle_price)) : null,
-      collateralizationRatio: isFrobEvent(event) ? getCollateralizationRatio(debt, lockedCollateral, new BigNumber(event.oracle_price)) : null
+      beforeCollateralizationRatio: isFrobEvent(event)
+        ? getCollateralizationRatio(
+            beforeDebt,
+            beforeLockedCollateral,
+            new BigNumber(event.oracle_price),
+          )
+        : null,
+      collateralizationRatio: isFrobEvent(event)
+        ? getCollateralizationRatio(debt, lockedCollateral, new BigNumber(event.oracle_price))
+        : null,
     };
 
     return [...acc, aggregatedEvent];
