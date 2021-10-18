@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js';
 import { sortBy } from 'lodash';
 import { Aggregated, isFrobEvent } from '../types/multiplyHistory';
 import { Event } from '../types/history';
-import { zero } from './constants';
+import { one, zero } from './constants';
 import { getCollateralizationRatio } from './vaultParams';
 
 function sumNormalizedDebt(total: BigNumber, event: Event): BigNumber {
@@ -12,11 +12,13 @@ function sumNormalizedDebt(total: BigNumber, event: Event): BigNumber {
     case 'WITHDRAW-PAYBACK':
     case 'DEPOSIT-GENERATE':
     case 'MOVE_DEST':
-      return total.plus(new BigNumber(event.dai_amount).div(event.rate));
+      let result = total.plus(new BigNumber(event.dai_amount).div(event.rate));
+      return result.lt(one) ? zero : result
     case 'MOVE_SRC':
     case 'AUCTION_STARTED_V2':
     case 'AUCTION_STARTED':
-      return total.minus(new BigNumber(event.dai_amount).div(event.rate));
+      result = total.minus(new BigNumber(event.dai_amount).div(event.rate));
+      return result.lt(one) ? zero : result
     default:
       return total;
   }
