@@ -11,11 +11,10 @@ function sumNormalizedDebt(total: BigNumber, event: Event): BigNumber {
     case 'PAYBACK':
     case 'WITHDRAW-PAYBACK':
     case 'DEPOSIT-GENERATE':
-    case 'MOVE_DESC':
+    case 'MOVE_DEST':
       return total.plus(new BigNumber(event.dai_amount).div(event.rate));
     case 'MOVE_SRC':
     case 'AUCTION_STARTED_V2':
-      return total;
     case 'AUCTION_STARTED':
       return total.minus(new BigNumber(event.dai_amount).div(event.rate));
     default:
@@ -28,7 +27,7 @@ function sumCollateral(total: BigNumber, event: Event): BigNumber {
     case 'WITHDRAW':
     case 'WITHDRAW-PAYBACK':
     case 'DEPOSIT-GENERATE':
-    case 'MOVE_DESC':
+    case 'MOVE_DEST':
       return total.plus(event.collateral_amount);
     case 'MOVE_SRC':
     case 'AUCTION_STARTED_V2':

@@ -112,7 +112,7 @@ interface MoveSrcEvent extends HistoryEventBase {
 }
 
 interface MoveDestEvent extends HistoryEventBase {
-  kind: 'MOVE_DESC';
+  kind: 'MOVE_DEST';
   transfer_from: string;
   transfer_to: string;
   collateral_amount: string;
