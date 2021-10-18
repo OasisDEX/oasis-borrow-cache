@@ -12,13 +12,11 @@ function sumNormalizedDebt(total: BigNumber, event: Event): BigNumber {
     case 'WITHDRAW-PAYBACK':
     case 'DEPOSIT-GENERATE':
     case 'MOVE_DEST':
-      let result = total.plus(new BigNumber(event.dai_amount).div(event.rate));
-      return result.lt(one) ? zero : result
+      return total.plus(new BigNumber(event.dai_amount).div(event.rate));
     case 'MOVE_SRC':
     case 'AUCTION_STARTED_V2':
     case 'AUCTION_STARTED':
-      result = total.minus(new BigNumber(event.dai_amount).div(event.rate));
-      return result.lt(one) ? zero : result
+      return total.minus(new BigNumber(event.dai_amount).div(event.rate));
     default:
       return total;
   }
@@ -40,6 +38,10 @@ function sumCollateral(total: BigNumber, event: Event): BigNumber {
   }
 }
 
+function getValidDebt(debt: BigNumber): BigNumber {
+  return debt.lte(one) ? zero : debt
+}
+
 export function aggregateVaultParams(events: Event[], eventsBefore: Event[]): Aggregated<Event>[] {
   const debtBeforeBatch = eventsBefore.reduce(sumNormalizedDebt, zero);
   const lockedCollateralBeforeBatch = eventsBefore.reduce(sumCollateral, zero);
@@ -52,11 +54,11 @@ export function aggregateVaultParams(events: Event[], eventsBefore: Event[]): Ag
 
   return sortedEvents.reduce((acc, event) => {
     const previousEvent: Aggregated<Event> | undefined = acc[acc.length - 1];
-    const beforeDebt = previousEvent ? previousEvent.debt : debtBeforeBatch;
+    const beforeDebt = getValidDebt(previousEvent ? previousEvent.debt : debtBeforeBatch);
     const beforeLockedCollateral = previousEvent
       ? previousEvent.lockedCollateral
       : lockedCollateralBeforeBatch;
-    const debt = sumNormalizedDebt(beforeDebt, event);
+    const debt = getValidDebt(sumNormalizedDebt(beforeDebt, event));
     const lockedCollateral = sumCollateral(beforeLockedCollateral, event);
 
     const aggregatedEvent = {
