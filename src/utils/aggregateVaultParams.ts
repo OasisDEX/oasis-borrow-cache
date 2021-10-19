@@ -39,7 +39,7 @@ function sumCollateral(total: BigNumber, event: Event): BigNumber {
 }
 
 function getValidDebt(debt: BigNumber): BigNumber {
-  return debt.lte(one) ? zero : debt
+  return debt.lte(one) ? zero : debt;
 }
 
 export function aggregateVaultParams(events: Event[], eventsBefore: Event[]): Aggregated<Event>[] {

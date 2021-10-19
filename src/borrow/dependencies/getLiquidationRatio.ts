@@ -14,6 +14,8 @@ export async function getLiquidationRatio(
   const addresses = getAddressesFromConfig(services);
   const spot = new ethers.Contract(addresses.MCD_SPOT, mcdSpotAbi, (services as any).provider);
 
-  const [, mat]: [string, BigNumber] = await spot.ilks(ethers.utils.toUtf8Bytes(ilk), { blockTag });
+  const [, mat]: [string, BigNumber] = await spot.ilks(ethers.utils.toUtf8Bytes(ilk), {
+    blockTag,
+  });
   return new BigNumber(mat).div(ray);
 }

@@ -12,6 +12,8 @@ jobs:
     env:
       AWS_REGION: eu-central-1
       ECR_REPO_NAME: oazo-bcache-staging
+      GOERLI_ETL_SERVICE_NAME: oazo-bcache-etl-goerli-staging
+      GOERLI_API_SERVICE_NAME: oazo-bcache-api-goerli-staging
       KOVAN_ETL_SERVICE_NAME: oazo-bcache-etl-kovan-staging
       KOVAN_API_SERVICE_NAME: oazo-bcache-api-kovan-staging
       MAINNET_ETL_SERVICE_NAME: oazo-bcache-etl-mainnet-staging
@@ -56,6 +58,16 @@ jobs:
                      .
         docker push $ECR_REGISTRY/$ECR_REPO_NAME --all-tags
 
+    - name: Update ${{ env.GOERLI_ETL_SERVICE_NAME }} ECS service with latest Docker image
+      id: service-update-goerli-etl
+      run: |
+        aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.GOERLI_ETL_SERVICE_NAME }} --force-new-deployment --region $AWS_REGION
+
+    - name: Update ${{ env.GOERLI_API_SERVICE_NAME }} ECS service with latest Docker image
+      id: service-update-goerli-api
+      run: |
+        aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.KOVAN_API_SERVICE_NAME }} --force-new-deployment --region $AWS_REGION
+
     - name: Update ${{ env.KOVAN_ETL_SERVICE_NAME }} ECS service with latest Docker image
       id: service-update-kovan-etl
       run: |
@@ -75,6 +87,12 @@ jobs:
       id: service-update-mainnet-api
       run: |
         aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.MAINNET_API_SERVICE_NAME }} --force-new-deployment --region $AWS_REGION
+
+    - name: Wait for goerli services to become stable
+      uses: oryanmoshe/ecs-wait-action@v1.3
+      with:
+        ecs-cluster: ${{ env.CLUSTER_NAME }}
+        ecs-services: '["${{ env.GOERLI_ETL_SERVICE_NAME }}", "${{ env.GOERLI_API_SERVICE_NAME }}"]'
 
     - name: Wait for kovan services to become stable
       uses: oryanmoshe/ecs-wait-action@v1.3
