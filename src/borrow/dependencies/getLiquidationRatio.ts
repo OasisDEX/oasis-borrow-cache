@@ -6,14 +6,16 @@ import { ray } from '../../utils/precision';
 
 const mcdSpotAbi = require('../../../abis/dss-spot.json');
 
-export async function getLiquidationRatio(ilk: string, blockTag: number, services: LocalServices): Promise<BigNumber> {
+export async function getLiquidationRatio(
+  ilk: string,
+  blockTag: number,
+  services: LocalServices,
+): Promise<BigNumber> {
   const addresses = getAddressesFromConfig(services);
-  const spot = new ethers.Contract(
-    addresses.MCD_SPOT,
-    mcdSpotAbi,
-    (services as any).provider,
-  );
+  const spot = new ethers.Contract(addresses.MCD_SPOT, mcdSpotAbi, (services as any).provider);
 
-    const [_, mat]: [string, BigNumber] = await spot.ilks(ethers.utils.toUtf8Bytes(ilk), { blockTag });
-    return new BigNumber(mat).div(ray);
+  const [, mat]: [string, BigNumber] = await spot.ilks(ethers.utils.toUtf8Bytes(ilk), {
+    blockTag,
+  });
+  return new BigNumber(mat).div(ray);
 }
