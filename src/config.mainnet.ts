@@ -128,6 +128,10 @@ const multiply = [
     address: '0x33b4be1b67c49125c1524777515e4034e04dff58',
     startingBlock: 13184929,
   },
+  {
+    address: '0x2a49Eae5CCa3f050eBEC729Cf90CC910fADAf7A2',
+    startingBlock: 13461195,
+  },
 ];
 
 const exchange = [
