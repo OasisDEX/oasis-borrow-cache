@@ -35,6 +35,9 @@ Requirements:
    Here you may also override `VL_CHAIN_NAME=mainnet`. You may set it to `mainnet` or `kovan` or
    `localnet` but remember to also provide proper jsonrpc node.
 
+   It is also possible to override vat starting block (there are defaults within config files).
+   To do so use `GENESIS=<HERE PASTE STARTING BLOCK NUMBER>` variable.
+
    ```
    VL_CHAIN_HOST= <HERE PASTE AN URL TO JSONRPC NODE FROM WHERE YOU WISH TO FETCH BLOCKCHAIN DATA>
    ```
