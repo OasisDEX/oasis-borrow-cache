@@ -23,16 +23,12 @@ import {
 import { flipNoteTransformer, flipTransformer } from './borrow/transformers/flipperTransformer';
 import { getIlkInfo } from './borrow/dependencies/getIlkInfo';
 import { getUrnForCdp } from './borrow/dependencies/getUrnForCdp';
-import { getLiquidationRatio } from './borrow/dependencies/getLiquidationRatio';
-import { getIlkForCdp } from './borrow/dependencies/getIlkForCdp';
 import {
   auctionLiq2Transformer,
   dogTransformer,
   getDogTransformerName,
 } from './borrow/transformers/dogTransformer';
 import { clipperTransformer } from './borrow/transformers/clipperTransformer';
-import { multiplyTransformer } from './borrow/transformers/multiply';
-import { exchangeTransformer } from './borrow/transformers/exchange';
 
 import { getOraclesAddresses } from './utils/addresses';
 import {
@@ -41,37 +37,33 @@ import {
 } from './borrow/transformers/oraclesTransformer';
 import { eventEnhancerTransformer } from './borrow/transformers/eventEnhancer';
 
-const mainnetAddresses = require('./addresses/mainnet.json');
+const goerliAddresses = require('./addresses/goerli.json');
 
-const GENESIS = Number(process.env.GENESIS) || 8928152;
+const GENESIS = Number(process.env.GENESIS) || 5273074;
 
 const vat = {
-  address: '0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b',
+  address: goerliAddresses.MCD_VAT,
   startingBlock: GENESIS,
 };
 
 const cdpManagers = [
   {
-    address: '0x5ef30b9986345249bc32d8928B7ee64DE9435E39',
-    startingBlock: 8928198,
+    address: goerliAddresses.CDP_MANAGER,
+    startingBlock: 5273301,
   },
 ];
 
 const cats = [
   {
-    address: '0x78F2c2AF65126834c51822F56Be0d7469D7A523E',
-    startingBlock: 9638144,
-  },
-  {
-    address: '0xa5679C04fc3d9d8b0AaB1F0ab83555b301cA70Ea',
-    startingBlock: 10742907,
+    address: goerliAddresses.MCD_CAT,
+    startingBlock: 5273080,
   },
 ];
 
 const dogs = [
   {
-    address: '0x135954d155898d42c90d2a57824c690e0c7bef1b',
-    startingBlock: 12246358,
+    address: goerliAddresses.MCD_DOG,
+    startingBlock: 5273080,
   },
 ];
 
@@ -79,7 +71,7 @@ const clippers = [
   {
     name: 'clipper',
     abi: require('../abis/clipper.json'),
-    startingBlock: 24136159,
+    startingBlock: GENESIS,
   },
 ];
 
@@ -118,25 +110,12 @@ const flipperNotes: AbiInfo[] = [
 ];
 
 const addresses = {
-  ...mainnetAddresses,
-  MIGRATION: '0xc73e0383f3aff3215e6f04b0331d58cecf0ab849',
-  ILK_REGISTRY: '0x5a464C28D19848f44199D003BeF5ecc87d090F87',
+  ...goerliAddresses,
+  MIGRATION: '',
+  ILK_REGISTRY: '0x525FaC4CEc48a4eF2FBb0A72355B6255f8D5f79e',
 };
 
-const multiply = [
-  {
-    address: '0xeae4061009f0b804aafc76f3ae67567d0abe9c27',
-    startingBlock: 13140365,
-  },
-];
-
-const exchange = [
-  {
-    address: '0xb5eb8cb6ced6b6f8e13bcd502fb489db4a726c7b',
-    startingBlock: 13140368,
-  },
-];
-const oracles = getOraclesAddresses(mainnetAddresses).map(description => ({
+const oracles = getOraclesAddresses(goerliAddresses).map(description => ({
   ...description,
   startingBlock: GENESIS,
 }));
@@ -156,9 +135,9 @@ export const config: UserProvidedSpockConfig = {
       clippers,
       dogs.map(dog => dog.address.toLowerCase()),
     ), // ignore dogs addresses because event name conflict
-    ...makeRawLogExtractors(multiply),
-    ...makeRawLogExtractors(exchange),
-    ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(oracle),
+    ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(
+        oracle,
+        dogs.map(dog => dog.address.toLowerCase())),
   ],
   transformers: [
     ...openCdpTransformer(cdpManagers, { getUrnForCdp }),
@@ -174,13 +153,6 @@ export const config: UserProvidedSpockConfig = {
     flipTransformer(),
     flipNoteTransformer(),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
-    ...multiplyTransformer(multiply, {
-      cdpManager: cdpManagers[0].address,
-      vat: vat.address,
-      getIlkForCdp,
-      getLiquidationRatio,
-    }),
-    ...exchangeTransformer(exchange),
     ...oraclesTransformer(oracles),
     eventEnhancerTransformer(vat.address, GENESIS, oraclesTransformers),
   ],

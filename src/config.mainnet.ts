@@ -23,8 +23,8 @@ import {
 import { flipNoteTransformer, flipTransformer } from './borrow/transformers/flipperTransformer';
 import { getIlkInfo } from './borrow/dependencies/getIlkInfo';
 import { getUrnForCdp } from './borrow/dependencies/getUrnForCdp';
-import { getLiquidationRatio } from './borrow/dependencies/getLiquidationRatio'
-import { getIlkForCdp } from './borrow/dependencies/getIlkForCdp'
+import { getLiquidationRatio } from './borrow/dependencies/getLiquidationRatio';
+import { getIlkForCdp } from './borrow/dependencies/getIlkForCdp';
 import {
   auctionLiq2Transformer,
   dogTransformer,
@@ -34,14 +34,16 @@ import { clipperTransformer } from './borrow/transformers/clipperTransformer';
 import { multiplyTransformer } from './borrow/transformers/multiply';
 import { exchangeTransformer } from './borrow/transformers/exchange';
 
-import { getOraclesAddresses } from "./utils/addresses";
-import { getOracleTransformerName, oraclesTransformer } from './borrow/transformers/oraclesTransformer';
+import { getOraclesAddresses } from './utils/addresses';
+import {
+  getOracleTransformerName,
+  oraclesTransformer,
+} from './borrow/transformers/oraclesTransformer';
 import { eventEnhancerTransformer } from './borrow/transformers/eventEnhancer';
 
+const mainnetAddresses = require('./addresses/mainnet.json');
 
-const mainnetAddresses = require('./addresses/mainnet.json')
-
-const GENESIS = 8928152;
+const GENESIS = Number(process.env.GENESIS) || 8928152;
 
 const vat = {
   address: '0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b',
@@ -126,20 +128,24 @@ const multiply = [
     address: '0x33b4be1b67c49125c1524777515e4034e04dff58',
     startingBlock: 13184929,
   },
+  {
+    address: '0x2a49Eae5CCa3f050eBEC729Cf90CC910fADAf7A2',
+    startingBlock: 13461195,
+  },
 ];
 
 const exchange = [
   {
     address: '0xb5eb8cb6ced6b6f8e13bcd502fb489db4a726c7b',
     startingBlock: 13140368,
-  }
-]
+  },
+];
 const oracles = getOraclesAddresses(mainnetAddresses).map(description => ({
   ...description,
   startingBlock: GENESIS,
-}))
+}));
 
-const oraclesTransformers = oracles.map(getOracleTransformerName)
+const oraclesTransformers = oracles.map(getOracleTransformerName);
 
 export const config: UserProvidedSpockConfig = {
   startingBlock: GENESIS,
@@ -150,7 +156,10 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors([vat]),
     ...makeRawEventBasedOnTopicExtractor(flipper),
     ...makeRowEventBasedOnDSNoteTopic(flipperNotes),
-    ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(clippers, dogs.map(dog => dog.address.toLowerCase())), // ignore dogs addresses because event name conflict 
+    ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(
+      clippers,
+      dogs.map(dog => dog.address.toLowerCase()),
+    ), // ignore dogs addresses because event name conflict
     ...makeRawLogExtractors(multiply),
     ...makeRawLogExtractors(exchange),
     ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(oracle),
@@ -169,10 +178,15 @@ export const config: UserProvidedSpockConfig = {
     flipTransformer(),
     flipNoteTransformer(),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
-    ...multiplyTransformer(multiply, { cdpManager: cdpManagers[0].address, vat: vat.address, getIlkForCdp, getLiquidationRatio }),
+    ...multiplyTransformer(multiply, {
+      cdpManager: cdpManagers[0].address,
+      vat: vat.address,
+      getIlkForCdp,
+      getLiquidationRatio,
+    }),
     ...exchangeTransformer(exchange),
     ...oraclesTransformer(oracles),
-    eventEnhancerTransformer(vat.address, GENESIS, oraclesTransformers)
+    eventEnhancerTransformer(vat.address, GENESIS, oraclesTransformers),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),

@@ -33,11 +33,14 @@ Requirements:
    variables. In order to create borrow history you will need to supply an url to jsonrpc node.
 
    Here you may also override `VL_CHAIN_NAME=mainnet`. You may set it to `mainnet` or `kovan` or
-   `localnet` but remember to also provide proper jsonrpc node.
+   `localnet` but remember to also provide proper jsonrpc node (taken from [alchemy](https://www.alchemy.com/) or [infura](https://infura.io/)).
 
    ```
    VL_CHAIN_HOST= <HERE PASTE AN URL TO JSONRPC NODE FROM WHERE YOU WISH TO FETCH BLOCKCHAIN DATA>
    ```
+   
+   It is also possible to override vat starting block (there are defaults within config files).
+   To do so use `GENESIS=<HERE PASTE STARTING BLOCK NUMBER>` variable.
 
 4. Run database
    ```bash
@@ -115,3 +118,20 @@ Note: values saved from pure events or function calls are not normalized, they n
   block_id                integer not null REFERENCES vulcan2x.block(id) ON DELETE CASCADE,
   ```
 - Remember to lowercase all addresses when saving them.
+
+## Troubleshooting known issues
+
+### Getting EHOSTUNREACH on some ip when running yarn start-etl
+This issue is related to IPv6 and happens for some people on some service providers (for ex. UPC in Poland).
+Temporary solution to fix it at one [Linux machine by disabling IPv6](https://www.techrepublic.com/article/how-to-disable-ipv6-on-linux/).
+Long term solution, for many devices is to call service provider and ask them to switch off IPv6.
+#### Example log for this issue
+```
+Got 0, {"attempts":15,"method":"getBlock","params":{"blockTag":"0x507b24","includeTransactions":false},"error":{"statusCode":0,"responseText":"Error: connect EHOSTUNREACH 54.205.195.79:443\n    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1138:16)"}}
+› Got error, failing... {"statusCode":0,"responseText":"Error: connect EHOSTUNREACH 54.205.195.79:443\n    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1138:16)"}
+ℹ Releasing lock: 4919                                                                                                                                                       db/utils 10:18:22
+› SELECT pg_advisory_unlock(4919); (2 ms)                                                                                                                                          db 10:18:22
+ℹ Released lock: 4919                                                                                                                                                        db/utils 10:18:22
+Error: invalid response - 0
+    at exports.XMLHttpRequest.request.onreadystatechange (/home/johnnie/Projects/oasis-borrow-cache/node_modules/ethers/utils/web.js:84:29)
+```
