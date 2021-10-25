@@ -42,6 +42,21 @@ async function getTimeStamp(services: LocalServices, block_id: number): Promise<
   return value.timestamp;
 }
 
+async function savePriceToDb(services: LocalServices, row: Price): Promise<void> {
+  const cs = new services.pg.helpers.ColumnSet(
+    ['price', 'token', 'timestamp', 'osm_address', 'tx_id', 'block_id', 'log_index'],
+    {
+      table: {
+        schema: 'oracles',
+        table: 'prices',
+      },
+    },
+  );
+
+  const query = services.pg.helpers.insert([row], cs);
+  await services.tx.none(query);
+}
+
 async function savePrice(
   services: LocalServices,
   log: PersistedLog,
@@ -58,18 +73,8 @@ async function savePrice(
     tx_id: log.tx_id,
     block_id: log.block_id,
   };
-  const cs = new services.pg.helpers.ColumnSet(
-    ['price', 'token', 'timestamp', 'osm_address', 'tx_id', 'block_id', 'log_index'],
-    {
-      table: {
-        schema: 'oracles',
-        table: 'prices',
-      },
-    },
-  );
 
-  const query = services.pg.helpers.insert([row], cs);
-  await services.tx.none(query);
+  await savePriceToDb(services, row)
 }
 
 const handlers = (token: string) => ({
