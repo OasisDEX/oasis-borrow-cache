@@ -11,6 +11,7 @@ export function getCollateralizationRatio(
   }
   return collateral.times(osmPrice).div(debt);
 }
+
 export function getLiquidationPrice(
   debt: BigNumber,
   collateral: BigNumber,
@@ -21,6 +22,7 @@ export function getLiquidationPrice(
   }
   return liquidationRatio.times(debt).div(collateral);
 }
+
 export function getMultiple(
   debt: BigNumber,
   collateral: BigNumber,
@@ -32,12 +34,13 @@ export function getMultiple(
   }
   return lockedCollateralUSD.div(lockedCollateralUSD.minus(debt));
 }
+
 export function getNetValue(
   debt: BigNumber,
   collateral: BigNumber,
-  osmPrice: BigNumber,
+  marketPrice: BigNumber,
 ): BigNumber {
-  const lockedCollateralUSD = collateral.times(osmPrice);
+  const lockedCollateralUSD = collateral.times(marketPrice);
   if (lockedCollateralUSD.eq(zero)) {
     return zero;
   }
