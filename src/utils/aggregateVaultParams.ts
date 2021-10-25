@@ -69,13 +69,13 @@ export function aggregateVaultParams(events: Event[], eventsBefore: Event[]): Ag
       lockedCollateral,
       beforeCollateralizationRatio: isFrobEvent(event)
         ? getCollateralizationRatio(
-            beforeDebt,
+            beforeDebt.times(event.rate),
             beforeLockedCollateral,
             new BigNumber(event.oracle_price),
           )
         : null,
       collateralizationRatio: isFrobEvent(event)
-        ? getCollateralizationRatio(debt, lockedCollateral, new BigNumber(event.oracle_price))
+        ? getCollateralizationRatio(debt.times(event.rate), lockedCollateral, new BigNumber(event.oracle_price))
         : null,
     };
 
