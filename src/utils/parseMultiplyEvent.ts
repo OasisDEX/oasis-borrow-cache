@@ -6,7 +6,6 @@ import {
   MultiplyDbEvent,
   MultiplyEvent,
 } from '../types/multiplyHistory';
-import { wad } from './precision';
 import { Event } from '../types/history';
 import {
   getCollateralizationRatio,
@@ -32,9 +31,10 @@ export async function parseMultiplyEvent(
   const collateralChange = new BigNumber(lastEvent.collateral_amount);
   const debtChange = new BigNumber(lastEvent.dai_amount);
 
+  const daiPrecision = new BigNumber(10).pow(18)
   const oraclePrice = new BigNumber(lastEvent.oracle_price);
-  const oazoFee = new BigNumber(multiplyEvent.oazo_fee).div(wad);
-  const loanFee = new BigNumber(multiplyEvent.due).minus(multiplyEvent.borrowed).div(wad);
+  const oazoFee = new BigNumber(multiplyEvent.oazo_fee).div(daiPrecision);
+  const loanFee = new BigNumber(multiplyEvent.due).minus(multiplyEvent.borrowed).div(daiPrecision);
   const liquidationRatio = new BigNumber(multiplyEvent.liquidation_ratio);
   const collateralTokenAddress =
     multiplyEvent.method_name === 'increaseMultiple' ||
@@ -57,13 +57,13 @@ export async function parseMultiplyEvent(
   const daiFromExchange =
     multiplyEvent.method_name === 'increaseMultiple' ||
     multiplyEvent.method_name === 'openMultiplyVault'
-      ? new BigNumber(multiplyEvent.amount_in).div(wad)
-      : new BigNumber(multiplyEvent.amount_out).div(wad);
+      ? new BigNumber(multiplyEvent.amount_in).div(daiPrecision)
+      : new BigNumber(multiplyEvent.amount_out).div(daiPrecision);
 
   const depositDai =
     multiplyEvent.method_name === 'increaseMultiple' ||
     multiplyEvent.method_name === 'openMultiplyVault'
-      ? daiFromExchange.plus(oazoFee).minus(new BigNumber(multiplyEvent.borrowed).div(wad))
+      ? daiFromExchange.plus(oazoFee).minus(new BigNumber(multiplyEvent.borrowed).div(daiPrecision))
       : zero;
 
   const marketPrice = daiFromExchange.div(collateralFromExchange);
@@ -115,7 +115,7 @@ export async function parseMultiplyEvent(
       lastEvent.lockedCollateral,
       liquidationRatio,
     ),
-    netValue: getNetValue(lastEvent.debt, lastEvent.lockedCollateral, oraclePrice),
+    netValue: getNetValue(lastEvent.debt, lastEvent.lockedCollateral, marketPrice),
 
     oazoFee,
     loanFee,
@@ -167,7 +167,7 @@ export async function parseMultiplyEvent(
         ...common,
         kind: 'CLOSE_VAULT_TO_DAI',
         sold,
-        exitDai: new BigNumber(multiplyEvent.dai_left).div(wad),
+        exitDai: new BigNumber(multiplyEvent.dai_left).div(daiPrecision),
         debt: zero,
         collateral: zero,
       };
