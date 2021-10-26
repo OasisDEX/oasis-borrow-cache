@@ -140,7 +140,7 @@ export async function parseMultiplyEvent(
     case 'increaseMultiple':
       return {
         ...common,
-        kind: 'INCREASE_MULTIPLY',
+        kind: 'INCREASE_MULTIPLE',
         bought,
         depositCollateral: collateralChange.minus(bought),
         depositDai,
@@ -148,7 +148,7 @@ export async function parseMultiplyEvent(
     case 'decreaseMultiple':
       return {
         ...common,
-        kind: 'DECREASE_MULTIPLY',
+        kind: 'DECREASE_MULTIPLE',
         sold,
         withdrawnCollateral: collateralChange.minus(sold),
         withdrawnDai: daiFromExchange.plus(debtChange),

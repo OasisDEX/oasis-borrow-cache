@@ -72,8 +72,8 @@ export async function getLastExtendedEventBeforeBatch(
 export function eventToDbFormat(event: Aggregated<Event> | MultiplyEvent) {
   {
     switch (event.kind) {
-      case 'INCREASE_MULTIPLY':
-      case 'DECREASE_MULTIPLY':
+      case 'INCREASE_MULTIPLE':
+      case 'DECREASE_MULTIPLE':
       case 'OPEN_MULTIPLY_VAULT':
       case 'CLOSE_VAULT_TO_COLLATERAL':
       case 'CLOSE_VAULT_TO_DAI':
@@ -107,8 +107,8 @@ export function eventToDbFormat(event: Aggregated<Event> | MultiplyEvent) {
 
           sold: !isBuyingCollateral(event) ? event.sold.toFixed(18) : null,
           withdrawn_collateral:
-            event.kind === 'DECREASE_MULTIPLY' ? event.withdrawnCollateral.toFixed(18) : null,
-          withdrawn_dai: event.kind === 'DECREASE_MULTIPLY' ? event.withdrawnDai.toFixed(18) : null,
+            event.kind === 'DECREASE_MULTIPLE' ? event.withdrawnCollateral.toFixed(18) : null,
+          withdrawn_dai: event.kind === 'DECREASE_MULTIPLE' ? event.withdrawnDai.toFixed(18) : null,
 
           exit_collateral:
             event.kind === 'CLOSE_VAULT_TO_COLLATERAL' ? event.exitCollateral.toFixed(18) : null,

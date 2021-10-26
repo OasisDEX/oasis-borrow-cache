@@ -77,14 +77,14 @@ interface OpenMultiplyEvent extends CommonEvent {
 }
 
 interface IncreaseMultiplyEvent extends CommonEvent {
-  kind: 'INCREASE_MULTIPLY';
+  kind: 'INCREASE_MULTIPLE';
   depositCollateral: BigNumber;
   depositDai: BigNumber;
   bought: BigNumber;
 }
 
 interface DecreaseMultiplyEvent extends CommonEvent {
-  kind: 'DECREASE_MULTIPLY';
+  kind: 'DECREASE_MULTIPLE';
   withdrawnCollateral: BigNumber;
   withdrawnDai: BigNumber;
   sold: BigNumber;
@@ -144,7 +144,7 @@ export interface MPAAggregatedEvent {
   block_id: number;
 }
 
-const buyingCollateralEvents = ['OPEN_MULTIPLY_VAULT', 'INCREASE_MULTIPLY'] as const;
+const buyingCollateralEvents = ['OPEN_MULTIPLY_VAULT', 'INCREASE_MULTIPLE'] as const;
 export function isBuyingCollateral(
   event: MultiplyEvent,
 ): event is FilterByKind<MultiplyEvent, typeof buyingCollateralEvents[number]> {
