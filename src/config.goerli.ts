@@ -39,7 +39,7 @@ import { eventEnhancerTransformer } from './borrow/transformers/eventEnhancer';
 
 const goerliAddresses = require('./addresses/goerli.json');
 
-const GENESIS = 5273074;
+const GENESIS = Number(process.env.GENESIS) || 5273074;
 
 const vat = {
   address: goerliAddresses.MCD_VAT,

@@ -44,7 +44,7 @@ import { multiplyHistoryTransformer } from './borrow/transformers/multiplyHistor
 
 const mainnetAddresses = require('./addresses/mainnet.json');
 
-const GENESIS = 8928152;
+const GENESIS = Number(process.env.GENESIS) || 8928152;
 
 const vat = {
   address: '0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b',
@@ -132,6 +132,10 @@ const multiply = [
   {
     address: '0xeae4061009f0b804aafc76f3ae67567d0abe9c27',
     startingBlock: 13140365,
+  },
+  {
+    address: '0x2a49Eae5CCa3f050eBEC729Cf90CC910fADAf7A2',
+    startingBlock: 13461195,
   },
 ];
 

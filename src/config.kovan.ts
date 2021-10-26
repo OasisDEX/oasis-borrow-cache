@@ -30,7 +30,7 @@ import {
 } from './borrow/transformers/dogTransformer';
 import { clipperTransformer } from './borrow/transformers/clipperTransformer';
 
-const GENESIS = 14764534;
+const GENESIS = Number(process.env.GENESIS) || 14764534;
 
 const vat = {
   address: '0xba987bdb501d131f766fee8180da5d81b34b69d9',
