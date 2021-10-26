@@ -6,8 +6,8 @@ CREATE TABLE vault.multiply_events (
     kind                            character varying(50),
     market_price                    decimal(78,18),
     oracle_price                    decimal(78,18),
-    before_collateral               decimal(78,18),
-    collateral                      decimal(78,18),
+    before_locked_collateral        decimal(78,18),
+    locked_collateral               decimal(78,18),
     before_collateralization_ratio  decimal(78,18),
     collateralization_ratio         decimal(78,18),
     before_debt                     decimal(78,18),
@@ -55,8 +55,8 @@ CREATE VIEW api.vault_events AS (
 CREATE VIEW api.vault_multiply_history AS (
     SELECT 
     t.hash as tx_hash, b.timestamp,
-    me.id, me.urn, me.kind, me.market_price, me.before_collateral as before_locked_collateral,
-    me.collateral as locked_collateral, me.before_collateralization_ratio, me.collateralization_ratio, 
+    me.id, me.urn, me.kind, me.market_price, me.before_locked_collateral,
+    me.locked_collateral, me.before_collateralization_ratio, me.collateralization_ratio, 
     me.before_debt, me.debt, me.before_multiple, me.multiple, me.before_liquidation_price, me.liquidation_price, 
     me.net_value, me.oazo_fee, me.loan_fee, me.gas_fee, me.total_fee, me.bought, me.deposit_collateral, 
     me.deposit_dai, me.sold, me.withdrawn_collateral, me.withdrawn_dai, me.exit_collateral, me.exit_dai,
@@ -69,4 +69,6 @@ CREATE VIEW api.vault_multiply_history AS (
     JOIN vulcan2x.transaction t ON me.tx_id = t.id
     JOIN vulcan2x.block b ON me.block_id = b.id
     LEFT JOIN vault.events e ON me.standard_event_id = e.id
-)
+);
+
+CREATE INDEX multiply_event ON vault.multiply_events(urn);

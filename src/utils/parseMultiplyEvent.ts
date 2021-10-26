@@ -3,7 +3,7 @@ import {
   Aggregated,
   assertAllowedEvent,
   CommonEvent,
-  MultiplyDbEvent,
+  MPAAggregatedEvent,
   MultiplyEvent,
 } from '../types/multiplyHistory';
 import { Event } from '../types/history';
@@ -21,7 +21,7 @@ interface Dependencies {
 }
 
 export async function parseMultiplyEvent(
-  multiplyEvent: MultiplyDbEvent,
+  multiplyEvent: MPAAggregatedEvent,
   vaultEvents: Aggregated<Event>[],
   dependencies: Dependencies,
 ): Promise<MultiplyEvent> {
@@ -31,7 +31,7 @@ export async function parseMultiplyEvent(
   const collateralChange = new BigNumber(lastEvent.collateral_amount);
   const debtChange = new BigNumber(lastEvent.dai_amount);
 
-  const daiPrecision = new BigNumber(10).pow(18)
+  const daiPrecision = new BigNumber(10).pow(18);
   const oraclePrice = new BigNumber(lastEvent.oracle_price);
   const oazoFee = new BigNumber(multiplyEvent.oazo_fee).div(daiPrecision);
   const loanFee = new BigNumber(multiplyEvent.due).minus(multiplyEvent.borrowed).div(daiPrecision);
@@ -84,8 +84,8 @@ export async function parseMultiplyEvent(
   const common: CommonEvent = {
     marketPrice,
     oraclePrice,
-    beforeCollateral: lastEvent.beforeLockedCollateral,
-    collateral: lastEvent.lockedCollateral,
+    beforeLockedCollateral: lastEvent.beforeLockedCollateral,
+    lockedCollateral: lastEvent.lockedCollateral,
     beforeCollateralizationRatio: getCollateralizationRatio(
       lastEvent.beforeDebt,
       lastEvent.beforeLockedCollateral,
@@ -160,7 +160,7 @@ export async function parseMultiplyEvent(
         sold,
         exitCollateral: new BigNumber(multiplyEvent.collateral_left).div(collateralPrecision),
         debt: zero,
-        collateral: zero,
+        lockedCollateral: zero,
       };
     case 'closeVaultExitDai':
       return {
@@ -169,7 +169,7 @@ export async function parseMultiplyEvent(
         sold,
         exitDai: new BigNumber(multiplyEvent.dai_left).div(daiPrecision),
         debt: zero,
-        collateral: zero,
+        lockedCollateral: zero,
       };
   }
 }

@@ -43,8 +43,8 @@ export interface CommonEvent {
   beforeDebt: BigNumber;
   debt: BigNumber;
 
-  beforeCollateral: BigNumber;
-  collateral: BigNumber;
+  beforeLockedCollateral: BigNumber;
+  lockedCollateral: BigNumber;
 
   beforeCollateralizationRatio: BigNumber;
   collateralizationRatio: BigNumber;
@@ -117,7 +117,7 @@ export type MultiplyMethods =
   | 'closeVaultExitCollateral'
   | 'closeVaultExitDai';
 
-export interface MultiplyDbEvent {
+export interface MPAAggregatedEvent {
   id: number;
   method_name: MultiplyMethods;
   cdp_id: string;

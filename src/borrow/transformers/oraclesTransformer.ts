@@ -74,7 +74,7 @@ async function savePrice(
     block_id: log.block_id,
   };
 
-  await savePriceToDb(services, row)
+  await savePriceToDb(services, row);
 }
 
 const handlers = (token: string) => ({

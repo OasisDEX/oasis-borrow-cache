@@ -33,14 +33,15 @@ Requirements:
    variables. In order to create borrow history you will need to supply an url to jsonrpc node.
 
    Here you may also override `VL_CHAIN_NAME=mainnet`. You may set it to `mainnet` or `kovan` or
-   `localnet` but remember to also provide proper jsonrpc node (taken from [alchemy](https://www.alchemy.com/) or [infura](https://infura.io/)).
+   `localnet` but remember to also provide proper jsonrpc node (taken from
+   [alchemy](https://www.alchemy.com/) or [infura](https://infura.io/)).
 
    ```
    VL_CHAIN_HOST= <HERE PASTE AN URL TO JSONRPC NODE FROM WHERE YOU WISH TO FETCH BLOCKCHAIN DATA>
    ```
-   
-   It is also possible to override vat starting block (there are defaults within config files).
-   To do so use `GENESIS=<HERE PASTE STARTING BLOCK NUMBER>` variable.
+
+   It is also possible to override vat starting block (there are defaults within config files). To
+   do so use `GENESIS=<HERE PASTE STARTING BLOCK NUMBER>` variable.
 
 4. Run database
    ```bash
@@ -105,6 +106,10 @@ Requirements:
 
 Note: values saved from pure events or function calls are not normalized, they need to be divided by
 `wad` `rad` or `ray`. [Read more](https://docs.makerdao.com/other-documentation/system-glossary)
+
+- `multiply_events` - Aggregated multiply events, transformed from `vault.events` (called standard_events) and events dispatched by MPA contract and exchange.
+
+Note: debt and before_debt is stored in normalized form, to get to exact debt at the time of the event it needs to be multiplied by rate. 
 
 ## Unit tests
 
