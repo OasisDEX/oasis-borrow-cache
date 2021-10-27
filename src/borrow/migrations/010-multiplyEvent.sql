@@ -34,11 +34,16 @@ CREATE TABLE vault.multiply_events (
     exit_collateral                 decimal(78,18),
     exit_dai                        decimal(78,18),
   
+    order_index                     decimal(78,0),
     log_index                       integer not null,
     tx_id                           integer not null REFERENCES vulcan2x.transaction(id) ON DELETE CASCADE,
     block_id                        integer not null REFERENCES vulcan2x.block(id) ON DELETE CASCADE,
     unique (tx_id, log_index, kind)
 );
+
+CREATE INDEX multiply_event_urn ON vault.multiply_events(urn);
+CREATE INDEX multiply_event_block_id ON vault.multiply_events(block_id);
+CREATE INDEX multiply_event_order ON vault.multiply_events(order_index);
 
 DROP VIEW api.vault_events;
 
@@ -54,7 +59,7 @@ CREATE VIEW api.vault_events AS (
 
 CREATE VIEW api.vault_multiply_history AS (
     SELECT 
-    t.hash as tx_hash, b.timestamp,
+    t.hash, b.timestamp,
     me.id, me.urn, me.kind, me.market_price, me.before_locked_collateral,
     me.locked_collateral, me.before_collateralization_ratio, me.collateralization_ratio, 
     me.before_debt, me.debt, me.before_multiple, me.multiple, me.before_liquidation_price, me.liquidation_price, 
@@ -70,5 +75,3 @@ CREATE VIEW api.vault_multiply_history AS (
     JOIN vulcan2x.block b ON me.block_id = b.id
     LEFT JOIN vault.events e ON me.standard_event_id = e.id
 );
-
-CREATE INDEX multiply_event ON vault.multiply_events(urn);
