@@ -8,13 +8,15 @@ function ilkToToken(ilk: string): string {
   return ilk.split('-')[0];
 }
 
+export const eventEnhancerTransformerName = `event-enhancer-transformer`;
+
 export const eventEnhancerTransformer: (
   vatAddress: string,
   startingBlock: number,
   oraclesTransformers: string[],
 ) => BlockTransformer = (vatAddress, startingBlock, oraclesTransformers) => {
   return {
-    name: `event-enhancer-transformer`,
+    name: eventEnhancerTransformerName,
     dependencies: [getExtractorName(vatAddress)],
     transformerDependencies: [
       `vatCombineTransformerV2-${vatAddress}`,

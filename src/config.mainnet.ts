@@ -40,6 +40,7 @@ import {
   oraclesTransformer,
 } from './borrow/transformers/oraclesTransformer';
 import { eventEnhancerTransformer } from './borrow/transformers/eventEnhancer';
+import { multiplyHistoryTransformer } from './borrow/transformers/multiplyHistoryTransformer';
 
 const mainnetAddresses = require('./addresses/mainnet.json');
 
@@ -129,6 +130,10 @@ const multiply = [
     startingBlock: 13184929,
   },
   {
+    address: '0xeae4061009f0b804aafc76f3ae67567d0abe9c27',
+    startingBlock: 13140365,
+  },
+  {
     address: '0x2a49Eae5CCa3f050eBEC729Cf90CC910fADAf7A2',
     startingBlock: 13461195,
   },
@@ -187,6 +192,10 @@ export const config: UserProvidedSpockConfig = {
     ...exchangeTransformer(exchange),
     ...oraclesTransformer(oracles),
     eventEnhancerTransformer(vat.address, GENESIS, oraclesTransformers),
+    multiplyHistoryTransformer(vat.address, {
+      dogs,
+      multiplyProxyActionsAddress: multiply,
+    }),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),

@@ -57,14 +57,14 @@ async function savePriceToDb(services: LocalServices, row: Price): Promise<void>
   await services.tx.none(query);
 }
 
-const savePrice = async (
+async function savePrice(
   services: LocalServices,
   log: PersistedLog,
   price: BigNumber,
   token: string,
-) => {
+): Promise<void> {
   const timestamp = await getTimeStamp(services, log.block_id);
-  const row = {
+  const row: Price = {
     price: price.toString(),
     token,
     timestamp: timestamp,
@@ -73,8 +73,9 @@ const savePrice = async (
     tx_id: log.tx_id,
     block_id: log.block_id,
   };
+
   await savePriceToDb(services, row);
-};
+}
 
 const handlers = (token: string) => ({
   async LogValue(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {

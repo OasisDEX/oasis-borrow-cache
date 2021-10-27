@@ -33,14 +33,15 @@ Requirements:
    variables. In order to create borrow history you will need to supply an url to jsonrpc node.
 
    Here you may also override `VL_CHAIN_NAME=mainnet`. You may set it to `mainnet` or `kovan` or
-   `localnet` but remember to also provide proper jsonrpc node (taken from [alchemy](https://www.alchemy.com/) or [infura](https://infura.io/)).
+   `localnet` but remember to also provide proper jsonrpc node (taken from
+   [alchemy](https://www.alchemy.com/) or [infura](https://infura.io/)).
 
    ```
    VL_CHAIN_HOST= <HERE PASTE AN URL TO JSONRPC NODE FROM WHERE YOU WISH TO FETCH BLOCKCHAIN DATA>
    ```
-   
-   It is also possible to override vat starting block (there are defaults within config files).
-   To do so use `GENESIS=<HERE PASTE STARTING BLOCK NUMBER>` variable.
+
+   It is also possible to override vat starting block (there are defaults within config files). To
+   do so use `GENESIS=<HERE PASTE STARTING BLOCK NUMBER>` variable.
 
 4. Run database
    ```bash
@@ -90,12 +91,13 @@ Requirements:
 
 - `cdp` - Holds information about vaults open via cdp manager.
 
-### Schema: `vat` [contract source](https://github.com/makerdao/dss/blob/master/src/vat.sol)
+### Schema: `vat` [contract source](https://github.com/makerdao/dss/blob/master/src/vat.sol) [MakerDAO docs](https://docs.makerdao.com/smart-contract-modules/core-module/vat-detailed-documentation)
 
-- `fold` - Holds pure fold function calls on vat.
-- `fork` - Holds pure fork function calls on vat.
-- `frob` - Holds pure frob function calls on vat.
-- `grab` - Holds pure grab function calls on vat.
+- `fold` - Holds pure fold function calls on vat. Updates rates for ilk.
+- `fork` - Holds pure fork function calls on vat. Moves collateral and debt between vaults.
+- `frob` - Holds pure frob function calls on vat. This call does debt and collateral changes on
+  vault.
+- `grab` - Holds pure grab function calls on vat. Confiscates vault on liquidation.
 
 ### Schema: `vault`
 
@@ -105,9 +107,13 @@ Requirements:
 Note: values saved from pure events or function calls are not normalized, they need to be divided by
 `wad` `rad` or `ray`. [Read more](https://docs.makerdao.com/other-documentation/system-glossary)
 
+- `multiply_events` - Aggregated multiply events, transformed from `vault.events` (called standard_events) and events dispatched by MPA contract and exchange.
+
+Note: debt and before_debt is stored in normalized form, to get to exact debt at the time of the event it needs to be multiplied by rate. 
+
 ## Unit tests
 
-<DESCRIBE UNIT TESTS>
+- For running tests you also need node v12 <DESCRIBE UNIT TESTS>
 
 ## Development notes
 
@@ -122,10 +128,14 @@ Note: values saved from pure events or function calls are not normalized, they n
 ## Troubleshooting known issues
 
 ### Getting EHOSTUNREACH on some ip when running yarn start-etl
-This issue is related to IPv6 and happens for some people on some service providers (for ex. UPC in Poland).
-Temporary solution to fix it at one [Linux machine by disabling IPv6](https://www.techrepublic.com/article/how-to-disable-ipv6-on-linux/).
+
+This issue is related to IPv6 and happens for some people on some service providers (for ex. UPC in
+Poland). Temporary solution to fix it at one
+[Linux machine by disabling IPv6](https://www.techrepublic.com/article/how-to-disable-ipv6-on-linux/).
 Long term solution, for many devices is to call service provider and ask them to switch off IPv6.
+
 #### Example log for this issue
+
 ```
 Got 0, {"attempts":15,"method":"getBlock","params":{"blockTag":"0x507b24","includeTransactions":false},"error":{"statusCode":0,"responseText":"Error: connect EHOSTUNREACH 54.205.195.79:443\n    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1138:16)"}}
 › Got error, failing... {"statusCode":0,"responseText":"Error: connect EHOSTUNREACH 54.205.195.79:443\n    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1138:16)"}

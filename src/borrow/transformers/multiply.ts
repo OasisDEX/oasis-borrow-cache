@@ -116,6 +116,10 @@ const handlers = (dependencies: Dependencies) => ({
   },
 });
 
+export function getMultiplyTransformerName(deps: SimpleProcessorDefinition): string {
+  return `multiplyActions-${deps.address}`;
+}
+
 export const multiplyTransformer: (
   addresses: (string | SimpleProcessorDefinition)[],
   dependencies: Dependencies,
@@ -124,7 +128,7 @@ export const multiplyTransformer: (
     const deps = normalizeAddressDefinition(_deps);
 
     return {
-      name: `multiplyActions-${deps.address}`,
+      name: getMultiplyTransformerName(deps),
       dependencies: [getExtractorName(deps.address)],
       transformerDependencies: [
         `openCdpTransformer-${dependencies.cdpManager}`,
