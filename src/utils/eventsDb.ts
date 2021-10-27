@@ -7,6 +7,7 @@ import {
   MultiplyEvent,
 } from '../types/multiplyHistory';
 import { Event } from '../types/history';
+import { BigNumber } from 'bignumber.js';
 
 export function getEventsFromBlockRange(
   services: LocalServices,
@@ -58,19 +59,19 @@ export async function getLastExtendedEventBeforeBatch(
   const values = urns.map(urn => `'${urn}'`).join(',');
 
   return services.tx.manyOrNone(`
-    SELECT * from vault.multiply_events 
-    WHERE id in (
-      SELECT Max(id) as last_event_id FROM vault.multiply_events 
-      WHERE urn IN (${values}) 
-      AND block_id < ${blockId}
-      GROUP BY urn
-    );
+  WITH inner_table AS (
+    SELECT e.* FROM vault.multiply_events e
+          WHERE urn IN (${values})
+          AND e.block_id < ${blockId})
+    SELECT tab1.* FROM inner_table AS tab1 
+    INNER JOIN ( SELECT max(order_index) as order_index, urn FROM inner_table GROUP BY urn ) AS tab2 ON tab1.order_index = tab2.order_index AND tab1.urn = tab2.urn
   `);
 }
 // it's intended to infer the returned typed here.
 // tslint:disable-next-line
 export function eventToDbFormat(event: Aggregated<Event> | MultiplyEvent) {
   {
+    const order_index = new BigNumber(event.block_id).times(1000000).plus(event.log_index)
     switch (event.kind) {
       case 'INCREASE_MULTIPLE':
       case 'DECREASE_MULTIPLE':
@@ -119,6 +120,7 @@ export function eventToDbFormat(event: Aggregated<Event> | MultiplyEvent) {
           block_id: event.block_id,
 
           standard_event_id: null,
+          order_index: order_index.toString(),
         };
       default:
         return {
@@ -135,6 +137,7 @@ export function eventToDbFormat(event: Aggregated<Event> | MultiplyEvent) {
           block_id: event.block_id,
           before_collateralization_ratio: event.beforeCollateralizationRatio?.toFixed(18) || null,
           collateralization_ratio: event.collateralizationRatio?.toFixed(18) || null,
+          order_index: order_index.toString(),
 
           market_price: null,
           before_multiple: null,
@@ -200,6 +203,7 @@ export async function saveEventsToDb(
 
       'standard_event_id',
 
+      'order_index',
       'tx_id',
       'block_id',
       'log_index',
