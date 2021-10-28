@@ -107,9 +107,11 @@ Requirements:
 Note: values saved from pure events or function calls are not normalized, they need to be divided by
 `wad` `rad` or `ray`. [Read more](https://docs.makerdao.com/other-documentation/system-glossary)
 
-- `multiply_events` - Aggregated multiply events, transformed from `vault.events` (called standard_events) and events dispatched by MPA contract and exchange.
+- `multiply_events` - Aggregated multiply events, transformed from `vault.events` (called
+  standard_events) and events dispatched by MPA contract and exchange.
 
-Note: debt and before_debt is stored in normalized form, to get to exact debt at the time of the event it needs to be multiplied by rate. 
+Note: debt and before_debt is stored in normalized form, to get to exact debt at the time of the
+event it needs to be multiplied by rate.
 
 ## Unit tests
 

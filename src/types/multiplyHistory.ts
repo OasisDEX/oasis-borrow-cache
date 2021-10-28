@@ -68,7 +68,7 @@ export interface CommonEvent {
   totalFee: BigNumber;
   gasFee: BigNumber; // in wei
 
-  standardEventId: number
+  standardEventId: number;
 }
 
 interface OpenMultiplyEvent extends CommonEvent {

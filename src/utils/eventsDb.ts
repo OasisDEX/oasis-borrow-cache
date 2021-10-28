@@ -71,7 +71,7 @@ export async function getLastExtendedEventBeforeBatch(
 // tslint:disable-next-line
 export function eventToDbFormat(event: Aggregated<Event> | MultiplyEvent) {
   {
-    const order_index = new BigNumber(event.block_id).times(1000000).plus(event.log_index)
+    const order_index = new BigNumber(event.block_id).times(1000000).plus(event.log_index);
     switch (event.kind) {
       case 'INCREASE_MULTIPLE':
       case 'DECREASE_MULTIPLE':
