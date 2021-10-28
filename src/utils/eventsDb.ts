@@ -119,7 +119,7 @@ export function eventToDbFormat(event: Aggregated<Event> | MultiplyEvent) {
           log_index: event.log_index,
           block_id: event.block_id,
 
-          standard_event_id: null,
+          standard_event_id: event.standardEventId,
           order_index: order_index.toString(),
         };
       default:
