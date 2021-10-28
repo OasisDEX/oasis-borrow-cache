@@ -126,6 +126,8 @@ export async function parseMultiplyEvent(
     log_index: multiplyEvent.tx_id,
     block_id: multiplyEvent.block_id,
     urn: multiplyEvent.urn,
+
+    standardEventId: lastEvent.id,
   };
 
   switch (multiplyEvent.method_name) {
