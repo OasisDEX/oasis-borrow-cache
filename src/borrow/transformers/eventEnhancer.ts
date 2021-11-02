@@ -1,10 +1,14 @@
 import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
-import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
 import { getExtractorName } from '@oasisdex/spock-utils/dist/extractors/rawEventDataExtractor';
 
 import { flatten, max, min } from 'lodash';
 import { getEventsFromBlockRange, getEventsFromRangeWithFrobIlk } from '../../utils/eventsDb';
-import { addTokenFromIlk, getEventsToOSMPrice, updateEventsWithEthPrice, updateEventsWithOsmPrice } from '../../utils/pricesDb';
+import {
+  addTokenFromIlk,
+  getEventsToOSMPrice,
+  updateEventsWithEthPrice,
+  updateEventsWithOsmPrice,
+} from '../../utils/pricesDb';
 
 export const eventEnhancerTransformerName = `event-enhancer-transformer-v2`;
 
@@ -32,15 +36,17 @@ export const eventEnhancerTransformer: (
       const minBlock = min(blocks);
       const maxBlock = max(blocks);
 
-      const events = (await getEventsFromRangeWithFrobIlk(services, minBlock, maxBlock)).map(addTokenFromIlk)
+      const events = (await getEventsFromRangeWithFrobIlk(services, minBlock, maxBlock)).map(
+        addTokenFromIlk,
+      );
 
       if (events.length === 0) {
         return;
       }
 
-      const eventsToPrice = await getEventsToOSMPrice(services, events)
+      const eventsToPrice = await getEventsToOSMPrice(services, events);
 
-      await updateEventsWithOsmPrice(services, eventsToPrice)
+      await updateEventsWithOsmPrice(services, eventsToPrice);
     },
   };
 };
@@ -71,15 +77,18 @@ export const eventEnhancerTransformerEthPrice: (
       const minBlock = min(blocks);
       const maxBlock = max(blocks);
 
-      const events = (await getEventsFromBlockRange(services, minBlock, maxBlock)).map(event => ({...event, token: 'ETH'}))
+      const events = (await getEventsFromBlockRange(services, minBlock, maxBlock)).map(event => ({
+        ...event,
+        token: 'ETH',
+      }));
 
       if (events.length === 0) {
         return;
       }
 
-      const eventsToPrice = await getEventsToOSMPrice(services, events)
+      const eventsToPrice = await getEventsToOSMPrice(services, events);
 
-      await updateEventsWithEthPrice(services, eventsToPrice)
+      await updateEventsWithEthPrice(services, eventsToPrice);
     },
   };
 };

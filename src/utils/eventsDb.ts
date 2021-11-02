@@ -2,7 +2,6 @@ import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
 import {
   Aggregated,
   isBuyingCollateral,
-  isFrobEvent,
   MPAAggregatedEvent,
   MultiplyEvent,
 } from '../types/multiplyHistory';
@@ -219,9 +218,13 @@ export async function saveEventsToDb(
   await services.tx.none(query);
 }
 
-export type WithIlk<T> = T & { ilk: string }
+export type WithIlk<T> = T & { ilk: string };
 
-export async function getEventsFromRangeWithFrobIlk(services: LocalServices, minBlock: number, maxBlock: number): Promise<WithIlk<Event>[]> {
+export async function getEventsFromRangeWithFrobIlk(
+  services: LocalServices,
+  minBlock: number,
+  maxBlock: number,
+): Promise<WithIlk<Event>[]> {
   return flatten(
     await services.tx.multi(
       `
@@ -232,6 +235,6 @@ export async function getEventsFromRangeWithFrobIlk(services: LocalServices, min
         `,
     ),
   )
-    .map(event => ({...event, ilk: event.ilk || event.frob_ilk}))
-    .filter(event => event.ilk != undefined)
+    .map(event => ({ ...event, ilk: event.ilk || event.frob_ilk }))
+    .filter(event => event.ilk != undefined);
 }

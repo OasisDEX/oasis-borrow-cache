@@ -7,7 +7,10 @@ import { flatten, groupBy, max, min } from 'lodash';
 import { Aggregated, MPAAggregatedEvent, MultiplyEvent } from '../../types/multiplyHistory';
 import { Event } from '../../types/history';
 import { getAuctions2TransformerName } from './dogTransformer';
-import { eventEnhancerTransformerName, eventEnhancerEthPriceTransformerName } from './eventEnhancer';
+import {
+  eventEnhancerTransformerName,
+  eventEnhancerEthPriceTransformerName,
+} from './eventEnhancer';
 import { getMultiplyTransformerName } from './multiply';
 import { getTokenPrecision } from '../../utils/getTokenPrecision';
 import { aggregateVaultParams } from '../../utils/aggregateVaultParams';

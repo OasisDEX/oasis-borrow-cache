@@ -29,7 +29,6 @@ export async function parseMultiplyEvent(
   assertAllowedEvent(lastEvent);
 
   const collateralChange = new BigNumber(lastEvent.collateral_amount);
-  const debtChange = new BigNumber(lastEvent.dai_amount);
 
   const daiPrecision = new BigNumber(10).pow(18);
   const oraclePrice = new BigNumber(lastEvent.oracle_price);

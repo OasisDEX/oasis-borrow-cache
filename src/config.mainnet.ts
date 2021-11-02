@@ -39,7 +39,10 @@ import {
   getOracleTransformerName,
   oraclesTransformer,
 } from './borrow/transformers/oraclesTransformer';
-import { eventEnhancerTransformer, eventEnhancerTransformerEthPrice } from './borrow/transformers/eventEnhancer';
+import {
+  eventEnhancerTransformer,
+  eventEnhancerTransformerEthPrice,
+} from './borrow/transformers/eventEnhancer';
 import { multiplyHistoryTransformer } from './borrow/transformers/multiplyHistoryTransformer';
 
 const mainnetAddresses = require('./addresses/mainnet.json');
