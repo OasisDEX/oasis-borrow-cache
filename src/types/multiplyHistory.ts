@@ -40,7 +40,6 @@ export function assertAllowedEvent(event: Aggregated<Event>): asserts event is F
 
 export interface CommonEvent {
   marketPrice: BigNumber;
-  oraclePrice: BigNumber;
 
   beforeDebt: BigNumber;
   debt: BigNumber;

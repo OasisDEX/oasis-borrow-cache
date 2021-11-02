@@ -83,7 +83,6 @@ export async function parseMultiplyEvent(
 
   const common: CommonEvent = {
     marketPrice,
-    oraclePrice,
     beforeLockedCollateral: lastEvent.beforeLockedCollateral,
     lockedCollateral: lastEvent.lockedCollateral,
     beforeCollateralizationRatio: getCollateralizationRatio(

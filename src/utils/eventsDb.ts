@@ -83,7 +83,6 @@ export function eventToDbFormat(event: Aggregated<Event> | MultiplyEvent) {
           kind: event.kind,
           urn: event.urn,
           market_price: event.marketPrice.toFixed(18),
-          oracle_price: event.oraclePrice.toFixed(18),
           before_locked_collateral: event.beforeLockedCollateral.toFixed(18),
           locked_collateral: event.lockedCollateral.toFixed(18),
           before_collateralization_ratio: event.beforeCollateralizationRatio.toFixed(18),
@@ -132,7 +131,6 @@ export function eventToDbFormat(event: Aggregated<Event> | MultiplyEvent) {
           before_debt: event.beforeDebt.toFixed(18),
           locked_collateral: event.lockedCollateral.toFixed(18),
           before_locked_collateral: event.beforeLockedCollateral.toFixed(18),
-          oracle_price: isFrobEvent(event) ? event.oracle_price : null,
           tx_id: event.tx_id,
           log_index: event.log_index,
           block_id: event.block_id,
@@ -174,7 +172,6 @@ export async function saveEventsToDb(
       'kind',
       'urn',
       'market_price',
-      'oracle_price',
       'before_locked_collateral',
       'locked_collateral',
       'before_collateralization_ratio',
@@ -222,9 +219,9 @@ export async function saveEventsToDb(
   await services.tx.none(query);
 }
 
-export type WithFrobIlk<T> = T & { ilk: string }
+export type WithIlk<T> = T & { ilk: string }
 
-export async function getEventsFromRangeWithFrobIlk(services: LocalServices, minBlock: number, maxBlock: number): Promise<WithFrobIlk<Event>[]> {
+export async function getEventsFromRangeWithFrobIlk(services: LocalServices, minBlock: number, maxBlock: number): Promise<WithIlk<Event>[]> {
   return flatten(
     await services.tx.multi(
       `

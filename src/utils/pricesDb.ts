@@ -1,27 +1,27 @@
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
 import { flatten } from 'lodash';
-import { Event } from 'src/types/history';
-import { WithFrobIlk } from 'src/utils/eventsDb';
+import { Event } from '../types/history';
+import { WithIlk } from '../utils/eventsDb';
 
 export interface EventToPrice {
-  id: string;
+  id: number;
   price: string;
 }
 
-type WithTokenFromIlk<T extends WithFrobIlk<unknown>> = T & { token: string; };
+type WithTokenFromIlk<T extends WithIlk<unknown>> = T & { token: string; };
 
-type EventWithToken = WithTokenFromIlk<WithFrobIlk<Event>>;
+type EventWithToken = WithTokenFromIlk<WithIlk<Event>>;
 
 // tslint:disable-next-line
 function ilkToToken(ilk: string): string {
   return ilk.split('-')[0];
 }
 
-export function addTokenFromIlk<T extends WithFrobIlk<unknown>>(event: T): WithTokenFromIlk<T> {
-  return { ...event, token: ilkToToken(event.frob_ilk) };
+export function addTokenFromIlk<T extends WithIlk<unknown>>(event: T): WithTokenFromIlk<T> {
+  return { ...event, token: ilkToToken(event.ilk) };
 }
 
-export async function getEventsToOSMPrice(services: LocalServices, events: EventWithToken[]): Promise<EventToPrice[]> {
+export async function getEventsToOSMPrice<T extends {token: string, id: number, timestamp: Date}>(services: LocalServices, events: T[]): Promise<EventToPrice[]> {
   const values = events
     .map(event => `('${event.token}','${new Date(event.timestamp).toISOString()}',${event.id})`)
     .join(',');
@@ -46,6 +46,19 @@ export async function updateEventsWithOsmPrice(services: LocalServices, eventsTo
   return services.tx.none(
     `
       UPDATE vault.events SET oracle_price = c.price
+      FROM (values${updateValues}) AS c(price, id) 
+      WHERE c.id = vault.events.id;
+    `)
+}
+
+export async function updateEventsWithEthPrice(services: LocalServices, eventsToPrice: EventToPrice[]) {
+  const updateValues = eventsToPrice
+        .map(({ price, id }) => ({ id, price: price || 0 }))
+        .map(({ id, price }) => `(${price},${id})`)
+        .join(',');
+  return services.tx.none(
+    `
+      UPDATE vault.events SET eth_price = c.price
       FROM (values${updateValues}) AS c(price, id) 
       WHERE c.id = vault.events.id;
     `)
