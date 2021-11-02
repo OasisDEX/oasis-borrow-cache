@@ -18,7 +18,9 @@ const allowedStandardEvents = [
   'GENERATE',
   'PAYBACK',
 ] as const;
+
 export type AllowedEventsKey = typeof allowedStandardEvents[number];
+
 export type FilterByKind<E extends { kind: string }, K extends string> = E extends any
   ? E['kind'] extends K
     ? E

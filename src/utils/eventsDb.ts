@@ -8,6 +8,7 @@ import {
 } from '../types/multiplyHistory';
 import { Event } from '../types/history';
 import { BigNumber } from 'bignumber.js';
+import { flatten } from 'lodash';
 
 export function getEventsFromBlockRange(
   services: LocalServices,
@@ -161,6 +162,7 @@ export function eventToDbFormat(event: Aggregated<Event> | MultiplyEvent) {
     }
   }
 }
+
 export type MultiplyEventDb = ReturnType<typeof eventToDbFormat>;
 
 export async function saveEventsToDb(
@@ -218,4 +220,21 @@ export async function saveEventsToDb(
 
   const query = services.pg.helpers.insert(events, cs);
   await services.tx.none(query);
+}
+
+export type WithFrobIlk<T> = T & { ilk: string }
+
+export async function getEventsFromRangeWithFrobIlk(services: LocalServices, minBlock: number, maxBlock: number): Promise<WithFrobIlk<Event>[]> {
+  return flatten(
+    await services.tx.multi(
+      `
+        SELECT e.*, f.ilk as frob_ilk from (
+          SELECT * from vault.events e 
+            WHERE block_id >= ${minBlock} AND block_id <= ${maxBlock}) e 
+          LEFT JOIN vat.frob f ON e.tx_id = f.tx_id AND e.block_id = f.block_id AND e.log_index = f.log_index;
+        `,
+    ),
+  )
+    .map(event => ({...event, ilk: event.ilk || event.frob_ilk}))
+    .filter(event => event.ilk != undefined)
 }

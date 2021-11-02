@@ -152,8 +152,8 @@ export async function parseMultiplyEvent(
         ...common,
         kind: 'DECREASE_MULTIPLE',
         sold,
-        withdrawnCollateral: collateralChange.minus(sold),
-        withdrawnDai: daiFromExchange.plus(debtChange),
+        withdrawnCollateral: new BigNumber(multiplyEvent.collateral_left).div(collateralPrecision),
+        withdrawnDai: new BigNumber(multiplyEvent.dai_left).div(daiPrecision), // TODO: ask @Adam
       };
     case 'closeVaultExitCollateral':
       return {
