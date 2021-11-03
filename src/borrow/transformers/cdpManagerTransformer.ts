@@ -108,6 +108,10 @@ interface OpenCdpTransformerDependencies {
   getUrnForCdp: (provider: Provider, id: string, managerAddress: string) => Promise<string>;
 }
 
+export function getOpenCdpTransformerName(manager: SimpleProcessorDefinition) {
+  return `openCdpTransformer-${manager.address}`
+}
+
 export const openCdpTransformer: (
   addresses: (string | SimpleProcessorDefinition)[],
   dependencies: OpenCdpTransformerDependencies,
@@ -116,7 +120,7 @@ export const openCdpTransformer: (
     const deps = normalizeAddressDefinition(_deps);
 
     return {
-      name: `openCdpTransformer-${deps.address}`,
+      name: getOpenCdpTransformerName(deps),
       dependencies: [getExtractorName(deps.address)],
       startingBlock: deps.startingBlock,
       transform: async (services, logs) => {

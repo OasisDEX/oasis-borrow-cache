@@ -2,12 +2,12 @@ import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
 import {
   Aggregated,
   isBuyingCollateral,
-  isFrobEvent,
   MPAAggregatedEvent,
   MultiplyEvent,
 } from '../types/multiplyHistory';
 import { Event } from '../types/history';
 import { BigNumber } from 'bignumber.js';
+import { flatten } from 'lodash';
 
 export function getEventsFromBlockRange(
   services: LocalServices,
@@ -82,7 +82,6 @@ export function eventToDbFormat(event: Aggregated<Event> | MultiplyEvent) {
           kind: event.kind,
           urn: event.urn,
           market_price: event.marketPrice.toFixed(18),
-          oracle_price: event.oraclePrice.toFixed(18),
           before_locked_collateral: event.beforeLockedCollateral.toFixed(18),
           locked_collateral: event.lockedCollateral.toFixed(18),
           before_collateralization_ratio: event.beforeCollateralizationRatio.toFixed(18),
@@ -131,7 +130,6 @@ export function eventToDbFormat(event: Aggregated<Event> | MultiplyEvent) {
           before_debt: event.beforeDebt.toFixed(18),
           locked_collateral: event.lockedCollateral.toFixed(18),
           before_locked_collateral: event.beforeLockedCollateral.toFixed(18),
-          oracle_price: isFrobEvent(event) ? event.oracle_price : null,
           tx_id: event.tx_id,
           log_index: event.log_index,
           block_id: event.block_id,
@@ -161,6 +159,7 @@ export function eventToDbFormat(event: Aggregated<Event> | MultiplyEvent) {
     }
   }
 }
+
 export type MultiplyEventDb = ReturnType<typeof eventToDbFormat>;
 
 export async function saveEventsToDb(
@@ -172,7 +171,6 @@ export async function saveEventsToDb(
       'kind',
       'urn',
       'market_price',
-      'oracle_price',
       'before_locked_collateral',
       'locked_collateral',
       'before_collateralization_ratio',
@@ -218,4 +216,25 @@ export async function saveEventsToDb(
 
   const query = services.pg.helpers.insert(events, cs);
   await services.tx.none(query);
+}
+
+export type WithIlk<T> = T & { ilk: string };
+
+export async function getEventsFromRangeWithFrobIlk(
+  services: LocalServices,
+  minBlock: number,
+  maxBlock: number,
+): Promise<WithIlk<Event>[]> {
+  return flatten(
+    await services.tx.multi(
+      `
+        SELECT e.*, f.ilk as frob_ilk from (
+          SELECT * from vault.events e 
+            WHERE block_id >= ${minBlock} AND block_id <= ${maxBlock}) e 
+          LEFT JOIN vat.frob f ON e.tx_id = f.tx_id AND e.block_id = f.block_id AND e.log_index = f.log_index;
+        `,
+    ),
+  )
+    .map(event => ({ ...event, ilk: event.ilk || event.frob_ilk }))
+    .filter(event => event.ilk != undefined);
 }

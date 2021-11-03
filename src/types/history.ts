@@ -6,6 +6,7 @@ export interface HistoryEventBase {
   log_index: number;
   tx_id: number;
   block_id: number;
+  eth_price: string;
 }
 
 interface VaultOpenedEvent extends HistoryEventBase {
@@ -19,6 +20,7 @@ interface DepositEvent extends HistoryEventBase {
   dai_amount: string;
   collateral_amount: string;
   oracle_price: string;
+  eth_price: string;
   rate: string;
 }
 
@@ -27,6 +29,7 @@ interface WithdrawEvent extends HistoryEventBase {
   dai_amount: string;
   collateral_amount: string;
   oracle_price: string;
+  eth_price: string;
   rate: string;
 }
 
@@ -36,6 +39,7 @@ interface GenerateEvent extends HistoryEventBase {
   collateral_amount: string;
   rate: string;
   oracle_price: string;
+  eth_price: string;
 }
 
 interface PaybackEvent extends HistoryEventBase {
@@ -44,6 +48,7 @@ interface PaybackEvent extends HistoryEventBase {
   collateral_amount: string;
   rate: string;
   oracle_price: string;
+  eth_price: string;
 }
 
 interface DepositGenerateEvent extends HistoryEventBase {
@@ -52,6 +57,7 @@ interface DepositGenerateEvent extends HistoryEventBase {
   rate: string;
   collateral_amount: string;
   oracle_price: string;
+  eth_price: string;
 }
 
 interface WithdrawPaybackEvent extends HistoryEventBase {
@@ -60,6 +66,7 @@ interface WithdrawPaybackEvent extends HistoryEventBase {
   rate: string;
   collateral_amount: string;
   oracle_price: string;
+  eth_price: string;
 }
 
 interface AuctionStartedEvent extends HistoryEventBase {
@@ -109,6 +116,8 @@ interface MoveSrcEvent extends HistoryEventBase {
   collateral_amount: string;
   dai_amount: string;
   rate: string;
+  oracle_price: string;
+  eth_price: string;
 }
 
 interface MoveDestEvent extends HistoryEventBase {
@@ -118,6 +127,8 @@ interface MoveDestEvent extends HistoryEventBase {
   collateral_amount: string;
   dai_amount: string;
   rate: string;
+  oracle_price: string;
+  eth_price: string;
 }
 
 interface MigrateEvent extends HistoryEventBase {

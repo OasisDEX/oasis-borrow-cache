@@ -18,7 +18,9 @@ const allowedStandardEvents = [
   'GENERATE',
   'PAYBACK',
 ] as const;
+
 export type AllowedEventsKey = typeof allowedStandardEvents[number];
+
 export type FilterByKind<E extends { kind: string }, K extends string> = E extends any
   ? E['kind'] extends K
     ? E
@@ -38,7 +40,6 @@ export function assertAllowedEvent(event: Aggregated<Event>): asserts event is F
 
 export interface CommonEvent {
   marketPrice: BigNumber;
-  oraclePrice: BigNumber;
 
   beforeDebt: BigNumber;
   debt: BigNumber;

@@ -29,7 +29,6 @@ export async function parseMultiplyEvent(
   assertAllowedEvent(lastEvent);
 
   const collateralChange = new BigNumber(lastEvent.collateral_amount);
-  const debtChange = new BigNumber(lastEvent.dai_amount);
 
   const daiPrecision = new BigNumber(10).pow(18);
   const oraclePrice = new BigNumber(lastEvent.oracle_price);
@@ -83,7 +82,6 @@ export async function parseMultiplyEvent(
 
   const common: CommonEvent = {
     marketPrice,
-    oraclePrice,
     beforeLockedCollateral: lastEvent.beforeLockedCollateral,
     lockedCollateral: lastEvent.lockedCollateral,
     beforeCollateralizationRatio: getCollateralizationRatio(
@@ -152,8 +150,8 @@ export async function parseMultiplyEvent(
         ...common,
         kind: 'DECREASE_MULTIPLE',
         sold,
-        withdrawnCollateral: collateralChange.minus(sold),
-        withdrawnDai: daiFromExchange.plus(debtChange),
+        withdrawnCollateral: new BigNumber(multiplyEvent.collateral_left).div(collateralPrecision),
+        withdrawnDai: new BigNumber(multiplyEvent.dai_left).div(daiPrecision), // TODO: ask @Adam
       };
     case 'closeVaultExitCollateral':
       return {

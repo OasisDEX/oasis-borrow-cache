@@ -7,7 +7,10 @@ import { flatten, groupBy, max, min } from 'lodash';
 import { Aggregated, MPAAggregatedEvent, MultiplyEvent } from '../../types/multiplyHistory';
 import { Event } from '../../types/history';
 import { getAuctions2TransformerName } from './dogTransformer';
-import { eventEnhancerTransformerName } from './eventEnhancer';
+import {
+  eventEnhancerTransformerName,
+  eventEnhancerEthPriceTransformerName,
+} from './eventEnhancer';
 import { getMultiplyTransformerName } from './multiply';
 import { getTokenPrecision } from '../../utils/getTokenPrecision';
 import { aggregateVaultParams } from '../../utils/aggregateVaultParams';
@@ -38,6 +41,7 @@ export const multiplyHistoryTransformer: (
     dependencies: [getExtractorName(vatAddress)],
     transformerDependencies: [
       eventEnhancerTransformerName,
+      eventEnhancerEthPriceTransformerName,
       ...dependencies.dogs.map(dog => getAuctions2TransformerName(dog)),
       ...dependencies.multiplyProxyActionsAddress.map(mpa => getMultiplyTransformerName(mpa)),
     ],
