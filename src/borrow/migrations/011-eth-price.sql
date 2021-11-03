@@ -22,3 +22,5 @@ CREATE VIEW api.vault_multiply_history AS (
     JOIN vulcan2x.block b ON me.block_id = b.id
     LEFT JOIN vault.events e ON me.standard_event_id = e.id
 );
+
+CREATE INDEX oracle_timestamp_index ON oracles.prices(timestamp);

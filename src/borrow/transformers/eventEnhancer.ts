@@ -1,5 +1,5 @@
 import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
-import { getExtractorName } from '@oasisdex/spock-utils/dist/extractors/rawEventDataExtractor';
+import { getExtractorName, SimpleProcessorDefinition } from '@oasisdex/spock-utils/dist/extractors/rawEventDataExtractor';
 
 import { flatten, max, min } from 'lodash';
 import { getEventsFromBlockRange, getEventsFromRangeWithFrobIlk } from '../../utils/eventsDb';
@@ -9,23 +9,28 @@ import {
   updateEventsWithEthPrice,
   updateEventsWithOsmPrice,
 } from '../../utils/pricesDb';
+import { getOpenCdpTransformerName } from './cdpManagerTransformer';
+import { getAuctions2TransformerName } from './dogTransformer';
 
 export const eventEnhancerTransformerName = `event-enhancer-transformer-v2`;
 
 export const eventEnhancerTransformer: (
-  vatAddress: string,
-  startingBlock: number,
+  vat: SimpleProcessorDefinition,
+  dog: SimpleProcessorDefinition,
+  managers: SimpleProcessorDefinition[],
   oraclesTransformers: string[],
-) => BlockTransformer = (vatAddress, startingBlock, oraclesTransformers) => {
+) => BlockTransformer = (vat, dog, managers, oraclesTransformers) => {
   return {
     name: eventEnhancerTransformerName,
-    dependencies: [getExtractorName(vatAddress)],
+    dependencies: [getExtractorName(vat.address)],
     transformerDependencies: [
-      `vatCombineTransformerV2-${vatAddress}`,
-      `vatMoveEventsTransformerV2-${vatAddress}`,
+      `vatCombineTransformerV2-${vat.address}`,
+      `vatMoveEventsTransformerV2-${vat.address}`,
+      getAuctions2TransformerName(dog),
+      ...managers.map(getOpenCdpTransformerName),
       ...oraclesTransformers,
     ],
-    startingBlock: startingBlock,
+    startingBlock: vat.startingBlock,
     transform: async (services, _logs) => {
       const logs = flatten(_logs);
       if (logs.length === 0) {
@@ -54,19 +59,22 @@ export const eventEnhancerTransformer: (
 export const eventEnhancerEthPriceTransformerName = `event-enhancer-transformer-eth-price`;
 
 export const eventEnhancerTransformerEthPrice: (
-  vatAddress: string,
-  startingBlock: number,
+  vat: SimpleProcessorDefinition,
+  dog: SimpleProcessorDefinition,
+  managers: SimpleProcessorDefinition[],
   oraclesTransformers: string[],
-) => BlockTransformer = (vatAddress, startingBlock, oraclesTransformers) => {
+) => BlockTransformer = (vat, dog, managers: SimpleProcessorDefinition[], oraclesTransformers) => {
   return {
     name: eventEnhancerEthPriceTransformerName,
-    dependencies: [getExtractorName(vatAddress)],
+    dependencies: [getExtractorName(vat.address)],
     transformerDependencies: [
-      `vatCombineTransformerV2-${vatAddress}`,
-      `vatMoveEventsTransformerV2-${vatAddress}`,
+      `vatCombineTransformerV2-${vat.address}`,
+      `vatMoveEventsTransformerV2-${vat.address}`,
+      getAuctions2TransformerName(dog),
+      ...managers.map(getOpenCdpTransformerName),
       ...oraclesTransformers,
     ],
-    startingBlock: startingBlock,
+    startingBlock: vat.startingBlock,
     transform: async (services, _logs) => {
       const logs = flatten(_logs);
       if (logs.length === 0) {

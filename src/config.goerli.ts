@@ -35,7 +35,7 @@ import {
   getOracleTransformerName,
   oraclesTransformer,
 } from './borrow/transformers/oraclesTransformer';
-import { eventEnhancerTransformer } from './borrow/transformers/eventEnhancer';
+import { eventEnhancerTransformer, eventEnhancerTransformerEthPrice } from './borrow/transformers/eventEnhancer';
 
 const goerliAddresses = require('./addresses/goerli.json');
 
@@ -155,7 +155,8 @@ export const config: UserProvidedSpockConfig = {
     flipNoteTransformer(),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
     ...oraclesTransformer(oracles),
-    eventEnhancerTransformer(vat.address, GENESIS, oraclesTransformers),
+    eventEnhancerTransformer(vat, dogs[0], cdpManagers, oraclesTransformers),
+    eventEnhancerTransformerEthPrice(vat, dogs[0], cdpManagers, oraclesTransformers)
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),

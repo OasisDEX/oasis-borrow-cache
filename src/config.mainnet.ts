@@ -194,8 +194,8 @@ export const config: UserProvidedSpockConfig = {
     }),
     ...exchangeTransformer(exchange),
     ...oraclesTransformer(oracles),
-    eventEnhancerTransformer(vat.address, GENESIS, oraclesTransformers),
-    eventEnhancerTransformerEthPrice(vat.address, GENESIS, oraclesTransformers),
+    eventEnhancerTransformer(vat, dogs[0], cdpManagers, oraclesTransformers),
+    eventEnhancerTransformerEthPrice(vat, dogs[0], cdpManagers, oraclesTransformers),
     multiplyHistoryTransformer(vat.address, {
       dogs,
       multiplyProxyActionsAddress: multiply,

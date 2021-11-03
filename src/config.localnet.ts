@@ -39,7 +39,7 @@ import {
   getOracleTransformerName,
   oraclesTransformer,
 } from './borrow/transformers/oraclesTransformer';
-import { eventEnhancerTransformer } from './borrow/transformers/eventEnhancer';
+import { eventEnhancerTransformer, eventEnhancerTransformerEthPrice } from './borrow/transformers/eventEnhancer';
 
 const mainnetAddresses = require('./addresses/mainnet.json');
 
@@ -182,7 +182,8 @@ export const config: UserProvidedSpockConfig = {
     }),
     ...exchangeTransformer(exchange),
     ...oraclesTransformer(oracles),
-    eventEnhancerTransformer(vat.address, GENESIS, oraclesTransformers),
+    eventEnhancerTransformer(vat, dogs[0], cdpManagers, oraclesTransformers),
+    eventEnhancerTransformerEthPrice(vat, dogs[0], cdpManagers, oraclesTransformers)
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),
