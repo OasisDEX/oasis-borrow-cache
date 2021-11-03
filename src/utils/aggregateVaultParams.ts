@@ -14,9 +14,10 @@ function sumNormalizedDebt(total: BigNumber, event: Event): BigNumber {
     case 'MOVE_DEST':
       return total.plus(new BigNumber(event.dai_amount).div(event.rate));
     case 'MOVE_SRC':
+      return total.minus(new BigNumber(event.dai_amount).div(event.rate));
     case 'AUCTION_STARTED_V2':
     case 'AUCTION_STARTED':
-      return total.minus(new BigNumber(event.dai_amount).div(event.rate));
+      return zero;
     default:
       return total;
   }
