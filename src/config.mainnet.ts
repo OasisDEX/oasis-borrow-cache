@@ -199,7 +199,7 @@ export const config: UserProvidedSpockConfig = {
       vat: vat.address,
       getIlkForCdp,
       getLiquidationRatio,
-    }),,
+    }),
     ...multiplyGuniTransformer(guni, {
       cdpManager: cdpManagers[0].address,
       vat: vat.address,
