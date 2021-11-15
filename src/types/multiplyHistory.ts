@@ -116,9 +116,11 @@ export type MultiplyMethods =
   | 'openMultiplyVault'
   | 'increaseMultiple'
   | 'decreaseMultiple'
-  | 'openMultiplyVault'
   | 'closeVaultExitCollateral'
-  | 'closeVaultExitDai';
+  | 'closeVaultExitDai'
+  | 'openMultiplyGuniVault'
+  | 'increaseMultipleGuni'
+  | 'closeGuniVaultExitDai';
 
 export interface MPAAggregatedEvent {
   id: number;
