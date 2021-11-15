@@ -4,7 +4,7 @@ cd "$(dirname "$0")"
 
 echo "Starting dependencies..."
 echo "container clean up..."
-#docker rm -f postgres-vulcan2x || true
+docker rm -f postgres-vulcan2x || true
 echo "docker-compose clean up..."
 docker-compose down 
 echo "migration..."
