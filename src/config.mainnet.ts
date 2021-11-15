@@ -31,7 +31,7 @@ import {
   getDogTransformerName,
 } from './borrow/transformers/dogTransformer';
 import { clipperTransformer } from './borrow/transformers/clipperTransformer';
-import { multiplyTransformer } from './borrow/transformers/multiply';
+import { multiplyGuniTransformer, multiplyTransformer } from './borrow/transformers/multiply';
 import { exchangeTransformer } from './borrow/transformers/exchange';
 
 import { getOraclesAddresses } from './utils/addresses';
@@ -139,7 +139,14 @@ const multiply = [
   {
     address: '0x2a49Eae5CCa3f050eBEC729Cf90CC910fADAf7A2',
     startingBlock: 13461195,
-  },
+  }
+];
+
+const guni = [
+  {
+    address: '0x62fab0ffcc439c75a7d31f94f5b34be31f3e08e7',
+    startingBlock: 13615365,
+  }
 ];
 
 const exchange = [
@@ -169,6 +176,7 @@ export const config: UserProvidedSpockConfig = {
       dogs.map(dog => dog.address.toLowerCase()),
     ), // ignore dogs addresses because event name conflict
     ...makeRawLogExtractors(multiply),
+    ...makeRawLogExtractors(guni),
     ...makeRawLogExtractors(exchange),
     ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(oracle),
   ],
@@ -191,6 +199,12 @@ export const config: UserProvidedSpockConfig = {
       vat: vat.address,
       getIlkForCdp,
       getLiquidationRatio,
+    }),,
+    ...multiplyGuniTransformer(guni, {
+      cdpManager: cdpManagers[0].address,
+      vat: vat.address,
+      getIlkForCdp,
+      getLiquidationRatio,
     }),
     ...exchangeTransformer(exchange),
     ...oraclesTransformer(oracles),
@@ -199,6 +213,10 @@ export const config: UserProvidedSpockConfig = {
     multiplyHistoryTransformer(vat.address, {
       dogs,
       multiplyProxyActionsAddress: multiply,
+    }),
+    multiplyHistoryTransformer(vat.address, {
+      dogs,
+      multiplyProxyActionsAddress: guni,
     }),
   ],
   migrations: {

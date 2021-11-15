@@ -141,3 +141,25 @@ export const multiplyTransformer: (
     };
   });
 };
+
+export const multiplyGuniTransformer: (
+  addresses: (string | SimpleProcessorDefinition)[],
+  dependencies: Dependencies,
+) => BlockTransformer[] = (addresses, dependencies) => {
+  return addresses.map(_deps => {
+    const deps = normalizeAddressDefinition(_deps);
+
+    return {
+      name: getMultiplyTransformerName(deps),
+      dependencies: [getExtractorName(deps.address)],
+      transformerDependencies: [
+        `openCdpTransformer-${dependencies.cdpManager}`,
+        `vatTransformer-${dependencies.vat}`,
+      ],
+      startingBlock: deps.startingBlock,
+      transform: async (services, logs) => {
+        await handleEvents(services, multiplyGuniAbi, flatten(logs), handlers(dependencies));
+      },
+    };
+  });
+};
