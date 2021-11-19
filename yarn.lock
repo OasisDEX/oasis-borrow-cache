@@ -113,10 +113,10 @@
     "@types/yargs" "^15.0.0"
     chalk "^4.0.0"
 
-"@oasisdex/spock-etl@^0.1.4":
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/@oasisdex/spock-etl/-/spock-etl-0.1.4.tgz#c99346adc2e8d2ab35106b043dcdfa4828542aa6"
-  integrity sha512-Ci6MFXQoHX14YXMIBckGthP2hHP4aGPZxtj0BpTEACLnYrwzhrl2JfPTiYFPQLCskDgkICJB7kiLS4W/sBzadw==
+"@oasisdex/spock-etl@^0.1.5":
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/@oasisdex/spock-etl/-/spock-etl-0.1.5.tgz#6b73efdfe7fd71cf0a9991579146d47b5a5af4e1"
+  integrity sha512-0FcVBlJ0aJQ/pFNybVD/mk+81iBcmiJACzEmcsmGO99Yghoc7SSJpSzMG/jStLkmjYwsIu8Mgls+ZozHp+SJgg==
   dependencies:
     "@sentry/node" "^5.15.0"
     convert-hrtime "^3.0.0"
