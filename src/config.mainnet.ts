@@ -212,11 +212,7 @@ export const config: UserProvidedSpockConfig = {
     eventEnhancerTransformerEthPrice(vat, dogs[0], cdpManagers, oraclesTransformers),
     multiplyHistoryTransformer(vat.address, {
       dogs,
-      multiplyProxyActionsAddress: multiply,
-    }),
-    multiplyHistoryTransformer(vat.address, {
-      dogs,
-      multiplyProxyActionsAddress: guni,
+      multiplyProxyActionsAddress: [...multiply, ...guni],
     }),
   ],
   migrations: {

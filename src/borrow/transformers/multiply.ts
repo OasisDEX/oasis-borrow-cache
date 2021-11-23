@@ -17,7 +17,7 @@ import { cleanUpString } from '../../utils/cleanUpString';
 
 const multiplyAbi = require('../../../abis/multiply-proxy-actions.json');
 
-const multiplyGuniAbi = require('../../../abis/guni-multiply-proxy-actions.json');
+const multiplyGuniAbi = require('../../../abis/guni-multiply-proxy-action.json');
 
 interface Dependencies {
   getIlkForCdp: typeof getIlkForCdp;
