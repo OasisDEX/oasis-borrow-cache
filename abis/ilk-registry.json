@@ -163,19 +163,6 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "usr",
-        "type": "address"
-      }
-    ],
-    "name": "Rely",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "bytes32",
         "name": "ilk",
         "type": "bytes32"
