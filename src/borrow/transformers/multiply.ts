@@ -17,6 +17,8 @@ import { cleanUpString } from '../../utils/cleanUpString';
 
 const multiplyAbi = require('../../../abis/multiply-proxy-actions.json');
 
+const multiplyGuniAbi = require('../../../abis/guni-multiply-proxy-action.json');
+
 interface Dependencies {
   getIlkForCdp: typeof getIlkForCdp;
   getLiquidationRatio: typeof getLiquidationRatio;
@@ -137,6 +139,28 @@ export const multiplyTransformer: (
       startingBlock: deps.startingBlock,
       transform: async (services, logs) => {
         await handleEvents(services, multiplyAbi, flatten(logs), handlers(dependencies));
+      },
+    };
+  });
+};
+
+export const multiplyGuniTransformer: (
+  addresses: (string | SimpleProcessorDefinition)[],
+  dependencies: Dependencies,
+) => BlockTransformer[] = (addresses, dependencies) => {
+  return addresses.map(_deps => {
+    const deps = normalizeAddressDefinition(_deps);
+
+    return {
+      name: getMultiplyTransformerName(deps),
+      dependencies: [getExtractorName(deps.address)],
+      transformerDependencies: [
+        `openCdpTransformer-${dependencies.cdpManager}`,
+        `vatTransformer-${dependencies.vat}`,
+      ],
+      startingBlock: deps.startingBlock,
+      transform: async (services, logs) => {
+        await handleEvents(services, multiplyGuniAbi, flatten(logs), handlers(dependencies));
       },
     };
   });

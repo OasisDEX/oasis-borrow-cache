@@ -20,6 +20,21 @@ interface Dependencies {
   getGasFee(hash: string): Promise<BigNumber>;
 }
 
+
+const isEventNameIncreaseOrOpen = function(name : string) : boolean{
+  return name === 'increaseMultiple' ||
+  name === 'openMultiplyVault' ||
+  name === 'openMultiplyGuniVault' ||
+  name === 'increaseMultipleGuni';
+}
+
+const isEventNameDecreaseOrClose = function(name : string) : boolean{
+  return name === 'decreaseMultiple' ||
+  name === 'closeVaultExitCollateral' ||
+  name === 'closeVaultExitDai' ||
+  name === 'closeGuniVaultExitDai';
+}
+
 export async function parseMultiplyEvent(
   multiplyEvent: MPAAggregatedEvent,
   vaultEvents: Aggregated<Event>[],
@@ -36,8 +51,7 @@ export async function parseMultiplyEvent(
   const loanFee = new BigNumber(multiplyEvent.due).minus(multiplyEvent.borrowed).div(daiPrecision);
   const liquidationRatio = new BigNumber(multiplyEvent.liquidation_ratio);
   const collateralTokenAddress =
-    multiplyEvent.method_name === 'increaseMultiple' ||
-    multiplyEvent.method_name === 'openMultiplyVault'
+  isEventNameIncreaseOrOpen(multiplyEvent.method_name)
       ? multiplyEvent.asset_out
       : multiplyEvent.asset_in;
 
@@ -48,35 +62,28 @@ export async function parseMultiplyEvent(
   const collateralPrecision = new BigNumber(10).pow(collateralTokenDecimals);
 
   const collateralFromExchange =
-    multiplyEvent.method_name === 'increaseMultiple' ||
-    multiplyEvent.method_name === 'openMultiplyVault'
+  isEventNameIncreaseOrOpen(multiplyEvent.method_name)
       ? new BigNumber(multiplyEvent.amount_out).div(collateralPrecision)
       : new BigNumber(multiplyEvent.amount_in).div(collateralPrecision);
 
   const daiFromExchange =
-    multiplyEvent.method_name === 'increaseMultiple' ||
-    multiplyEvent.method_name === 'openMultiplyVault'
+  isEventNameIncreaseOrOpen(multiplyEvent.method_name)
       ? new BigNumber(multiplyEvent.amount_in).div(daiPrecision)
       : new BigNumber(multiplyEvent.amount_out).div(daiPrecision);
 
   const depositDai =
-    multiplyEvent.method_name === 'increaseMultiple' ||
-    multiplyEvent.method_name === 'openMultiplyVault'
+  isEventNameIncreaseOrOpen(multiplyEvent.method_name)
       ? daiFromExchange.plus(oazoFee).minus(new BigNumber(multiplyEvent.borrowed).div(daiPrecision))
       : zero;
 
   const marketPrice = daiFromExchange.div(collateralFromExchange);
 
   const bought =
-    multiplyEvent.method_name === 'increaseMultiple' ||
-    multiplyEvent.method_name === 'openMultiplyVault'
+  isEventNameIncreaseOrOpen(multiplyEvent.method_name)
       ? collateralFromExchange
       : zero;
 
-  const sold =
-    multiplyEvent.method_name === 'decreaseMultiple' ||
-    multiplyEvent.method_name === 'closeVaultExitCollateral' ||
-    multiplyEvent.method_name === 'closeVaultExitDai'
+  const sold = isEventNameDecreaseOrClose(multiplyEvent.method_name)
       ? collateralFromExchange
       : zero;
 
@@ -130,6 +137,7 @@ export async function parseMultiplyEvent(
 
   switch (multiplyEvent.method_name) {
     case 'openMultiplyVault':
+    case 'openMultiplyGuniVault':
       return {
         ...common,
         kind: 'OPEN_MULTIPLY_VAULT',
@@ -137,6 +145,7 @@ export async function parseMultiplyEvent(
         depositCollateral: collateralChange.minus(bought),
         depositDai,
       };
+    case 'increaseMultipleGuni':
     case 'increaseMultiple':
       return {
         ...common,
@@ -163,6 +172,7 @@ export async function parseMultiplyEvent(
         lockedCollateral: zero,
       };
     case 'closeVaultExitDai':
+    case 'closeGuniVaultExitDai':
       return {
         ...common,
         kind: 'CLOSE_VAULT_TO_DAI',
