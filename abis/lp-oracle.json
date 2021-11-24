@@ -36,12 +36,6 @@
     "name": "Link",
     "type": "event"
   },
-  {
-    "anonymous": false,
-    "inputs": [{ "indexed": true, "internalType": "address", "name": "usr", "type": "address" }],
-    "name": "Rely",
-    "type": "event"
-  },
   { "anonymous": false, "inputs": [], "name": "Start", "type": "event" },
   {
     "anonymous": false,

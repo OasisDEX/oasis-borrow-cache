@@ -49,25 +49,6 @@
       },
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "data",
-        "type": "uint256"
-      }
-    ],
-    "name": "File",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "what",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
         "internalType": "address",
         "name": "data",
         "type": "address"
@@ -172,19 +153,6 @@
       }
     ],
     "name": "Redo",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "usr",
-        "type": "address"
-      }
-    ],
-    "name": "Rely",
     "type": "event"
   },
   {
