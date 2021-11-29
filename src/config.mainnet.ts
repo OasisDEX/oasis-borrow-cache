@@ -140,14 +140,14 @@ const multiply = [
   {
     address: '0x2a49Eae5CCa3f050eBEC729Cf90CC910fADAf7A2',
     startingBlock: 13461195,
-  }
+  },
 ];
 
 const guni = [
   {
     address: '0x64b0010f6b90d0ae0bf2587ba47f2d3437487447',
     startingBlock: 13621657,
-  }
+  },
 ];
 
 const exchange = [
@@ -215,7 +215,7 @@ export const config: UserProvidedSpockConfig = {
       dogs,
       multiplyProxyActionsAddress: [...multiply, ...guni],
     }),
-    eventEnhancerGasPrice(vat, cdpManagers)
+    eventEnhancerGasPrice(vat, cdpManagers),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),

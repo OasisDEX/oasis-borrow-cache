@@ -133,8 +133,8 @@ interface Rate {
   rate: string;
 }
 
-export function getVatCombineTransformerName(vat: SimpleProcessorDefinition) {
-  return `vatCombineTransformerV2-${vat.address}`
+export function getVatCombineTransformerName(vat: SimpleProcessorDefinition): string {
+  return `vatCombineTransformerV2-${vat.address}`;
 }
 
 export const vatCombineTransformer: (
@@ -436,7 +436,7 @@ export const vatRawMoveTransformer: (
 };
 
 export function getVatMoveTransformerName(vat: SimpleProcessorDefinition): string {
-  return `vatMoveEventsTransformerV2-${vat.address}`
+  return `vatMoveEventsTransformerV2-${vat.address}`;
 }
 
 export const vatMoveEventsTransformer: (

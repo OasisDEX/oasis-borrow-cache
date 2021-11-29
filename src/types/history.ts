@@ -75,6 +75,7 @@ interface AuctionStartedEvent extends HistoryEventBase {
   dai_amount: string;
   rate: string;
   auction_id: string;
+  collateral: string;
 }
 
 interface AuctionStartedV2Event extends HistoryEventBase {
@@ -84,6 +85,7 @@ interface AuctionStartedV2Event extends HistoryEventBase {
   dai_amount: string;
   rate: string;
   liqPenalty: string;
+  collateral: string;
 }
 
 interface AuctionFinishedV2Event extends HistoryEventBase {
