@@ -168,6 +168,7 @@ export async function parseMultiplyEvent(
         kind: 'CLOSE_VAULT_TO_COLLATERAL',
         sold,
         exitCollateral: new BigNumber(multiplyEvent.collateral_left).div(collateralPrecision),
+        exitDai: new BigNumber(multiplyEvent.dai_left).div(daiPrecision),
         debt: zero,
         lockedCollateral: zero,
       };

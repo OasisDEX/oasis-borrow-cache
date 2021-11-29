@@ -103,6 +103,7 @@ interface CloseVaultToCollateralEvent extends CommonEvent {
   kind: 'CLOSE_VAULT_TO_COLLATERAL';
   sold: BigNumber;
   exitCollateral: BigNumber;
+  exitDai: BigNumber;
 }
 
 export type MultiplyEvent =
