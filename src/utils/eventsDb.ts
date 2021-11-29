@@ -246,7 +246,8 @@ export function ilkToToken(ilk: string): string {
 
 export function addTokenToEvent(event: WithIlk<Event>): WithToken<Event> | undefined {
   if (event.kind === 'AUCTION_STARTED_V2' || event.kind === 'AUCTION_STARTED') {
-    return { ...event, token: event.collateral };
+    const token = event.collateral === 'WETH' ? 'ETH' : event.collateral;
+    return { ...event, token };
   }
 
   const token = event.ilk ? ilkToToken(event.ilk) : undefined;
