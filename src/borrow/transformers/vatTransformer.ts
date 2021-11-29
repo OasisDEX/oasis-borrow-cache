@@ -133,13 +133,17 @@ interface Rate {
   rate: string;
 }
 
+export function getVatCombineTransformerName(vat: SimpleProcessorDefinition) {
+  return `vatCombineTransformerV2-${vat.address}`
+}
+
 export const vatCombineTransformer: (
   addresses: string | SimpleProcessorDefinition,
 ) => BlockTransformer = addresses => {
   const deps = normalizeAddressDefinition(addresses);
 
   return {
-    name: `vatCombineTransformerV2-${deps.address}`,
+    name: getVatCombineTransformerName(deps),
     dependencies: [getExtractorName(deps.address)],
     transformerDependencies: [`vatTransformer-${deps.address}`],
     startingBlock: deps.startingBlock,
@@ -431,13 +435,17 @@ export const vatRawMoveTransformer: (
   };
 };
 
+export function getVatMoveTransformerName(vat: SimpleProcessorDefinition): string {
+  return `vatMoveEventsTransformerV2-${vat.address}`
+}
+
 export const vatMoveEventsTransformer: (
   addresses: string | SimpleProcessorDefinition,
 ) => BlockTransformer = addresses => {
   const deps = normalizeAddressDefinition(addresses);
 
   return {
-    name: `vatMoveEventsTransformerV2-${deps.address}`,
+    name: getVatMoveTransformerName(deps),
     dependencies: [getExtractorName(deps.address)],
     startingBlock: deps.startingBlock,
     transformerDependencies: [`vatTransformer-${deps.address}`],

@@ -238,3 +238,20 @@ export async function getEventsFromRangeWithFrobIlk(
     .map(event => ({ ...event, ilk: event.ilk || event.frob_ilk }))
     .filter(event => event.ilk != undefined);
 }
+
+export type WithGasFee<T> = T & {gasFee: BigNumber};
+
+export async function updateEventsWithGasFee(services: LocalServices, events: WithGasFee<Event>[]) {
+  const updateValues = events
+    .map(({ id, gasFee }) => `(${gasFee.toString()},${id})`)
+    .join(',');
+
+  return services.tx.none(
+    `
+      UPDATE vault.multiply_events SET gas_fee = c.gas_fee
+      FROM (values${updateValues}) AS c(gas_fee, id) 
+      WHERE c.id = vault.multiply_events.standard_event_id;
+    `,
+  );
+  
+}

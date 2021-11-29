@@ -40,6 +40,7 @@ import {
   oraclesTransformer,
 } from './borrow/transformers/oraclesTransformer';
 import {
+  eventEnhancerGasPrice,
   eventEnhancerTransformer,
   eventEnhancerTransformerEthPrice,
 } from './borrow/transformers/eventEnhancer';
@@ -214,6 +215,7 @@ export const config: UserProvidedSpockConfig = {
       dogs,
       multiplyProxyActionsAddress: [...multiply, ...guni],
     }),
+    eventEnhancerGasPrice(vat, cdpManagers)
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),
