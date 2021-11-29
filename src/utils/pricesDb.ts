@@ -1,21 +1,9 @@
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
 import { flatten } from 'lodash';
-import { WithIlk } from '../utils/eventsDb';
 
 export interface EventToPrice {
   id: number;
   price: string;
-}
-
-type WithTokenFromIlk<T extends WithIlk<unknown>> = T & { token: string };
-
-// tslint:disable-next-line
-function ilkToToken(ilk: string): string {
-  return ilk.split('-')[0];
-}
-
-export function addTokenFromIlk<T extends WithIlk<unknown>>(event: T): WithTokenFromIlk<T> {
-  return { ...event, token: ilkToToken(event.ilk) };
 }
 
 export async function getEventsToOSMPrice<T extends { token: string; id: number; timestamp: Date }>(

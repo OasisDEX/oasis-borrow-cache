@@ -1,11 +1,19 @@
 import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
-import { getExtractorName, SimpleProcessorDefinition } from '@oasisdex/spock-utils/dist/extractors/rawEventDataExtractor';
+import {
+  getExtractorName,
+  SimpleProcessorDefinition,
+} from '@oasisdex/spock-utils/dist/extractors/rawEventDataExtractor';
 
 import { flatten, max, min } from 'lodash';
 import { getGasFee } from '../../utils/getGasFee';
-import { getEventsFromBlockRange, getEventsFromRangeWithFrobIlk, updateEventsWithGasFee, WithGasFee } from '../../utils/eventsDb';
 import {
-  addTokenFromIlk,
+  addTokenToEvent,
+  getEventsFromBlockRange,
+  getEventsFromRange,
+  updateEventsWithGasFee,
+  WithGasFee,
+} from '../../utils/eventsDb';
+import {
   getEventsToOSMPrice,
   updateEventsWithEthPrice,
   updateEventsWithOsmPrice,
@@ -13,10 +21,9 @@ import {
 import { getOpenCdpTransformerName } from './cdpManagerTransformer';
 import { getAuctions2TransformerName } from './dogTransformer';
 import { getVatCombineTransformerName, getVatMoveTransformerName } from './vatTransformer';
-import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
-import BigNumber from 'bignumber.js';
 import { Event } from 'src/types/history';
 import { multiplyHistoryTransformerName } from './multiplyHistoryTransformer';
+import { isDefined } from '../../utils/isDefined';
 
 export const eventEnhancerTransformerName = `event-enhancer-transformer-v2`;
 
@@ -28,7 +35,7 @@ export const eventEnhancerTransformer: (
 ) => BlockTransformer = (vat, dog, managers, oraclesTransformers) => {
   return {
     name: eventEnhancerTransformerName,
-    dependencies: [getExtractorName(vat.address)],
+    dependencies: [getExtractorName(vat.address), getExtractorName(dog.address)],
     transformerDependencies: [
       getVatCombineTransformerName(vat),
       getVatMoveTransformerName(vat),
@@ -47,9 +54,9 @@ export const eventEnhancerTransformer: (
       const minBlock = min(blocks);
       const maxBlock = max(blocks);
 
-      const events = (await getEventsFromRangeWithFrobIlk(services, minBlock, maxBlock)).map(
-        addTokenFromIlk,
-      );
+      const events = (await getEventsFromRange(services, minBlock, maxBlock))
+        .map(addTokenToEvent)
+        .filter(isDefined);
 
       if (events.length === 0) {
         return;
@@ -143,18 +150,22 @@ export const eventEnhancerGasPrice: (
       const minBlock = min(blocks);
       const maxBlock = max(blocks);
 
-      const events = (await getEventsFromBlockRange(services, minBlock, maxBlock)).filter(isVatEvent)
+      const events = (await getEventsFromBlockRange(services, minBlock, maxBlock)).filter(
+        isVatEvent,
+      );
 
       if (events.length === 0) {
         return;
       }
 
-      const eventsWithGasFees: WithGasFee<Event>[] = await Promise.all(events.map(async event => {
-        const gasFee = await getGasFee(services, event.hash)
-        return { ...event, gasFee }
-      }))
+      const eventsWithGasFees: WithGasFee<Event>[] = await Promise.all(
+        events.map(async event => {
+          const gasFee = await getGasFee(services, event.hash);
+          return { ...event, gasFee };
+        }),
+      );
 
-      await updateEventsWithGasFee(services, eventsWithGasFees)
+      await updateEventsWithGasFee(services, eventsWithGasFees);
     },
   };
 };
