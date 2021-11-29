@@ -27,7 +27,7 @@ import {
 import { zero } from '../../utils/constants';
 import { BigNumber } from 'bignumber.js';
 
-const multiplyHistoryTransformerName = `multiply-history`;
+export const multiplyHistoryTransformerName = `multiply-history`;
 
 export const multiplyHistoryTransformer: (
   vatAddress: string,

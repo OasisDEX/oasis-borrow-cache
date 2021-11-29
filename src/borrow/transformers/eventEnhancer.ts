@@ -1,16 +1,29 @@
 import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
-import { getExtractorName, SimpleProcessorDefinition } from '@oasisdex/spock-utils/dist/extractors/rawEventDataExtractor';
+import {
+  getExtractorName,
+  SimpleProcessorDefinition,
+} from '@oasisdex/spock-utils/dist/extractors/rawEventDataExtractor';
 
 import { flatten, max, min } from 'lodash';
-import { getEventsFromBlockRange, getEventsFromRangeWithFrobIlk } from '../../utils/eventsDb';
+import { getGasFee } from '../../utils/getGasFee';
 import {
-  addTokenFromIlk,
+  addTokenToEvent,
+  getEventsFromBlockRange,
+  getEventsFromRange,
+  updateEventsWithGasFee,
+  WithGasFee,
+} from '../../utils/eventsDb';
+import {
   getEventsToOSMPrice,
   updateEventsWithEthPrice,
   updateEventsWithOsmPrice,
 } from '../../utils/pricesDb';
 import { getOpenCdpTransformerName } from './cdpManagerTransformer';
 import { getAuctions2TransformerName } from './dogTransformer';
+import { getVatCombineTransformerName, getVatMoveTransformerName } from './vatTransformer';
+import { Event } from 'src/types/history';
+import { multiplyHistoryTransformerName } from './multiplyHistoryTransformer';
+import { isDefined } from '../../utils/isDefined';
 
 export const eventEnhancerTransformerName = `event-enhancer-transformer-v2`;
 
@@ -22,10 +35,10 @@ export const eventEnhancerTransformer: (
 ) => BlockTransformer = (vat, dog, managers, oraclesTransformers) => {
   return {
     name: eventEnhancerTransformerName,
-    dependencies: [getExtractorName(vat.address)],
+    dependencies: [getExtractorName(vat.address), getExtractorName(dog.address)],
     transformerDependencies: [
-      `vatCombineTransformerV2-${vat.address}`,
-      `vatMoveEventsTransformerV2-${vat.address}`,
+      getVatCombineTransformerName(vat),
+      getVatMoveTransformerName(vat),
       getAuctions2TransformerName(dog),
       ...managers.map(getOpenCdpTransformerName),
       ...oraclesTransformers,
@@ -41,9 +54,9 @@ export const eventEnhancerTransformer: (
       const minBlock = min(blocks);
       const maxBlock = max(blocks);
 
-      const events = (await getEventsFromRangeWithFrobIlk(services, minBlock, maxBlock)).map(
-        addTokenFromIlk,
-      );
+      const events = (await getEventsFromRange(services, minBlock, maxBlock))
+        .map(addTokenToEvent)
+        .filter(isDefined);
 
       if (events.length === 0) {
         return;
@@ -68,8 +81,8 @@ export const eventEnhancerTransformerEthPrice: (
     name: eventEnhancerEthPriceTransformerName,
     dependencies: [getExtractorName(vat.address)],
     transformerDependencies: [
-      `vatCombineTransformerV2-${vat.address}`,
-      `vatMoveEventsTransformerV2-${vat.address}`,
+      getVatCombineTransformerName(vat),
+      getVatMoveTransformerName(vat),
       getAuctions2TransformerName(dog),
       ...managers.map(getOpenCdpTransformerName),
       ...oraclesTransformers,
@@ -97,6 +110,62 @@ export const eventEnhancerTransformerEthPrice: (
       const eventsToPrice = await getEventsToOSMPrice(services, events);
 
       await updateEventsWithEthPrice(services, eventsToPrice);
+    },
+  };
+};
+
+export const eventEnhancerGasPriceName = 'eventEnhancerGasPrice';
+
+function isVatEvent(event: Event): boolean {
+  return [
+    'DEPOSIT',
+    'GENERATE',
+    'DEPOSIT-GENERATE',
+    'WITHDRAW',
+    'PAYBACK',
+    'WITHDRAW-PAYBACK',
+  ].includes(event.kind);
+}
+
+export const eventEnhancerGasPrice: (
+  vat: SimpleProcessorDefinition,
+  managers: SimpleProcessorDefinition[],
+) => BlockTransformer = (vat, managers: SimpleProcessorDefinition[]) => {
+  return {
+    name: eventEnhancerGasPriceName,
+    dependencies: [getExtractorName(vat.address)],
+    transformerDependencies: [
+      getVatCombineTransformerName(vat),
+      ...managers.map(getOpenCdpTransformerName),
+      multiplyHistoryTransformerName,
+    ],
+    startingBlock: vat.startingBlock,
+    transform: async (services, _logs) => {
+      const logs = flatten(_logs);
+      if (logs.length === 0) {
+        return;
+      }
+      const blocks = Array.from(new Set(logs.map(log => log.block_id)));
+
+      const minBlock = min(blocks);
+      const maxBlock = max(blocks);
+
+      const events = (await getEventsFromBlockRange(services, minBlock, maxBlock)).filter(
+        isVatEvent,
+      );
+
+      if (events.length === 0) {
+        return;
+      }
+
+      const eventsWithGasFees: WithGasFee<Event>[] = await Promise.all(
+        events.map(async event => {
+          const gasFee = await getGasFee(services, event.hash);
+          return { ...event, gasFee };
+        }),
+      );
+
+      await updateEventsWithGasFee(services, eventsWithGasFees);
     },
   };
 };

@@ -218,9 +218,11 @@ export async function saveEventsToDb(
   await services.tx.none(query);
 }
 
-export type WithIlk<T> = T & { ilk: string };
+export type WithIlk<T> = T & { ilk: string | undefined };
 
-export async function getEventsFromRangeWithFrobIlk(
+export type WithToken<T> = T & { token: string };
+
+export async function getEventsFromRange(
   services: LocalServices,
   minBlock: number,
   maxBlock: number,
@@ -234,7 +236,42 @@ export async function getEventsFromRangeWithFrobIlk(
           LEFT JOIN vat.frob f ON e.tx_id = f.tx_id AND e.block_id = f.block_id AND e.log_index = f.log_index;
         `,
     ),
-  )
-    .map(event => ({ ...event, ilk: event.ilk || event.frob_ilk }))
-    .filter(event => event.ilk != undefined);
+  ).map(event => ({ ...event, ilk: event.ilk || event.frob_ilk }));
+}
+
+// tslint:disable-next-line
+export function ilkToToken(ilk: string): string {
+  return ilk.split('-')[0];
+}
+
+export function addTokenToEvent(event: WithIlk<Event>): WithToken<Event> | undefined {
+  if (event.kind === 'AUCTION_STARTED_V2' || event.kind === 'AUCTION_STARTED') {
+    const token = event.collateral === 'WETH' ? 'ETH' : event.collateral;
+    return { ...event, token };
+  }
+
+  const token = event.ilk ? ilkToToken(event.ilk) : undefined;
+
+  if (token) {
+    return { ...event, token };
+  }
+
+  return undefined;
+}
+
+export type WithGasFee<T> = T & { gasFee: BigNumber };
+
+export async function updateEventsWithGasFee(
+  services: LocalServices,
+  events: WithGasFee<Event>[],
+): Promise<null> {
+  const updateValues = events.map(({ id, gasFee }) => `(${gasFee.toString()},${id})`).join(',');
+
+  return services.tx.none(
+    `
+      UPDATE vault.multiply_events SET gas_fee = c.gas_fee
+      FROM (values${updateValues}) AS c(gas_fee, id) 
+      WHERE c.id = vault.multiply_events.standard_event_id;
+    `,
+  );
 }
