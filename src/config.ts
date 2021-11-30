@@ -1,7 +1,7 @@
 import { config as mainConfig } from './config.mainnet';
 import { config as kovanConfig } from './config.kovan';
 import { config as localConfig } from './config.localnet';
-import {config as goerliConfig } from './config.goerli';
+import { config as goerliConfig } from './config.goerli';
 
 const config = (() => {
   switch (process.env.VL_CHAIN_NAME) {

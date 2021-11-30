@@ -31,7 +31,7 @@ import {
   getDogTransformerName,
 } from './borrow/transformers/dogTransformer';
 import { clipperTransformer } from './borrow/transformers/clipperTransformer';
-import { multiplyTransformer } from './borrow/transformers/multiply';
+import { multiplyGuniTransformer, multiplyTransformer } from './borrow/transformers/multiply';
 import { exchangeTransformer } from './borrow/transformers/exchange';
 
 import { getOraclesAddresses } from './utils/addresses';
@@ -39,7 +39,12 @@ import {
   getOracleTransformerName,
   oraclesTransformer,
 } from './borrow/transformers/oraclesTransformer';
-import { eventEnhancerTransformer } from './borrow/transformers/eventEnhancer';
+import {
+  eventEnhancerGasPrice,
+  eventEnhancerTransformer,
+  eventEnhancerTransformerEthPrice,
+} from './borrow/transformers/eventEnhancer';
+import { multiplyHistoryTransformer } from './borrow/transformers/multiplyHistoryTransformer';
 
 const mainnetAddresses = require('./addresses/mainnet.json');
 
@@ -129,8 +134,19 @@ const multiply = [
     startingBlock: 13184929,
   },
   {
+    address: '0xeae4061009f0b804aafc76f3ae67567d0abe9c27',
+    startingBlock: 13140365,
+  },
+  {
     address: '0x2a49Eae5CCa3f050eBEC729Cf90CC910fADAf7A2',
     startingBlock: 13461195,
+  },
+];
+
+const guni = [
+  {
+    address: '0x64b0010f6b90d0ae0bf2587ba47f2d3437487447',
+    startingBlock: 13621657,
   },
 ];
 
@@ -161,6 +177,7 @@ export const config: UserProvidedSpockConfig = {
       dogs.map(dog => dog.address.toLowerCase()),
     ), // ignore dogs addresses because event name conflict
     ...makeRawLogExtractors(multiply),
+    ...makeRawLogExtractors(guni),
     ...makeRawLogExtractors(exchange),
     ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(oracle),
   ],
@@ -184,9 +201,21 @@ export const config: UserProvidedSpockConfig = {
       getIlkForCdp,
       getLiquidationRatio,
     }),
+    ...multiplyGuniTransformer(guni, {
+      cdpManager: cdpManagers[0].address,
+      vat: vat.address,
+      getIlkForCdp,
+      getLiquidationRatio,
+    }),
     ...exchangeTransformer(exchange),
     ...oraclesTransformer(oracles),
-    eventEnhancerTransformer(vat.address, GENESIS, oraclesTransformers),
+    eventEnhancerTransformer(vat, dogs[0], cdpManagers, oraclesTransformers),
+    eventEnhancerTransformerEthPrice(vat, dogs[0], cdpManagers, oraclesTransformers),
+    multiplyHistoryTransformer(vat.address, {
+      dogs,
+      multiplyProxyActionsAddress: [...multiply, ...guni],
+    }),
+    eventEnhancerGasPrice(vat, cdpManagers),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),

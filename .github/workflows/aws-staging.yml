@@ -14,8 +14,6 @@ jobs:
       ECR_REPO_NAME: oazo-bcache-staging
       GOERLI_ETL_SERVICE_NAME: oazo-bcache-etl-goerli-staging
       GOERLI_API_SERVICE_NAME: oazo-bcache-api-goerli-staging
-      KOVAN_ETL_SERVICE_NAME: oazo-bcache-etl-kovan-staging
-      KOVAN_API_SERVICE_NAME: oazo-bcache-api-kovan-staging
       MAINNET_ETL_SERVICE_NAME: oazo-bcache-etl-mainnet-staging
       MAINNET_API_SERVICE_NAME: oazo-bcache-api-mainnet-staging
       CLUSTER_NAME: oazo-bcache-staging
@@ -66,17 +64,7 @@ jobs:
     - name: Update ${{ env.GOERLI_API_SERVICE_NAME }} ECS service with latest Docker image
       id: service-update-goerli-api
       run: |
-        aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.KOVAN_API_SERVICE_NAME }} --force-new-deployment --region $AWS_REGION
-
-    - name: Update ${{ env.KOVAN_ETL_SERVICE_NAME }} ECS service with latest Docker image
-      id: service-update-kovan-etl
-      run: |
-        aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.KOVAN_ETL_SERVICE_NAME }} --force-new-deployment --region $AWS_REGION
-
-    - name: Update ${{ env.KOVAN_API_SERVICE_NAME }} ECS service with latest Docker image
-      id: service-update-kovan-api
-      run: |
-        aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.KOVAN_API_SERVICE_NAME }} --force-new-deployment --region $AWS_REGION
+        aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.GOERLI_API_SERVICE_NAME }} --force-new-deployment --region $AWS_REGION
 
     - name: Update ${{ env.MAINNET_ETL_SERVICE_NAME }} ECS service with latest Docker image
       id: service-update-mainnet-etl
@@ -93,12 +81,6 @@ jobs:
       with:
         ecs-cluster: ${{ env.CLUSTER_NAME }}
         ecs-services: '["${{ env.GOERLI_ETL_SERVICE_NAME }}", "${{ env.GOERLI_API_SERVICE_NAME }}"]'
-
-    - name: Wait for kovan services to become stable
-      uses: oryanmoshe/ecs-wait-action@v1.3
-      with:
-        ecs-cluster: ${{ env.CLUSTER_NAME }}
-        ecs-services: '["${{ env.KOVAN_ETL_SERVICE_NAME }}", "${{ env.KOVAN_API_SERVICE_NAME }}"]'
 
     - name: Wait for mainnet services to become stable
       uses: oryanmoshe/ecs-wait-action@v1.3

@@ -8,8 +8,8 @@ import {
 } from '../../../src/borrow/transformers/catTransformer';
 import { Services, TransactionalServices } from '@oasisdex/spock-etl/dist/services/types';
 import { createServices } from '../../utils/createServices';
-import { Ilk } from '../../../src/borrow/services/getIlkInfo';
 import BigNumber from 'bignumber.js';
+import { Ilk } from '../../../src/borrow/dependencies/getIlkInfo';
 
 const mockIlk: Ilk = {
   dec: new BigNumber(16),

@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@google-cloud/bigquery": "^3.0.0",
-    "@oasisdex/spock-etl": "^0.1.3",
+    "@oasisdex/spock-etl": "^0.1.5",
     "@oasisdex/spock-graphql-api": "^0.1.2",
     "@oasisdex/spock-test-utils": "^0.1.1",
     "@oasisdex/spock-utils": "^0.1.0",
