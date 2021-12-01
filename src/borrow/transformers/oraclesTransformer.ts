@@ -28,7 +28,7 @@ interface Price {
 }
 
 function isLPToken(token: string): boolean {
-  return token.startsWith('UNIV2');
+  return token.startsWith('UNIV2') || token.startsWith('GUNIV3');
 }
 
 async function getTimeStamp(services: LocalServices, block_id: number): Promise<string> {
