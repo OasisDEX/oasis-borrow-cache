@@ -43,10 +43,7 @@ import {
   eventEnhancerTransformer,
   eventEnhancerTransformerEthPrice,
 } from './borrow/transformers/eventEnhancer';
-<<<<<<< Updated upstream
-=======
 import { multiplyHistoryTransformer } from './borrow/transformers/multiplyHistoryTransformer';
->>>>>>> Stashed changes
 
 const mainnetAddresses = require('./addresses/mainnet.json');
 
@@ -217,13 +214,10 @@ export const config: UserProvidedSpockConfig = {
     ...oraclesTransformer(oracles),
     eventEnhancerTransformer(vat, dogs[0], cdpManagers, oraclesTransformers),
     eventEnhancerTransformerEthPrice(vat, dogs[0], cdpManagers, oraclesTransformers),
-<<<<<<< Updated upstream
-=======
     multiplyHistoryTransformer(vat.address, {
       dogs,
       multiplyProxyActionsAddress: [...multiply, ...guni],
     }),
->>>>>>> Stashed changes
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),
