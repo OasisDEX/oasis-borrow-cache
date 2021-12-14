@@ -13,7 +13,7 @@ import {
   getLiquidationPrice,
   getNetValue,
 } from './vaultParams';
-import { zero } from './constants';
+import { daiPrecision, ethPrecision, zero } from './constants';
 
 interface Dependencies {
   getTokenPrecision(tokenAddress: string): Promise<BigNumber>;
@@ -49,8 +49,7 @@ export async function parseMultiplyEvent(
 
   const collateralChange = new BigNumber(lastEvent.collateral_amount);
 
-  const daiPrecision = new BigNumber(10).pow(18);
-  const ethPrecision = new BigNumber(10).pow(18);
+
   const oraclePrice = new BigNumber(lastEvent.oracle_price);
   const oazoFee = new BigNumber(multiplyEvent.oazo_fee).div(daiPrecision);
   const loanFee = new BigNumber(multiplyEvent.due).minus(multiplyEvent.borrowed).div(daiPrecision);
