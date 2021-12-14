@@ -3,5 +3,4 @@ UPDATE vault.multiply_events
     WHERE gas_fee is not null;
 
 UPDATE vault.multiply_events
-    SET total_fee = total_fee + gas_fee
-    WHERE total_fee is not null;
+    SET total_fee = coalesce(total_fee + gas_fee, total_fee, gas_fee);
