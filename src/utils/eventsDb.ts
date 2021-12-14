@@ -79,6 +79,7 @@ export function eventToDbFormat(event: Aggregated<Event> | MultiplyEvent) {
       case 'OPEN_MULTIPLY_GUNI_VAULT':
       case 'CLOSE_VAULT_TO_COLLATERAL':
       case 'CLOSE_VAULT_TO_DAI':
+      case 'CLOSE_GUNI_VAULT_TO_DAI':
         return {
           kind: event.kind,
           urn: event.urn,
@@ -113,7 +114,7 @@ export function eventToDbFormat(event: Aggregated<Event> | MultiplyEvent) {
 
           exit_collateral:
             event.kind === 'CLOSE_VAULT_TO_COLLATERAL' ? event.exitCollateral.toFixed(18) : null,
-          exit_dai: event.kind === 'CLOSE_VAULT_TO_DAI' ? event.exitDai.toFixed(18) : null,
+          exit_dai: event.kind === 'CLOSE_VAULT_TO_DAI' || event.kind === 'CLOSE_GUNI_VAULT_TO_DAI' ? event.exitDai.toFixed(18) : null,
 
           tx_id: event.tx_id,
           log_index: event.log_index,

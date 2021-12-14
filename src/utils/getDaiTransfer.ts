@@ -11,5 +11,5 @@ export async function getDaiTransfer(services: LocalServices, txId: number): Pro
       '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' // transfer signature
     ))[0].data as string
 
-  return new BigNumber(parseInt(daiTransferHex))
+  return new BigNumber(parseInt(daiTransferHex)).div(new BigNumber(10).pow(18))
 }

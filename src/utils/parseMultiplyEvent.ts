@@ -58,13 +58,14 @@ export async function parseMultiplyEvent(
     ? multiplyEvent.asset_out
     : multiplyEvent.asset_in;
 
-  const [gasFee, collateralTokenDecimals, guniDaiTransfer] = await Promise.all([
+  const [rawGasFee, collateralTokenDecimals, guniDaiTransfer] = await Promise.all([
     dependencies.getGasFee(lastEvent.hash),
     dependencies.getTokenPrecision(collateralTokenAddress),
     dependencies.getDaiTransfer(multiplyEvent.tx_id)
   ]);
-  const collateralPrecision = new BigNumber(10).pow(collateralTokenDecimals);
 
+  const gasFee = rawGasFee.div(daiPrecision)
+  const collateralPrecision = new BigNumber(10).pow(collateralTokenDecimals);
   const collateralFromExchange = isEventNameIncreaseOrOpen(multiplyEvent.method_name)
     ? new BigNumber(multiplyEvent.amount_out).div(collateralPrecision)
     : new BigNumber(multiplyEvent.amount_in).div(collateralPrecision);
@@ -125,7 +126,7 @@ export async function parseMultiplyEvent(
     oazoFee,
     loanFee,
     gasFee,
-    totalFee: BigNumber.sum(oazoFee, loanFee),
+    totalFee: BigNumber.sum(oazoFee, loanFee, gasFee),
 
     tx_id: multiplyEvent.tx_id,
     log_index: multiplyEvent.tx_id,
@@ -181,10 +182,18 @@ export async function parseMultiplyEvent(
         lockedCollateral: zero,
       };
     case 'closeVaultExitDai':
-    case 'closeGuniVaultExitDai':
       return {
         ...common,
         kind: 'CLOSE_VAULT_TO_DAI',
+        sold,
+        exitDai: new BigNumber(multiplyEvent.dai_left).div(daiPrecision),
+        debt: zero,
+        lockedCollateral: zero,
+      };
+    case 'closeGuniVaultExitDai':
+      return {
+        ...common,
+        kind: 'CLOSE_GUNI_VAULT_TO_DAI',
         sold,
         exitDai: new BigNumber(multiplyEvent.dai_left).div(daiPrecision),
         debt: zero,
