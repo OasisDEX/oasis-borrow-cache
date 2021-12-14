@@ -76,6 +76,7 @@ export function eventToDbFormat(event: Aggregated<Event> | MultiplyEvent) {
       case 'INCREASE_MULTIPLE':
       case 'DECREASE_MULTIPLE':
       case 'OPEN_MULTIPLY_VAULT':
+      case 'OPEN_MULTIPLY_GUNI_VAULT':
       case 'CLOSE_VAULT_TO_COLLATERAL':
       case 'CLOSE_VAULT_TO_DAI':
         return {

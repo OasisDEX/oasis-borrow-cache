@@ -148,8 +148,8 @@ const guni = [
     startingBlock: 13621657,
   },
   {
-    address: '@Seba new guni contract here',
-    startingBlock: 13621657, // set starting block when the contract was deployed
+    address: '0xed3a954c0adfc8e3f85d92729c051ff320648e30',
+    startingBlock: 13733654,
   }
 ];
 
@@ -157,6 +157,14 @@ const exchange = [
   {
     address: '0xb5eb8cb6ced6b6f8e13bcd502fb489db4a726c7b',
     startingBlock: 13140368,
+  },
+  {
+    address: '0x99e4484dac819aa74b347208752306615213d324',
+    startingBlock: 13677143,
+  },
+  {
+    address: '0x12dcc776525c35836b10026929558208d1258b91',
+    startingBlock: 13733602,
   },
 ];
 const oracles = getOraclesAddresses(mainnetAddresses).map(description => ({

@@ -18,6 +18,7 @@ import { zero } from './constants';
 interface Dependencies {
   getTokenPrecision(tokenAddress: string): Promise<BigNumber>;
   getGasFee(hash: string): Promise<BigNumber>;
+  getDaiTransfer(txId: number): Promise<BigNumber>
 }
 
 const isEventNameIncreaseOrOpen = function(name: string): boolean {
@@ -57,9 +58,10 @@ export async function parseMultiplyEvent(
     ? multiplyEvent.asset_out
     : multiplyEvent.asset_in;
 
-  const [gasFee, collateralTokenDecimals] = await Promise.all([
+  const [gasFee, collateralTokenDecimals, guniDaiTransfer] = await Promise.all([
     dependencies.getGasFee(lastEvent.hash),
     dependencies.getTokenPrecision(collateralTokenAddress),
+    dependencies.getDaiTransfer(multiplyEvent.tx_id)
   ]);
   const collateralPrecision = new BigNumber(10).pow(collateralTokenDecimals);
 
@@ -135,13 +137,21 @@ export async function parseMultiplyEvent(
 
   switch (multiplyEvent.method_name) {
     case 'openMultiplyVault':
-    case 'openMultiplyGuniVault':
       return {
         ...common,
         kind: 'OPEN_MULTIPLY_VAULT',
         bought,
         depositCollateral: collateralChange.minus(bought),
         depositDai,
+      };
+    case 'openMultiplyGuniVault':
+      return {
+        ...common,
+        kind: 'OPEN_MULTIPLY_GUNI_VAULT',
+        depositDai: guniDaiTransfer,
+        depositCollateral: collateralChange.minus(bought),
+        bought,
+        netValue: getNetValue(lastEvent.debt, lastEvent.lockedCollateral, oraclePrice),
       };
     case 'increaseMultipleGuni':
     case 'increaseMultiple':

@@ -79,6 +79,13 @@ interface OpenMultiplyEvent extends CommonEvent {
   bought: BigNumber;
 }
 
+interface OpenMultiplyGuniEvent extends CommonEvent {
+  kind: 'OPEN_MULTIPLY_GUNI_VAULT';
+  depositDai: BigNumber;
+  depositCollateral: BigNumber;
+  bought: BigNumber;
+}
+
 interface IncreaseMultiplyEvent extends CommonEvent {
   kind: 'INCREASE_MULTIPLE';
   depositCollateral: BigNumber;
@@ -108,6 +115,7 @@ interface CloseVaultToCollateralEvent extends CommonEvent {
 
 export type MultiplyEvent =
   | OpenMultiplyEvent
+  | OpenMultiplyGuniEvent
   | IncreaseMultiplyEvent
   | DecreaseMultiplyEvent
   | CloseVaultToDaiEvent
@@ -150,7 +158,7 @@ export interface MPAAggregatedEvent {
   block_id: number;
 }
 
-const buyingCollateralEvents = ['OPEN_MULTIPLY_VAULT', 'INCREASE_MULTIPLE'] as const;
+const buyingCollateralEvents = ['OPEN_MULTIPLY_VAULT', 'OPEN_MULTIPLY_GUNI_VAULT', 'INCREASE_MULTIPLE'] as const;
 export function isBuyingCollateral(
   event: MultiplyEvent,
 ): event is FilterByKind<MultiplyEvent, typeof buyingCollateralEvents[number]> {

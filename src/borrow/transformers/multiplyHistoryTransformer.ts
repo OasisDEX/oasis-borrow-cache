@@ -26,6 +26,7 @@ import {
 } from '../../utils/eventsDb';
 import { zero } from '../../utils/constants';
 import { BigNumber } from 'bignumber.js';
+import { getDaiTransfer } from '../../utils/getDaiTransfer';
 
 export const multiplyHistoryTransformerName = `multiply-history`;
 
@@ -107,6 +108,7 @@ export const multiplyHistoryTransformer: (
                   await parseMultiplyEvent(multiplyEvent, events, {
                     getTokenPrecision: address => getTokenPrecision(services, address),
                     getGasFee: hash => getGasFee(services, hash),
+                    getDaiTransfer: (txId) => getDaiTransfer(services, txId)
                   }),
                 ];
               }
