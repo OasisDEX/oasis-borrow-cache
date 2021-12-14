@@ -50,6 +50,7 @@ export async function parseMultiplyEvent(
   const collateralChange = new BigNumber(lastEvent.collateral_amount);
 
   const daiPrecision = new BigNumber(10).pow(18);
+  const ethPrecision = new BigNumber(10).pow(18);
   const oraclePrice = new BigNumber(lastEvent.oracle_price);
   const oazoFee = new BigNumber(multiplyEvent.oazo_fee).div(daiPrecision);
   const loanFee = new BigNumber(multiplyEvent.due).minus(multiplyEvent.borrowed).div(daiPrecision);
@@ -64,7 +65,7 @@ export async function parseMultiplyEvent(
     dependencies.getDaiTransfer(multiplyEvent.tx_id)
   ]);
 
-  const gasFee = rawGasFee.div(daiPrecision)
+  const gasFee = rawGasFee.div(ethPrecision)
   const collateralPrecision = new BigNumber(10).pow(collateralTokenDecimals);
   const collateralFromExchange = isEventNameIncreaseOrOpen(multiplyEvent.method_name)
     ? new BigNumber(multiplyEvent.amount_out).div(collateralPrecision)
@@ -150,7 +151,7 @@ export async function parseMultiplyEvent(
         ...common,
         kind: 'OPEN_MULTIPLY_GUNI_VAULT',
         depositDai: guniDaiTransfer,
-        depositCollateral: collateralChange.minus(bought),
+        depositCollateral: collateralChange,
         bought,
         netValue: getNetValue(lastEvent.debt, lastEvent.lockedCollateral, oraclePrice),
       };
