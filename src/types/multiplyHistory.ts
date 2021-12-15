@@ -67,7 +67,6 @@ export interface CommonEvent {
   loanFee: BigNumber;
   oazoFee: BigNumber;
   totalFee: BigNumber;
-  gasFee: BigNumber; // in wei
 
   standardEventId: number;
 }
@@ -76,6 +75,13 @@ interface OpenMultiplyEvent extends CommonEvent {
   kind: 'OPEN_MULTIPLY_VAULT';
   depositCollateral: BigNumber;
   depositDai: BigNumber;
+  bought: BigNumber;
+}
+
+interface OpenMultiplyGuniEvent extends CommonEvent {
+  kind: 'OPEN_MULTIPLY_GUNI_VAULT';
+  depositDai: BigNumber;
+  depositCollateral: BigNumber;
   bought: BigNumber;
 }
 
@@ -99,6 +105,11 @@ interface CloseVaultToDaiEvent extends CommonEvent {
   exitDai: BigNumber;
 }
 
+interface CloseGuniVaultToDaiEvent extends CommonEvent {
+  kind: 'CLOSE_GUNI_VAULT_TO_DAI';
+  sold: BigNumber;
+  exitDai: BigNumber;
+}
 interface CloseVaultToCollateralEvent extends CommonEvent {
   kind: 'CLOSE_VAULT_TO_COLLATERAL';
   sold: BigNumber;
@@ -108,9 +119,11 @@ interface CloseVaultToCollateralEvent extends CommonEvent {
 
 export type MultiplyEvent =
   | OpenMultiplyEvent
+  | OpenMultiplyGuniEvent
   | IncreaseMultiplyEvent
   | DecreaseMultiplyEvent
   | CloseVaultToDaiEvent
+  | CloseGuniVaultToDaiEvent
   | CloseVaultToCollateralEvent;
 
 export type MultiplyMethods =
@@ -150,7 +163,7 @@ export interface MPAAggregatedEvent {
   block_id: number;
 }
 
-const buyingCollateralEvents = ['OPEN_MULTIPLY_VAULT', 'INCREASE_MULTIPLE'] as const;
+const buyingCollateralEvents = ['OPEN_MULTIPLY_VAULT', 'OPEN_MULTIPLY_GUNI_VAULT', 'INCREASE_MULTIPLE'] as const;
 export function isBuyingCollateral(
   event: MultiplyEvent,
 ): event is FilterByKind<MultiplyEvent, typeof buyingCollateralEvents[number]> {

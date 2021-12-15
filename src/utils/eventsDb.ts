@@ -76,8 +76,10 @@ export function eventToDbFormat(event: Aggregated<Event> | MultiplyEvent) {
       case 'INCREASE_MULTIPLE':
       case 'DECREASE_MULTIPLE':
       case 'OPEN_MULTIPLY_VAULT':
+      case 'OPEN_MULTIPLY_GUNI_VAULT':
       case 'CLOSE_VAULT_TO_COLLATERAL':
       case 'CLOSE_VAULT_TO_DAI':
+      case 'CLOSE_GUNI_VAULT_TO_DAI':
         return {
           kind: event.kind,
           urn: event.urn,
@@ -96,7 +98,6 @@ export function eventToDbFormat(event: Aggregated<Event> | MultiplyEvent) {
 
           oazo_fee: event.oazoFee.toFixed(18),
           loan_fee: event.loanFee.toFixed(18),
-          gas_fee: event.gasFee.toFixed(18),
           total_fee: event.totalFee.toFixed(18),
 
           bought: isBuyingCollateral(event) ? event.bought.toFixed(18) : null,
@@ -112,7 +113,7 @@ export function eventToDbFormat(event: Aggregated<Event> | MultiplyEvent) {
 
           exit_collateral:
             event.kind === 'CLOSE_VAULT_TO_COLLATERAL' ? event.exitCollateral.toFixed(18) : null,
-          exit_dai: event.kind === 'CLOSE_VAULT_TO_DAI' ? event.exitDai.toFixed(18) : null,
+          exit_dai: event.kind === 'CLOSE_VAULT_TO_DAI' || event.kind === 'CLOSE_GUNI_VAULT_TO_DAI' ? event.exitDai.toFixed(18) : null,
 
           tx_id: event.tx_id,
           log_index: event.log_index,
@@ -185,7 +186,6 @@ export async function saveEventsToDb(
 
       'oazo_fee',
       'loan_fee',
-      'gas_fee',
       'total_fee',
 
       'bought',
