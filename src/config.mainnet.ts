@@ -226,6 +226,7 @@ export const config: UserProvidedSpockConfig = {
     multiplyHistoryTransformer(vat.address, {
       dogs,
       multiplyProxyActionsAddress: [...multiply, ...guni],
+      exchangeAddress: [...exchange]
     }),
     eventEnhancerGasPrice(vat, cdpManagers),
   ],
