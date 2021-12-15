@@ -98,7 +98,6 @@ export function eventToDbFormat(event: Aggregated<Event> | MultiplyEvent) {
 
           oazo_fee: event.oazoFee.toFixed(18),
           loan_fee: event.loanFee.toFixed(18),
-          gas_fee: event.gasFee.toFixed(18),
           total_fee: event.totalFee.toFixed(18),
 
           bought: isBuyingCollateral(event) ? event.bought.toFixed(18) : null,
@@ -187,7 +186,6 @@ export async function saveEventsToDb(
 
       'oazo_fee',
       'loan_fee',
-      'gas_fee',
       'total_fee',
 
       'bought',

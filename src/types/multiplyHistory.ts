@@ -67,7 +67,6 @@ export interface CommonEvent {
   loanFee: BigNumber;
   oazoFee: BigNumber;
   totalFee: BigNumber;
-  gasFee: BigNumber; // in wei
 
   standardEventId: number;
 }

@@ -58,10 +58,9 @@ export async function parseMultiplyEvent(
     ? multiplyEvent.asset_out
     : multiplyEvent.asset_in;
 
-  const [rawGasFee, collateralTokenDecimals, guniDaiTransfer] = await Promise.all([
+  const [rawGasFee, collateralTokenDecimals] = await Promise.all([
     dependencies.getGasFee(lastEvent.hash),
     dependencies.getTokenPrecision(collateralTokenAddress),
-    dependencies.getDaiTransfer(multiplyEvent.tx_id)
   ]);
 
   const gasFee = rawGasFee.div(ethPrecision)
@@ -125,7 +124,6 @@ export async function parseMultiplyEvent(
 
     oazoFee,
     loanFee,
-    gasFee,
     totalFee: BigNumber.sum(oazoFee, loanFee, gasFee),
 
     tx_id: multiplyEvent.tx_id,
@@ -146,6 +144,7 @@ export async function parseMultiplyEvent(
         depositDai,
       };
     case 'openMultiplyGuniVault':
+      const guniDaiTransfer = await dependencies.getDaiTransfer(multiplyEvent.tx_id)
       return {
         ...common,
         kind: 'OPEN_MULTIPLY_GUNI_VAULT',
