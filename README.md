@@ -147,3 +147,6 @@ Got 0, {"attempts":15,"method":"getBlock","params":{"blockTag":"0x507b24","inclu
 Error: invalid response - 0
     at exports.XMLHttpRequest.request.onreadystatechange (/home/johnnie/Projects/oasis-borrow-cache/node_modules/ethers/utils/web.js:84:29)
 ```
+
+#### Disabling IP6 just on your machine doesn't help?
+Call your internet provider to disable it. Alternatively try network shared from mobile or go to other place like office or cafe to try it.
