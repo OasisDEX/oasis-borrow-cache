@@ -57,6 +57,7 @@ export interface CommonEvent {
   log_index: number;
   tx_id: number;
   block_id: number;
+  exitDai?: BigNumber;
 
   netValue: BigNumber;
 
@@ -102,19 +103,16 @@ interface DecreaseMultiplyEvent extends CommonEvent {
 interface CloseVaultToDaiEvent extends CommonEvent {
   kind: 'CLOSE_VAULT_TO_DAI';
   sold: BigNumber;
-  exitDai: BigNumber;
 }
 
 interface CloseGuniVaultToDaiEvent extends CommonEvent {
   kind: 'CLOSE_GUNI_VAULT_TO_DAI';
   sold: BigNumber;
-  exitDai: BigNumber;
 }
 interface CloseVaultToCollateralEvent extends CommonEvent {
   kind: 'CLOSE_VAULT_TO_COLLATERAL';
   sold: BigNumber;
   exitCollateral: BigNumber;
-  exitDai: BigNumber;
 }
 
 export type MultiplyEvent =
