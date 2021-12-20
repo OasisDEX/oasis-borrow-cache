@@ -65,6 +65,7 @@ export interface CommonEvent {
   beforeLiquidationPrice: BigNumber;
   liquidationPrice: BigNumber;
 
+  gasFee: BigNumber;
   loanFee: BigNumber;
   oazoFee: BigNumber;
   totalFee: BigNumber;
