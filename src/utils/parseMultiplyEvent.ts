@@ -13,7 +13,7 @@ import {
   getLiquidationPrice,
   getNetValue,
 } from './vaultParams';
-import { daiPrecision, ethPrecision, zero } from './constants';
+import { daiPrecision, zero } from './constants';
 
 interface Dependencies {
   getTokenPrecision(tokenAddress: string): Promise<BigNumber>;
@@ -58,12 +58,11 @@ export async function parseMultiplyEvent(
     ? multiplyEvent.asset_out
     : multiplyEvent.asset_in;
 
-  const [rawGasFee, collateralTokenDecimals] = await Promise.all([
+  const [gasFee, collateralTokenDecimals] = await Promise.all([
     dependencies.getGasFee(lastEvent.hash),
     dependencies.getTokenPrecision(collateralTokenAddress),
   ]);
 
-  const gasFee = rawGasFee.div(ethPrecision)
   const collateralPrecision = new BigNumber(10).pow(collateralTokenDecimals);
   const collateralFromExchange = isEventNameIncreaseOrOpen(multiplyEvent.method_name)
     ? new BigNumber(multiplyEvent.amount_out).div(collateralPrecision)
@@ -124,7 +123,8 @@ export async function parseMultiplyEvent(
 
     oazoFee,
     loanFee,
-    totalFee: BigNumber.sum(oazoFee, loanFee, gasFee),
+    gasFee,
+    totalFee: BigNumber.sum(oazoFee, loanFee),
 
     tx_id: multiplyEvent.tx_id,
     log_index: multiplyEvent.tx_id,
