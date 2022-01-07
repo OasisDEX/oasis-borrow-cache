@@ -13,11 +13,12 @@ import {
   getLiquidationPrice,
   getNetValue,
 } from './vaultParams';
-import { zero } from './constants';
+import { daiPrecision, zero } from './constants';
 
 interface Dependencies {
   getTokenPrecision(tokenAddress: string): Promise<BigNumber>;
   getGasFee(hash: string): Promise<BigNumber>;
+  getDaiTransfer(txId: number): Promise<BigNumber>
 }
 
 const isEventNameIncreaseOrOpen = function(name: string): boolean {
@@ -48,7 +49,7 @@ export async function parseMultiplyEvent(
 
   const collateralChange = new BigNumber(lastEvent.collateral_amount);
 
-  const daiPrecision = new BigNumber(10).pow(18);
+
   const oraclePrice = new BigNumber(lastEvent.oracle_price);
   const oazoFee = new BigNumber(multiplyEvent.oazo_fee).div(daiPrecision);
   const loanFee = new BigNumber(multiplyEvent.due).minus(multiplyEvent.borrowed).div(daiPrecision);
@@ -61,8 +62,8 @@ export async function parseMultiplyEvent(
     dependencies.getGasFee(lastEvent.hash),
     dependencies.getTokenPrecision(collateralTokenAddress),
   ]);
-  const collateralPrecision = new BigNumber(10).pow(collateralTokenDecimals);
 
+  const collateralPrecision = new BigNumber(10).pow(collateralTokenDecimals);
   const collateralFromExchange = isEventNameIncreaseOrOpen(multiplyEvent.method_name)
     ? new BigNumber(multiplyEvent.amount_out).div(collateralPrecision)
     : new BigNumber(multiplyEvent.amount_in).div(collateralPrecision);
@@ -135,13 +136,22 @@ export async function parseMultiplyEvent(
 
   switch (multiplyEvent.method_name) {
     case 'openMultiplyVault':
-    case 'openMultiplyGuniVault':
       return {
         ...common,
         kind: 'OPEN_MULTIPLY_VAULT',
         bought,
         depositCollateral: collateralChange.minus(bought),
         depositDai,
+      };
+    case 'openMultiplyGuniVault':
+      const guniDaiTransfer = await dependencies.getDaiTransfer(multiplyEvent.tx_id)
+      return {
+        ...common,
+        kind: 'OPEN_MULTIPLY_GUNI_VAULT',
+        depositDai: guniDaiTransfer,
+        depositCollateral: collateralChange,
+        bought,
+        netValue: getNetValue(lastEvent.debt, lastEvent.lockedCollateral, oraclePrice),
       };
     case 'increaseMultipleGuni':
     case 'increaseMultiple':
@@ -171,10 +181,18 @@ export async function parseMultiplyEvent(
         lockedCollateral: zero,
       };
     case 'closeVaultExitDai':
-    case 'closeGuniVaultExitDai':
       return {
         ...common,
         kind: 'CLOSE_VAULT_TO_DAI',
+        sold,
+        exitDai: new BigNumber(multiplyEvent.dai_left).div(daiPrecision),
+        debt: zero,
+        lockedCollateral: zero,
+      };
+    case 'closeGuniVaultExitDai':
+      return {
+        ...common,
+        kind: 'CLOSE_GUNI_VAULT_TO_DAI',
         sold,
         exitDai: new BigNumber(multiplyEvent.dai_left).div(daiPrecision),
         debt: zero,

@@ -106,6 +106,10 @@ const handlers = {
   },
 };
 
+export function getExchangeTransformerName(deps: SimpleProcessorDefinition): string {
+  return `exchange-${deps.address}`
+}
+
 export const exchangeTransformer: (
   addresses: (string | SimpleProcessorDefinition)[],
 ) => BlockTransformer[] = addresses => {
@@ -113,7 +117,7 @@ export const exchangeTransformer: (
     const deps = normalizeAddressDefinition(_deps);
 
     return {
-      name: `exchange-${deps.address}`,
+      name: getExchangeTransformerName(deps),
       dependencies: [getExtractorName(deps.address)],
       startingBlock: deps.startingBlock,
       transform: async (services, logs) => {

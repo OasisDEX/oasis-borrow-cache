@@ -31,7 +31,7 @@ import {
   getDogTransformerName,
 } from './borrow/transformers/dogTransformer';
 import { clipperTransformer } from './borrow/transformers/clipperTransformer';
-import { multiplyTransformer } from './borrow/transformers/multiply';
+import { multiplyGuniTransformer, multiplyTransformer } from './borrow/transformers/multiply';
 import { exchangeTransformer } from './borrow/transformers/exchange';
 
 import { getOraclesAddresses } from './utils/addresses';
@@ -40,9 +40,11 @@ import {
   oraclesTransformer,
 } from './borrow/transformers/oraclesTransformer';
 import {
+  eventEnhancerGasPrice,
   eventEnhancerTransformer,
   eventEnhancerTransformerEthPrice,
 } from './borrow/transformers/eventEnhancer';
+import { multiplyHistoryTransformer } from './borrow/transformers/multiplyHistoryTransformer';
 
 const mainnetAddresses = require('./addresses/mainnet.json');
 
@@ -128,15 +130,42 @@ const addresses = {
 
 const multiply = [
   {
+    address: '0x33b4be1b67c49125c1524777515e4034e04dff58',
+    startingBlock: 13184929,
+  },
+  {
     address: '0xeae4061009f0b804aafc76f3ae67567d0abe9c27',
     startingBlock: 13140365,
   },
+  {
+    address: '0x2a49Eae5CCa3f050eBEC729Cf90CC910fADAf7A2',
+    startingBlock: 13461195,
+  }
+];
+
+const guni = [
+  {
+    address: '0x64b0010f6b90d0ae0bf2587ba47f2d3437487447',
+    startingBlock: 13621657,
+  },
+  {
+    address: '0xed3a954c0adfc8e3f85d92729c051ff320648e30',
+    startingBlock: 13733654,
+  }
 ];
 
 const exchange = [
   {
     address: '0xb5eb8cb6ced6b6f8e13bcd502fb489db4a726c7b',
     startingBlock: 13140368,
+  },
+  {
+    address: '0x99e4484dac819aa74b347208752306615213d324',
+    startingBlock: 13677143,
+  },
+  {
+    address: '0x12dcc776525c35836b10026929558208d1258b91',
+    startingBlock: 13733602,
   },
 ];
 const oracles = getOraclesAddresses(mainnetAddresses).map(description => ({
@@ -160,6 +189,7 @@ export const config: UserProvidedSpockConfig = {
       dogs.map(dog => dog.address.toLowerCase()),
     ), // ignore dogs addresses because event name conflict
     ...makeRawLogExtractors(multiply),
+    ...makeRawLogExtractors(guni),
     ...makeRawLogExtractors(exchange),
     ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(oracle),
   ],
@@ -183,10 +213,22 @@ export const config: UserProvidedSpockConfig = {
       getIlkForCdp,
       getLiquidationRatio,
     }),
+    ...multiplyGuniTransformer(guni, {
+      cdpManager: cdpManagers[0].address,
+      vat: vat.address,
+      getIlkForCdp,
+      getLiquidationRatio,
+    }),
     ...exchangeTransformer(exchange),
     ...oraclesTransformer(oracles),
     eventEnhancerTransformer(vat, dogs[0], cdpManagers, oraclesTransformers),
     eventEnhancerTransformerEthPrice(vat, dogs[0], cdpManagers, oraclesTransformers),
+    multiplyHistoryTransformer(vat.address, {
+      dogs,
+      multiplyProxyActionsAddress: [...multiply, ...guni],
+      exchangeAddress: [...exchange]
+    }),
+    eventEnhancerGasPrice(vat, cdpManagers),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),
