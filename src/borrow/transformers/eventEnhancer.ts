@@ -128,6 +128,8 @@ function isVatEvent(event: Event): boolean {
   ].includes(event.kind);
 }
 
+type x = Exclude<>
+
 export const eventEnhancerGasPrice: (
   vat: SimpleProcessorDefinition,
   managers: SimpleProcessorDefinition[],
