@@ -24,7 +24,6 @@ import { getVatCombineTransformerName, getVatMoveTransformerName } from './vatTr
 import { Event } from 'src/types/history';
 import { multiplyHistoryTransformerName } from './multiplyHistoryTransformer';
 import { isDefined } from '../../utils/isDefined';
-import { ethPrecision } from '../../utils/constants';
 
 export const eventEnhancerTransformerName = `event-enhancer-transformer-v2`;
 
@@ -164,7 +163,7 @@ export const eventEnhancerGasPrice: (
       const eventsWithGasFees: WithGasFee<Event>[] = await Promise.all(
         events.map(async event => {
           const gasFee = await getGasFee(services, event.hash);
-          return { ...event, gasFee: gasFee.div(ethPrecision) };
+          return { ...event, gasFee };
         }),
       );
 
