@@ -39,6 +39,7 @@ import {
   eventEnhancerTransformer,
   eventEnhancerTransformerEthPrice,
 } from './borrow/transformers/eventEnhancer';
+import { automationBotTransformer } from './borrow/transformers/automationBotTransformer';
 
 const goerliAddresses = require('./addresses/goerli.json');
 
@@ -112,6 +113,11 @@ const flipperNotes: AbiInfo[] = [
   },
 ];
 
+const automationBot = {
+  address: goerliAddresses.AUTOMATION_BOT,
+  startingBlock: 5854649,
+};
+
 const addresses = {
   ...goerliAddresses,
   MIGRATION: '',
@@ -132,6 +138,7 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors(cats),
     ...makeRawLogExtractors(dogs),
     ...makeRawLogExtractors([vat]),
+    ...makeRawLogExtractors([automationBot]),
     ...makeRawEventBasedOnTopicExtractor(flipper),
     ...makeRowEventBasedOnDSNoteTopic(flipperNotes),
     ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(
@@ -160,6 +167,7 @@ export const config: UserProvidedSpockConfig = {
     ...oraclesTransformer(oracles),
     eventEnhancerTransformer(vat, dogs[0], cdpManagers, oraclesTransformers),
     eventEnhancerTransformerEthPrice(vat, dogs[0], cdpManagers, oraclesTransformers),
+    ...automationBotTransformer([automationBot]),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),
