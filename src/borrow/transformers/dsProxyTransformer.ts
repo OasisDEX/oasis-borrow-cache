@@ -18,6 +18,7 @@ async function handleApprovalGranted(
   const values = {
     cdp_id: params.cdpId.toString(),
     approved_entity: params.approvedEntity.toLowerCase(),
+    emitter: log.address.toLowerCase(),
 
     log_index: log.log_index,
     tx_id: log.tx_id,
@@ -26,9 +27,9 @@ async function handleApprovalGranted(
 
   await services.tx.none(
     `INSERT INTO automation_bot.approval_granted_events(
-        cdp_id, approved_entity, log_index, tx_id, block_id
+        cdp_id, approved_entity, emitter, log_index, tx_id, block_id
       ) VALUES (
-          \${cdp_id}, \${approved_entity}, \${log_index}, \${tx_id}, \${block_id}
+          \${cdp_id}, \${approved_entity}, \${emitter}, \${log_index}, \${tx_id}, \${block_id}
       );`,
     values,
   );
@@ -42,6 +43,7 @@ async function handleApprovalRemoved(
   const values = {
     cdp_id: params.cdpId.toString(),
     approved_entity: params.approvedEntity.toLowerCase(),
+    emitter: log.address.toLowerCase(),
 
     log_index: log.log_index,
     tx_id: log.tx_id,
@@ -50,9 +52,9 @@ async function handleApprovalRemoved(
 
   await services.tx.none(
     `INSERT INTO automation_bot.approval_removed_events(
-        cdp_id, approved_entity, log_index, tx_id, block_id
+        cdp_id, approved_entity, emitter, log_index, tx_id, block_id
       ) VALUES (
-        \${cdp_id}, \${approved_entity}, \${log_index}, \${tx_id}, \${block_id}
+        \${cdp_id}, \${approved_entity}, \${emitter}, \${log_index}, \${tx_id}, \${block_id}
       );`,
     values,
   );

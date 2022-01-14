@@ -45,7 +45,7 @@ import { dsProxyTransformer } from './borrow/transformers/dsProxyTransformer';
 const goerliAddresses = require('./addresses/goerli.json');
 
 const GOERLI_STARTING_BLOCKS = {
-  GENESIS: Number(process.env.GENESIS) || 5273074,
+  GENESIS: 6000000, // Number(process.env.GENESIS) || 5273074,
   CDP_MANAGER: 5273301,
   MCD_CAT: 5273080,
   MCD_DOG: 5273080,

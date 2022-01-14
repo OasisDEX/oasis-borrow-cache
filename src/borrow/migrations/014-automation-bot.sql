@@ -32,6 +32,7 @@ CREATE TABLE automation_bot.approval_granted_events (
     id                      serial primary key,
     cdp_id                  decimal(78,0) not null,
     approved_entity         character varying(66) not null,
+    emitter                 character varying(66),
 
     log_index               integer not null,
     tx_id                   integer not null REFERENCES vulcan2x.transaction(id) ON DELETE CASCADE,
@@ -45,6 +46,7 @@ CREATE TABLE automation_bot.approval_removed_events (
     id                      serial primary key,
     cdp_id                  decimal(78,0) not null,
     approved_entity         character varying(66) not null,
+    emitter                 character varying(66),
 
     log_index               integer not null,
     tx_id                   integer not null REFERENCES vulcan2x.transaction(id) ON DELETE CASCADE,
