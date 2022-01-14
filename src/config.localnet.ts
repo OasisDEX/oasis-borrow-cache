@@ -18,7 +18,7 @@ import { auctionTransformer, catTransformer } from './borrow/transformers/catTra
 import {
   AbiInfo,
   makeRawEventExtractorBasedOnTopicIgnoreConflicts,
-  makeRowEventBasedOnDSNoteTopic,
+  makeRawEventBasedOnDSNoteTopic,
 } from './borrow/customExtractors';
 import { flipNoteTransformer, flipTransformer } from './borrow/transformers/flipperTransformer';
 import { getIlkInfo } from './borrow/dependencies/getIlkInfo';
@@ -140,7 +140,7 @@ const multiply = [
   {
     address: '0x2a49Eae5CCa3f050eBEC729Cf90CC910fADAf7A2',
     startingBlock: 13461195,
-  }
+  },
 ];
 
 const guni = [
@@ -151,7 +151,7 @@ const guni = [
   {
     address: '0xed3a954c0adfc8e3f85d92729c051ff320648e30',
     startingBlock: 13733654,
-  }
+  },
 ];
 
 const exchange = [
@@ -183,7 +183,7 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors(dogs),
     ...makeRawLogExtractors([vat]),
     ...makeRawEventBasedOnTopicExtractor(flipper),
-    ...makeRowEventBasedOnDSNoteTopic(flipperNotes),
+    ...makeRawEventBasedOnDSNoteTopic(flipperNotes),
     ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(
       clippers,
       dogs.map(dog => dog.address.toLowerCase()),
@@ -226,7 +226,7 @@ export const config: UserProvidedSpockConfig = {
     multiplyHistoryTransformer(vat.address, {
       dogs,
       multiplyProxyActionsAddress: [...multiply, ...guni],
-      exchangeAddress: [...exchange]
+      exchangeAddress: [...exchange],
     }),
     eventEnhancerGasPrice(vat, cdpManagers),
   ],

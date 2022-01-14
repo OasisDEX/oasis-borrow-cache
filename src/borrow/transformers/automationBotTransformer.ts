@@ -1,14 +1,10 @@
 import { Dictionary } from 'ts-essentials';
 import { flatten } from 'lodash';
 import { handleEvents, FullEventInfo } from '@oasisdex/spock-utils/dist/transformers/common';
-import {
-  getExtractorName,
-  PersistedLog,
-  SimpleProcessorDefinition,
-} from '@oasisdex/spock-utils/dist/extractors/rawEventDataExtractor';
+import { PersistedLog } from '@oasisdex/spock-utils/dist/extractors/rawEventDataExtractor';
 import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
-import { normalizeAddressDefinition } from '../../utils';
+import { getExtractorName as getExtractorNameBasedOnTopic } from '@oasisdex/spock-utils/dist/extractors/rawEventBasedOnTopicExtractor';
 
 const automationBotAbi = require('../../../abis/automation-bot.json');
 
@@ -129,21 +125,12 @@ const automationBotHandlers = {
   },
 };
 
-export const getAutomationBotTransformerName = (address: string) =>
-  `automationBotTransformer-${address}`;
-export const automationBotTransformer: (
-  addresses: (string | SimpleProcessorDefinition)[],
-) => BlockTransformer[] = addresses => {
-  return addresses.map(_deps => {
-    const deps = normalizeAddressDefinition(_deps);
-
-    return {
-      name: getAutomationBotTransformerName(deps.address),
-      dependencies: [getExtractorName(deps.address)],
-      startingBlock: deps.startingBlock,
-      transform: async (services, logs) => {
-        await handleEvents(services, automationBotAbi, flatten(logs), automationBotHandlers);
-      },
-    };
-  });
+export const automationBotTransformer: () => BlockTransformer = () => {
+  return {
+    name: 'automationBotTransformer',
+    dependencies: [getExtractorNameBasedOnTopic('automation-bot')],
+    transform: async (services, logs) => {
+      await handleEvents(services, automationBotAbi, flatten(logs), automationBotHandlers);
+    },
+  };
 };
