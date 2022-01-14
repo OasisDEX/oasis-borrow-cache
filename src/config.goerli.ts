@@ -44,7 +44,7 @@ import { automationBotTransformer } from './borrow/transformers/automationBotTra
 const goerliAddresses = require('./addresses/goerli.json');
 
 const GOERLI_STARTING_BLOCKS = {
-  GENESIS: 6004130, // Number(process.env.GENESIS) || 5273074,
+  GENESIS: Number(process.env.GENESIS) || 5273074,
   CDP_MANAGER: 5273301,
   MCD_CAT: 5273080,
   MCD_DOG: 5273080,
