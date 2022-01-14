@@ -40,6 +40,7 @@ import {
   eventEnhancerTransformerEthPrice,
 } from './borrow/transformers/eventEnhancer';
 import { automationBotTransformer } from './borrow/transformers/automationBotTransformer';
+import { dsProxyTransformer } from './borrow/transformers/dsProxyTransformer';
 
 const goerliAddresses = require('./addresses/goerli.json');
 
@@ -120,10 +121,17 @@ const flipperNotes: AbiInfo[] = [
 ];
 
 const automationBot = {
-  name: 'automation-bot',
-  abi: require('../abis/automation-bot.json'),
+  address: goerliAddresses.AUTOMATION_BOT,
   startingBlock: GOERLI_STARTING_BLOCKS.AUTOMATION_BOT,
 };
+
+const dsProxy = [
+  {
+    name: 'automation-bot',
+    abi: require('../abis/automation-bot.json'),
+    startingBlock: GOERLI_STARTING_BLOCKS.AUTOMATION_BOT,
+  },
+];
 
 const addresses = {
   ...goerliAddresses,
@@ -145,8 +153,9 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors(cats),
     ...makeRawLogExtractors(dogs),
     ...makeRawLogExtractors([vat]),
+    ...makeRawLogExtractors([automationBot]),
     ...makeRawEventBasedOnTopicExtractor(flipper),
-    ...makeRawEventBasedOnTopicExtractor([automationBot]),
+    ...makeRawEventBasedOnTopicExtractor(dsProxy),
     ...makeRawEventBasedOnDSNoteTopic(flipperNotes),
     ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(
       clippers,
@@ -170,11 +179,12 @@ export const config: UserProvidedSpockConfig = {
     vatRawMoveTransformer(vat),
     flipTransformer(),
     flipNoteTransformer(),
+    automationBotTransformer(automationBot),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
     ...oraclesTransformer(oracles),
     eventEnhancerTransformer(vat, dogs[0], cdpManagers, oraclesTransformers),
     eventEnhancerTransformerEthPrice(vat, dogs[0], cdpManagers, oraclesTransformers),
-    automationBotTransformer(),
+    ...dsProxyTransformer(),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),
