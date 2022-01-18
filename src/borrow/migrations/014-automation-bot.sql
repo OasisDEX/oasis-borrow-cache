@@ -17,7 +17,9 @@ CREATE TABLE automation_bot.trigger_added_events (
 CREATE TABLE automation_bot.trigger_removed_events (
     id                      serial primary key,
     trigger_id              decimal(78,0) not null,
+    trigger_type            decimal(78,0) not null,
     cdp_id                  decimal(78,0) not null,
+    trigger_data            varchar,
 
     log_index               integer not null,
     tx_id                   integer not null REFERENCES vulcan2x.transaction(id) ON DELETE CASCADE,
