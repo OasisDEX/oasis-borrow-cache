@@ -48,8 +48,8 @@ export function makeRawEventBasedOnDSNoteTopic(abis: AbiInfo[]): BlockExtractor[
   });
 }
 
-export function getCustomExtractorNameBasedOnDSNoteTopicIgnoreConflicts(name: string): string {
-  return `raw_log_ds_note_topic_ignore_conflicts_${name}_extractor`;
+export function getCustomExtractorNameBasedOnTopicIgnoreConflicts(name: string): string {
+  return `raw_log_topic_ignore_conflicts_${name}_extractor`;
 }
 
 export function makeRawEventExtractorBasedOnTopicIgnoreConflicts(
@@ -61,7 +61,7 @@ export function makeRawEventExtractorBasedOnTopicIgnoreConflicts(
     const allTopics = Object.values(iface.events).map(e => e.topic);
 
     return {
-      name: getCustomExtractorNameBasedOnDSNoteTopicIgnoreConflicts(abi.name),
+      name: getCustomExtractorNameBasedOnTopicIgnoreConflicts(abi.name),
       startingBlock: abi.startingBlock,
       address: abi,
       extract: async (services, blocks) => {

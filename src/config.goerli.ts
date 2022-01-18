@@ -45,7 +45,7 @@ import { dsProxyTransformer } from './borrow/transformers/dsProxyTransformer';
 const goerliAddresses = require('./addresses/goerli.json');
 
 const GOERLI_STARTING_BLOCKS = {
-  GENESIS: 6000000, // Number(process.env.GENESIS) || 5273074,
+  GENESIS: Number(process.env.GENESIS) || 5273074,
   CDP_MANAGER: 5273301,
   MCD_CAT: 5273080,
   MCD_DOG: 5273080,
@@ -155,7 +155,6 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors([vat]),
     ...makeRawLogExtractors([automationBot]),
     ...makeRawEventBasedOnTopicExtractor(flipper),
-    ...makeRawEventBasedOnTopicExtractor(dsProxy),
     ...makeRawEventBasedOnDSNoteTopic(flipperNotes),
     ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(
       clippers,
@@ -165,6 +164,7 @@ export const config: UserProvidedSpockConfig = {
       oracle,
       dogs.map(dog => dog.address.toLowerCase()),
     ),
+    ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(dsProxy, [goerliAddresses.AUTOMATION_BOT]),
   ],
   transformers: [
     ...openCdpTransformer(cdpManagers, { getUrnForCdp }),

@@ -12,7 +12,7 @@ import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
 import BigNumber from 'bignumber.js';
 import { wad } from '../../utils/precision';
 import { normalizeAddressDefinition } from '../../utils';
-import { getCustomExtractorNameBasedOnDSNoteTopicIgnoreConflicts } from '../customExtractors';
+import { getCustomExtractorNameBasedOnTopicIgnoreConflicts } from '../customExtractors';
 
 const oracleAbi = require('../../../abis/oracle.json');
 const lpOracleAbi = require('../../../abis/lp-oracle.json');
@@ -103,8 +103,8 @@ export const oraclesTransformer: (
     return {
       name: getOracleTransformerName(_deps),
       dependencies: [
-        getCustomExtractorNameBasedOnDSNoteTopicIgnoreConflicts('oracle'),
-        getCustomExtractorNameBasedOnDSNoteTopicIgnoreConflicts('lp-oracle'),
+        getCustomExtractorNameBasedOnTopicIgnoreConflicts('oracle'),
+        getCustomExtractorNameBasedOnTopicIgnoreConflicts('lp-oracle'),
       ],
       startingBlock: deps.startingBlock,
       transform: async (services, logs) => {

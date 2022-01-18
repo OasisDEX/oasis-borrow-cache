@@ -1,12 +1,10 @@
 import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
-import {
-  getExtractorName as getExtractorNameBasedOnTopic,
-  PersistedLog,
-} from '@oasisdex/spock-utils/dist/extractors/rawEventBasedOnTopicExtractor';
+import { PersistedLog } from '@oasisdex/spock-utils/dist/extractors/rawEventBasedOnTopicExtractor';
 import { FullEventInfo, handleEvents } from '@oasisdex/spock-utils/dist/transformers/common';
 import { flatten } from 'lodash';
 import { Dictionary } from 'ts-essentials';
+import { getCustomExtractorNameBasedOnTopicIgnoreConflicts } from '../customExtractors';
 
 const automationBotAbi = require('../../../abis/automation-bot.json');
 
@@ -73,7 +71,7 @@ export const dsProxyTransformer: () => BlockTransformer[] = () => {
   return [
     {
       name: 'dsProxyAutomationBotTransformer',
-      dependencies: [getExtractorNameBasedOnTopic('automation-bot')],
+      dependencies: [getCustomExtractorNameBasedOnTopicIgnoreConflicts('automation-bot')],
       transform: async (services, logs) => {
         await handleEvents(services, automationBotAbi, flatten(logs), dsProxyAutomationBotHandlers);
       },
