@@ -23,7 +23,7 @@ export function getExtractorNameBasedOnDSNoteTopic(name: string): string {
   return `raw_log_ds_note_topic_${name}_extractor`;
 }
 
-export function makeRowEventBasedOnDSNoteTopic(abis: AbiInfo[]): BlockExtractor[] {
+export function makeRawEventBasedOnDSNoteTopic(abis: AbiInfo[]): BlockExtractor[] {
   return abis.map(abi => {
     const iface = new ethers.utils.Interface(abi.abi as any);
     const eventsTopicOnFunctionSignature = abi.functionNames.map(name => {
