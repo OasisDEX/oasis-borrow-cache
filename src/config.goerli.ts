@@ -41,6 +41,9 @@ import {
 } from './borrow/transformers/eventEnhancer';
 import { automationBotTransformer } from './borrow/transformers/automationBotTransformer';
 import { dsProxyTransformer } from './borrow/transformers/dsProxyTransformer';
+import { partialABI } from './utils';
+
+const AutomationBotABI = require('../abis/automation-bot.json');
 
 const goerliAddresses = require('./addresses/goerli.json');
 
@@ -128,7 +131,10 @@ const automationBot = {
 const dsProxy = [
   {
     name: 'automation-bot',
-    abi: require('../abis/automation-bot.json'),
+    abi: partialABI(AutomationBotABI, [
+      { name: 'ApprovalGranted', type: 'event' },
+      { name: 'ApprovalRemoved', type: 'event' },
+    ]),
     startingBlock: GOERLI_STARTING_BLOCKS.AUTOMATION_BOT,
   },
 ];
