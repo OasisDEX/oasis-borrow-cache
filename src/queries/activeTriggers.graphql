@@ -1,0 +1,11 @@
+query {
+  allActiveTriggers(orderBy: [BLOCK_ID_ASC]) {
+  nodes {
+    id
+    triggerId
+    triggerType
+    cdpId
+    blockId
+  }
+  }
+}
