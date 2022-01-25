@@ -19,8 +19,8 @@ async function handleTriggerAdded(
 ) {
   const values = {
     trigger_id: params.triggerId.toString(),
-    trigger_type: params.triggerType.toString(),
     cdp_id: params.cdpId.toString(),
+    command_address: params.commandAddress.toLowerCase(),
     trigger_data: params.triggerData.toString(),
 
     log_index: log.log_index,
@@ -30,9 +30,9 @@ async function handleTriggerAdded(
 
   await services.tx.none(
     `INSERT INTO automation_bot.trigger_added_events(
-      trigger_id, trigger_type, cdp_id, trigger_data, log_index, tx_id, block_id
+      trigger_id, cdp_id, command_address, trigger_data, log_index, tx_id, block_id
     ) VALUES (
-        \${trigger_id}, \${trigger_type}, \${cdp_id}, \${trigger_data}, \${log_index}, \${tx_id}, \${block_id}
+        \${trigger_id}, \${cdp_id}, \${command_address}, \${trigger_data}, \${log_index}, \${tx_id}, \${block_id}
     );`,
     values,
   );

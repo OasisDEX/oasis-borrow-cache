@@ -46,7 +46,6 @@
     "inputs": [
       { "internalType": "uint256", "name": "cdpId", "type": "uint256" },
       { "internalType": "uint256", "name": "triggerType", "type": "uint256" },
-      { "internalType": "address", "name": "_serviceRegistry", "type": "address" },
       { "internalType": "bytes", "name": "triggerData", "type": "bytes" }
     ],
     "name": "addRecord",
@@ -58,7 +57,6 @@
     "inputs": [
       { "internalType": "uint256", "name": "cdpId", "type": "uint256" },
       { "internalType": "uint256", "name": "triggerType", "type": "uint256" },
-      { "internalType": "address", "name": "_serviceRegistry", "type": "address" },
       { "internalType": "bytes", "name": "triggerData", "type": "bytes" }
     ],
     "name": "addTrigger",
@@ -83,6 +81,13 @@
     "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "name": "existingTriggers",
     "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "triggerType", "type": "uint256" }],
+    "name": "getCommandAddress",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
     "stateMutability": "view",
     "type": "function"
   },
@@ -122,7 +127,6 @@
       { "internalType": "uint256", "name": "cdpId", "type": "uint256" },
       { "internalType": "uint256", "name": "triggerId", "type": "uint256" },
       { "internalType": "address", "name": "commandAddress", "type": "address" },
-      { "internalType": "address", "name": "_serviceRegistry", "type": "address" },
       { "internalType": "bytes", "name": "triggerData", "type": "bytes" }
     ],
     "name": "removeRecord",
