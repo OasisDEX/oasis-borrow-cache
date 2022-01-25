@@ -3,6 +3,8 @@ DROP VIEW api.active_triggers;
 ALTER TABLE automation_bot.trigger_added_events
     DROP COLUMN trigger_type;
 
+DELETE FROM automation_bot.trigger_added_events;
+
 ALTER TABLE automation_bot.trigger_added_events
     ADD COLUMN command_address character varying(66) not null;
 
