@@ -1,5 +1,10 @@
 [
   {
+    "inputs": [{ "internalType": "address", "name": "_serviceRegistry", "type": "address" }],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
     "anonymous": false,
     "inputs": [
       { "indexed": true, "internalType": "uint256", "name": "cdpId", "type": "uint256" },
@@ -21,7 +26,7 @@
     "anonymous": false,
     "inputs": [
       { "indexed": true, "internalType": "uint256", "name": "triggerId", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "triggerType", "type": "uint256" },
+      { "indexed": true, "internalType": "address", "name": "commandAddress", "type": "address" },
       { "indexed": true, "internalType": "uint256", "name": "cdpId", "type": "uint256" },
       { "indexed": false, "internalType": "bytes", "name": "triggerData", "type": "bytes" }
     ],
@@ -41,7 +46,6 @@
     "inputs": [
       { "internalType": "uint256", "name": "cdpId", "type": "uint256" },
       { "internalType": "uint256", "name": "triggerType", "type": "uint256" },
-      { "internalType": "address", "name": "serviceRegistry", "type": "address" },
       { "internalType": "bytes", "name": "triggerData", "type": "bytes" }
     ],
     "name": "addRecord",
@@ -53,7 +57,6 @@
     "inputs": [
       { "internalType": "uint256", "name": "cdpId", "type": "uint256" },
       { "internalType": "uint256", "name": "triggerType", "type": "uint256" },
-      { "internalType": "address", "name": "serviceRegistry", "type": "address" },
       { "internalType": "bytes", "name": "triggerData", "type": "bytes" }
     ],
     "name": "addTrigger",
@@ -62,9 +65,39 @@
     "type": "function"
   },
   {
+    "inputs": [
+      { "internalType": "bytes", "name": "executionData", "type": "bytes" },
+      { "internalType": "uint256", "name": "cdpId", "type": "uint256" },
+      { "internalType": "bytes", "name": "triggerData", "type": "bytes" },
+      { "internalType": "address", "name": "commandAddress", "type": "address" },
+      { "internalType": "uint256", "name": "triggerId", "type": "uint256" }
+    ],
+    "name": "execute",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "name": "existingTriggers",
     "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "triggerType", "type": "uint256" }],
+    "name": "getCommandAddress",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "triggerType", "type": "uint256" },
+      { "internalType": "address", "name": "_serviceRegistry", "type": "address" }
+    ],
+    "name": "getCommandAddress",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
     "stateMutability": "view",
     "type": "function"
   },
@@ -81,7 +114,7 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "serviceRegistry", "type": "address" },
+      { "internalType": "address", "name": "_serviceRegistry", "type": "address" },
       { "internalType": "uint256", "name": "cdpId", "type": "uint256" }
     ],
     "name": "removeApproval",
@@ -93,7 +126,7 @@
     "inputs": [
       { "internalType": "uint256", "name": "cdpId", "type": "uint256" },
       { "internalType": "uint256", "name": "triggerId", "type": "uint256" },
-      { "internalType": "address", "name": "serviceRegistry", "type": "address" },
+      { "internalType": "address", "name": "commandAddress", "type": "address" },
       { "internalType": "bytes", "name": "triggerData", "type": "bytes" }
     ],
     "name": "removeRecord",
@@ -105,13 +138,21 @@
     "inputs": [
       { "internalType": "uint256", "name": "cdpId", "type": "uint256" },
       { "internalType": "uint256", "name": "triggerId", "type": "uint256" },
-      { "internalType": "address", "name": "serviceRegistry", "type": "address" },
+      { "internalType": "address", "name": "commandAddress", "type": "address" },
       { "internalType": "bool", "name": "removeAllowence", "type": "bool" },
+      { "internalType": "address", "name": "_serviceRegistry", "type": "address" },
       { "internalType": "bytes", "name": "triggerData", "type": "bytes" }
     ],
     "name": "removeTrigger",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "serviceRegistry",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
     "type": "function"
   },
   {
