@@ -36,10 +36,6 @@ async function handleTriggerAdded(
     );`,
     values,
   );
-
-  console.log(arguments.callee.name);
-  console.log({values});
-  
 }
 
 async function handleTriggerRemoved(
@@ -64,38 +60,29 @@ async function handleTriggerRemoved(
     );`,
     values,
   );
-
-  console.log(arguments.callee.name);
-  console.log({values});
-
 }
 
 async function handleTriggerExecuted(
-  params:Dictionary<any>,
+  params: Dictionary<any>,
   log: PersistedLog,
   services: LocalServices,
-  ) {
-    const values = {
-      trigger_id: params.triggerId.toString(),
-      cdp_id: params.cdpId.toString(),
-  
-      log_index: log.log_index,
-      tx_id: log.tx_id,
-      block_id: log.block_id,
-    };
+) {
+  const values = {
+    trigger_id: params.triggerId.toString(),
+
+    log_index: log.log_index,
+    tx_id: log.tx_id,
+    block_id: log.block_id,
+  };
 
   await services.tx.none(
     `INSERT INTO automation_bot.trigger_executed_events(
-        trigger_id, cdp_id, log_index, tx_id, block_id
+        trigger_id, log_index, tx_id, block_id
     ) VALUES (
-        \${trigger_id}, \${cdp_id}, \${log_index}, \${tx_id}, \${block_id}
+        \${trigger_id}, \${log_index}, \${tx_id}, \${block_id}
     );`,
     values,
   );
-
-  console.log(arguments.callee.name);
-  console.log({values})
-
 }
 
 const automationBotHandlers = {
