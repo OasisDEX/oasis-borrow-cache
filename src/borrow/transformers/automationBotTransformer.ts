@@ -85,7 +85,7 @@ async function handleTriggerExecuted(
     };
 
   await services.tx.none(
-    `INSERT INTO automation_bot.trigger_removed_events(
+    `INSERT INTO automation_bot.trigger_executed_events(
         trigger_id, cdp_id, log_index, tx_id, block_id
     ) VALUES (
         \${trigger_id}, \${cdp_id}, \${log_index}, \${tx_id}, \${block_id}
