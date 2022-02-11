@@ -36,6 +36,10 @@ async function handleTriggerAdded(
     );`,
     values,
   );
+
+  console.log(arguments.callee.name);
+  console.log({values});
+  
 }
 
 async function handleTriggerRemoved(
@@ -60,6 +64,10 @@ async function handleTriggerRemoved(
     );`,
     values,
   );
+
+  console.log(arguments.callee.name);
+  console.log({values});
+
 }
 
 async function handleTriggerExecuted(
@@ -84,6 +92,10 @@ async function handleTriggerExecuted(
     );`,
     values,
   );
+
+  console.log(arguments.callee.name);
+  console.log({values})
+
 }
 
 const automationBotHandlers = {
