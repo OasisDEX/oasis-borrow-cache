@@ -102,13 +102,16 @@ export const getAutomationBotTransformerName = (address: string) =>
   `automationBotTransformer-${address}`;
 export const automationBotTransformer: (
   address: string | SimpleProcessorDefinition,
+  dependencies: {
+    multiplyProxyActionsAddress: SimpleProcessorDefinition[];
+  }
 ) => BlockTransformer = address => {
   const deps = normalizeAddressDefinition(address);
 
   return {
     name: getAutomationBotTransformerName(deps.address),
     dependencies: [getExtractorName(deps.address)],
-    transformerDependencies: [multiplyHistoryTransformerName],
+    transformerDependencies: [multiplyHistoryTransformerName], //TODO ŁW  [...dependencies.multiplyProxyActionsAddress.map(mpa => getMultiplyTransformerName(mpa))],
     transform: async (services, logs) => {
       await handleEvents(services, automationBotAbi, flatten(logs), automationBotHandlers);
     },
