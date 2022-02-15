@@ -9,6 +9,7 @@ import {
 import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
 import { normalizeAddressDefinition } from '../../utils';
+import { multiplyHistoryTransformerName } from './multiplyHistoryTransformer';
 
 const automationBotAbi = require('../../../abis/automation-bot.json');
 
@@ -51,7 +52,6 @@ async function handleTriggerRemoved(
     tx_id: log.tx_id,
     block_id: log.block_id,
   };
-
   await services.tx.none(
     `INSERT INTO automation_bot.trigger_removed_events(
         trigger_id, cdp_id, log_index, tx_id, block_id
@@ -74,7 +74,8 @@ async function handleTriggerExecuted(
     tx_id: log.tx_id,
     block_id: log.block_id,
   };
-
+  // vault.multiply_events where tx_id jest taki sam jak tutaj i kind close to dai lub close to collateral
+  // values + ilkName
   await services.tx.none(
     `INSERT INTO automation_bot.trigger_executed_events(
         trigger_id, log_index, tx_id, block_id
@@ -107,6 +108,7 @@ export const automationBotTransformer: (
   return {
     name: getAutomationBotTransformerName(deps.address),
     dependencies: [getExtractorName(deps.address)],
+    transformerDependencies: [multiplyHistoryTransformerName],
     transform: async (services, logs) => {
       await handleEvents(services, automationBotAbi, flatten(logs), automationBotHandlers);
     },
