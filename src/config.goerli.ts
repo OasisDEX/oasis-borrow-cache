@@ -42,6 +42,9 @@ import {
 import { automationBotTransformer } from './borrow/transformers/automationBotTransformer';
 import { dsProxyTransformer } from './borrow/transformers/dsProxyTransformer';
 import { partialABI } from './utils';
+import { multiplyTransformer } from './borrow/transformers/multiply';
+import { getIlkForCdp } from './borrow/dependencies/getIlkForCdp';
+import { getLiquidationRatio } from './borrow/dependencies/getLiquidationRatio';
 
 const AutomationBotABI = require('../abis/automation-bot.json');
 
@@ -128,6 +131,13 @@ const automationBot = {
   startingBlock: GOERLI_STARTING_BLOCKS.AUTOMATION_BOT,
 };
 
+const multiply = [
+  {
+    address: '0x24E54706B100e2061Ed67fAe6894791ec421B421',
+    startingBlock: 6187206,
+  }
+]
+
 const dsProxy = [
   {
     name: 'automation-bot',
@@ -160,6 +170,7 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors(dogs),
     ...makeRawLogExtractors([vat]),
     ...makeRawLogExtractors([automationBot]),
+    ...makeRawLogExtractors(multiply),
     ...makeRawEventBasedOnTopicExtractor(flipper),
     ...makeRawEventBasedOnDSNoteTopic(flipperNotes),
     ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(
@@ -187,6 +198,12 @@ export const config: UserProvidedSpockConfig = {
     flipNoteTransformer(),
     automationBotTransformer(automationBot),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
+    ...multiplyTransformer(multiply, {
+      cdpManager: cdpManagers[0].address,
+      vat: vat.address,
+      getIlkForCdp,
+      getLiquidationRatio,
+    }),
     ...oraclesTransformer(oracles),
     eventEnhancerTransformer(vat, dogs[0], cdpManagers, oraclesTransformers),
     eventEnhancerTransformerEthPrice(vat, dogs[0], cdpManagers, oraclesTransformers),
