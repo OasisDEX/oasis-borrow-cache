@@ -9,7 +9,7 @@ import {
 import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
 import { normalizeAddressDefinition } from '../../utils';
-import { multiplyHistoryTransformerName } from './multiplyHistoryTransformer';
+import { getMultiplyTransformerName } from './multiply';
 
 const automationBotAbi = require('../../../abis/automation-bot.json');
 
@@ -102,16 +102,15 @@ export const getAutomationBotTransformerName = (address: string) =>
   `automationBotTransformer-${address}`;
 export const automationBotTransformer: (
   address: string | SimpleProcessorDefinition,
-  dependencies: {
-    multiplyProxyActionsAddress: SimpleProcessorDefinition[];
-  }
-) => BlockTransformer = address => {
+  multiplyProxyActionsAddress: SimpleProcessorDefinition[],
+  
+) => BlockTransformer = (address, multiplyProxyActionsAddress) => {
   const deps = normalizeAddressDefinition(address);
-
+  
   return {
     name: getAutomationBotTransformerName(deps.address),
     dependencies: [getExtractorName(deps.address)],
-    transformerDependencies: [multiplyHistoryTransformerName], //TODO ŁW  [...dependencies.multiplyProxyActionsAddress.map(mpa => getMultiplyTransformerName(mpa))],
+    transformerDependencies: [...multiplyProxyActionsAddress.map(mpa => getMultiplyTransformerName(mpa))],
     transform: async (services, logs) => {
       await handleEvents(services, automationBotAbi, flatten(logs), automationBotHandlers);
     },
