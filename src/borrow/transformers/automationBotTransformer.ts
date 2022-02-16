@@ -74,13 +74,19 @@ async function handleTriggerExecuted(
     tx_id: log.tx_id,
     block_id: log.block_id,
   };
-  // vault.multiply_events where tx_id jest taki sam jak tutaj i kind close to dai lub close to collateral
-  // values + ilkName
+
+  const matchingVaultClosedEvent = await services.tx.one(
+    `SELECT * FROM vault.multiply_events me WHERE
+       kind = 'exit_collateral' or kind = 'exit_dai' and tx_id = \${tx_id}
+      LIMIT 1`)
+
+  const closeEventId = matchingVaultClosedEvent.id;
+
   await services.tx.none(
     `INSERT INTO automation_bot.trigger_executed_events(
-        trigger_id, log_index, tx_id, block_id
+        trigger_id, vault_closed_event, log_index, tx_id, block_id
     ) VALUES (
-        \${trigger_id}, \${log_index}, \${tx_id}, \${block_id}
+        \${trigger_id}, \${closeEventId}, \${log_index}, \${tx_id}, \${block_id}
     );`,
     values,
   );
