@@ -56,6 +56,7 @@ const GOERLI_STARTING_BLOCKS = {
   MCD_CAT: 5273080,
   MCD_DOG: 5273080,
   AUTOMATION_BOT: 6359598,
+  MULTIPLY_PROXY_ACTIONS: 6187206
 };
 
 const vat = {
@@ -133,8 +134,8 @@ const automationBot = {
 
 const multiply = [
   {
-    address: '0x24E54706B100e2061Ed67fAe6894791ec421B421',
-    startingBlock: 6187206,
+    address: goerliAddresses.MULTIPLY_PROXY_ACTIONS,
+    startingBlock: GOERLI_STARTING_BLOCKS.MULTIPLY_PROXY_ACTIONS,
   }
 ]
 
