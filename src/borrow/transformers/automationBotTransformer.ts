@@ -67,26 +67,26 @@ async function handleTriggerExecuted(
   log: PersistedLog,
   services: LocalServices,
 ) {
-  const values = {
-    trigger_id: params.triggerId.toString(),
-
-    log_index: log.log_index,
-    tx_id: log.tx_id,
-    block_id: log.block_id,
-  };
+  
 
   const matchingVaultClosedEvent = await services.tx.one(
     `SELECT * FROM vault.multiply_events me WHERE
        kind = 'exit_collateral' or kind = 'exit_dai' and tx_id = \${tx_id}
       LIMIT 1`)
 
-  const closeEventId = matchingVaultClosedEvent.id;
-
+  
+  const values = {
+    trigger_id: params.triggerId.toString(),
+    close_event_id: matchingVaultClosedEvent.id,
+    log_index: log.log_index,
+    tx_id: log.tx_id,
+    block_id: log.block_id,
+  };
   await services.tx.none(
     `INSERT INTO automation_bot.trigger_executed_events(
         trigger_id, vault_closed_event, log_index, tx_id, block_id
     ) VALUES (
-        \${trigger_id}, \${closeEventId}, \${log_index}, \${tx_id}, \${block_id}
+        \${trigger_id}, \${close_event_id}, \${log_index}, \${tx_id}, \${block_id}
     );`,
     values,
   );
