@@ -67,17 +67,18 @@ async function handleTriggerExecuted(
   log: PersistedLog,
   services: LocalServices,
 ) {
-  
-
-  const matchingVaultClosedEvent = await services.tx.one(
+    
+  // Closed event exist for multiply vaults but not for borrow vaults.
+  // User can payback DAI and withdraw collateral, but it doesn't mean vault is closed.
+  // One can deposit collateral and generate again on existing vault. ~ŁW
+  const matchingVaultClosedEvent = await services.tx.oneOrNone(
     `SELECT * FROM vault.multiply_events me WHERE
-       kind = 'exit_collateral' or kind = 'exit_dai' and tx_id = \${tx_id}
-      LIMIT 1`)
-
+       kind = 'exit_collateral' or kind = 'exit_dai' and tx_id = ${log.tx_id}
+      LIMIT 1;`)
   
   const values = {
     trigger_id: params.triggerId.toString(),
-    close_event_id: matchingVaultClosedEvent.id,
+    close_event_id: matchingVaultClosedEvent?.id,
     log_index: log.log_index,
     tx_id: log.tx_id,
     block_id: log.block_id,
