@@ -89,6 +89,12 @@
            "type":"uint256"
         },
         {
+         "indexed":true,
+         "internalType":"uint256",
+         "name":"cdpId",
+         "type":"uint256"
+        },
+        {
            "indexed":false,
            "internalType":"bytes",
            "name":"executionData",

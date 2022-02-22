@@ -78,6 +78,7 @@ async function handleTriggerExecuted(
   
   const values = {
     trigger_id: params.triggerId.toString(),
+    cdp_id: params.cdpId.toString(),
     close_event_id: matchingVaultClosedEvent?.id,
     log_index: log.log_index,
     tx_id: log.tx_id,
@@ -85,9 +86,9 @@ async function handleTriggerExecuted(
   };
   await services.tx.none(
     `INSERT INTO automation_bot.trigger_executed_events(
-        trigger_id, vault_closed_event, log_index, tx_id, block_id
+        trigger_id, cdp_id, vault_closed_event, log_index, tx_id, block_id
     ) VALUES (
-        \${trigger_id}, \${close_event_id}, \${log_index}, \${tx_id}, \${block_id}
+        \${trigger_id}, \${cdp_id}, \${close_event_id}, \${log_index}, \${tx_id}, \${block_id}
     );`,
     values,
   );
