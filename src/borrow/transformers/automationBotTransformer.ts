@@ -118,7 +118,7 @@ export const automationBotTransformer: (
   return {
     name: getAutomationBotTransformerName(deps.address),
     dependencies: [getExtractorName(deps.address)],
-    transformerDependencies: [...multiplyProxyActionsAddress.map(mpa => getMultiplyTransformerName(mpa))],
+    transformerDependencies: multiplyProxyActionsAddress.map(mpa => getMultiplyTransformerName(mpa)),
     transform: async (services, logs) => {
       await handleEvents(services, automationBotAbi, flatten(logs), automationBotHandlers);
     },
