@@ -73,7 +73,7 @@ async function handleTriggerExecuted(
   // One can deposit collateral and generate again on existing vault. ~ŁW
   const matchingVaultClosedEvent = await services.tx.oneOrNone(
     `SELECT * FROM vault.multiply_events me WHERE
-       kind = 'exit_collateral' or kind = 'exit_dai' and tx_id = ${log.tx_id}
+       (kind = 'exit_collateral' or kind = 'exit_dai') and tx_id = ${log.tx_id}
       LIMIT 1;`)
   
   const values = {
@@ -110,8 +110,7 @@ export const getAutomationBotTransformerName = (address: string) =>
   `automationBotTransformer-${address}`;
 export const automationBotTransformer: (
   address: string | SimpleProcessorDefinition,
-  multiplyProxyActionsAddress: SimpleProcessorDefinition[],
-  
+  multiplyProxyActionsAddress: SimpleProcessorDefinition[],  
 ) => BlockTransformer = (address, multiplyProxyActionsAddress) => {
   const deps = normalizeAddressDefinition(address);
   
