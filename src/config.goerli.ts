@@ -136,8 +136,8 @@ const multiply = [
   {
     address: goerliAddresses.MULTIPLY_PROXY_ACTIONS,
     startingBlock: GOERLI_STARTING_BLOCKS.MULTIPLY_PROXY_ACTIONS,
-  }
-]
+  },
+];
 
 const dsProxy = [
   {

@@ -67,15 +67,15 @@ async function handleTriggerExecuted(
   log: PersistedLog,
   services: LocalServices,
 ) {
-    
   // Closed event exist for multiply vaults but not for borrow vaults.
   // User can payback DAI and withdraw collateral, but it doesn't mean vault is closed.
   // One can deposit collateral and generate again on existing vault. ~ŁW
   const matchingVaultClosedEvent = await services.tx.oneOrNone(
     `SELECT * FROM vault.multiply_events me WHERE
        (kind = 'exit_collateral' or kind = 'exit_dai') and tx_id = ${log.tx_id}
-      LIMIT 1;`)
-  
+      LIMIT 1;`,
+  );
+
   const values = {
     trigger_id: params.triggerId.toString(),
     cdp_id: params.cdpId.toString(),
@@ -110,14 +110,16 @@ export const getAutomationBotTransformerName = (address: string) =>
   `automationBotTransformer-${address}`;
 export const automationBotTransformer: (
   address: string | SimpleProcessorDefinition,
-  multiplyProxyActionsAddress: SimpleProcessorDefinition[],  
+  multiplyProxyActionsAddress: SimpleProcessorDefinition[],
 ) => BlockTransformer = (address, multiplyProxyActionsAddress) => {
   const deps = normalizeAddressDefinition(address);
-  
+
   return {
     name: getAutomationBotTransformerName(deps.address),
     dependencies: [getExtractorName(deps.address)],
-    transformerDependencies: multiplyProxyActionsAddress.map(mpa => getMultiplyTransformerName(mpa)),
+    transformerDependencies: multiplyProxyActionsAddress.map(mpa =>
+      getMultiplyTransformerName(mpa),
+    ),
     transform: async (services, logs) => {
       await handleEvents(services, automationBotAbi, flatten(logs), automationBotHandlers);
     },
