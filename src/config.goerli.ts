@@ -42,6 +42,9 @@ import {
 import { automationBotTransformer } from './borrow/transformers/automationBotTransformer';
 import { dsProxyTransformer } from './borrow/transformers/dsProxyTransformer';
 import { partialABI } from './utils';
+import { multiplyTransformer } from './borrow/transformers/multiply';
+import { getIlkForCdp } from './borrow/dependencies/getIlkForCdp';
+import { getLiquidationRatio } from './borrow/dependencies/getLiquidationRatio';
 
 const AutomationBotABI = require('../abis/automation-bot.json');
 
@@ -53,6 +56,7 @@ const GOERLI_STARTING_BLOCKS = {
   MCD_CAT: 5273080,
   MCD_DOG: 5273080,
   AUTOMATION_BOT: 6359598,
+  MULTIPLY_PROXY_ACTIONS: 6187206,
 };
 
 const vat = {
@@ -128,6 +132,13 @@ const automationBot = {
   startingBlock: GOERLI_STARTING_BLOCKS.AUTOMATION_BOT,
 };
 
+const multiply = [
+  {
+    address: goerliAddresses.MULTIPLY_PROXY_ACTIONS,
+    startingBlock: GOERLI_STARTING_BLOCKS.MULTIPLY_PROXY_ACTIONS,
+  },
+];
+
 const dsProxy = [
   {
     name: 'automation-bot',
@@ -160,6 +171,7 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors(dogs),
     ...makeRawLogExtractors([vat]),
     ...makeRawLogExtractors([automationBot]),
+    ...makeRawLogExtractors(multiply),
     ...makeRawEventBasedOnTopicExtractor(flipper),
     ...makeRawEventBasedOnDSNoteTopic(flipperNotes),
     ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(
@@ -185,8 +197,14 @@ export const config: UserProvidedSpockConfig = {
     vatRawMoveTransformer(vat),
     flipTransformer(),
     flipNoteTransformer(),
-    automationBotTransformer(automationBot),
+    automationBotTransformer(automationBot, multiply),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
+    ...multiplyTransformer(multiply, {
+      cdpManager: cdpManagers[0].address,
+      vat: vat.address,
+      getIlkForCdp,
+      getLiquidationRatio,
+    }),
     ...oraclesTransformer(oracles),
     eventEnhancerTransformer(vat, dogs[0], cdpManagers, oraclesTransformers),
     eventEnhancerTransformerEthPrice(vat, dogs[0], cdpManagers, oraclesTransformers),
