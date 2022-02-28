@@ -1,5 +1,5 @@
 import { Dictionary } from 'ts-essentials';
-import { flatten } from 'lodash';
+import { flatten, max, min } from 'lodash';
 import { handleEvents, FullEventInfo } from '@oasisdex/spock-utils/dist/transformers/common';
 import {
   getExtractorName,
@@ -125,3 +125,50 @@ export const automationBotTransformer: (
     },
   };
 };
+
+export function getTriggerEventsCombineTransformerName(automationBot: SimpleProcessorDefinition) : string {
+  return `triggerEventsCombineTransformer-${automationBot.address}`
+}
+
+interface TriggerAdded {
+  id: number;
+  trigger_id: number;
+  cdp_id: number;
+  trigger_data: number;
+}
+
+export const triggerEventsCombineTransformer: (
+  addresses: string | SimpleProcessorDefinition,
+) => BlockTransformer = addresses => {
+  const deps = normalizeAddressDefinition(addresses);
+
+  return {
+    name: getTriggerEventsCombineTransformerName(deps),
+    dependencies: [getExtractorName(deps.address)],
+    transformerDependencies: [`automationBotTransformer-${deps.address}`],
+    startingBlock: deps.startingBlock,
+    transform: async (services, _logs) => {
+      const logs = flatten(_logs);
+      if (logs.length === 0) {
+        return;
+      }
+      const blocks = Array.from(new Set(logs.map(log => log.block_id)));
+
+      const minBlock = min(blocks);
+      const maxBlock = max(blocks);
+      // TODO select with TriggerAdded, Executed etc... then add it all to events as in vatTransformer.ts ~ŁW
+      
+      const trigger_added_events = flatten(
+        await services.tx.multi<TriggerAdded>(
+          `
+          select *
+          from automation_bot.trigger_added_events tae 
+          where block_id >= ${minBlock} and block_id <= ${maxBlock};
+          `,
+          [blocks],
+        ),
+      );
+
+    }
+  }
+}
