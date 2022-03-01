@@ -137,6 +137,20 @@ interface TriggerAdded {
   trigger_data: number;
 }
 
+interface TriggerExecuted {
+  id: number;
+  trigger_id: number;
+  cdp_id: number;
+  vault_closed_event: number;
+}
+
+// TODO: Question add interface BaseTriggerEvent and inheritance ? ~ŁW
+interface TriggerRemoved {
+  id: number;
+  trigger_id: number;
+  cdp_id: number;
+}
+
 export const triggerEventsCombineTransformer: (
   addresses: string | SimpleProcessorDefinition,
 ) => BlockTransformer = addresses => {
@@ -165,10 +179,30 @@ export const triggerEventsCombineTransformer: (
           from automation_bot.trigger_added_events tae 
           where block_id >= ${minBlock} and block_id <= ${maxBlock};
           `,
-          [blocks],
         ),
       );
 
+      const trigger_executed_events = flatten(
+        await services.tx.multi<TriggerExecuted>(
+          `
+          select *
+          from automation_bot.trigger_executed_events tee
+          where block_id >= ${minBlock} and block_id <= ${maxBlock};
+          `,
+        ),
+      );
+
+      const trigger_removed_events = flatten(
+        await services.tx.multi<TriggerRemoved>(
+          `
+          select *
+          from automation_bot.approval_removed_events are2 
+          where block_id >= ${minBlock} and block_id <= ${maxBlock};
+          `,
+        ),
+      );
+      
+      // How should it look like in events
     }
   }
 }
