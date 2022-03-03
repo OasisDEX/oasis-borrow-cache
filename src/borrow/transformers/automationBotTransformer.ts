@@ -165,6 +165,7 @@ interface TriggerRemoved {
 }
 
 interface CombineTransformerDependencies {
+  managerAddress: string,
   getUrnForCdp: (
     provider: Provider,
     id: string,
@@ -227,21 +228,25 @@ export function triggerEventsCombineTransformer (
       // How should it look like in events
       // add trigger added events
 
-    
+    // console.log('trigger_added_events')
+    // console.log(trigger_added_events)
 
       const triggerAddedVaultEvents = trigger_added_events.map(async (event) => {
         const timestampOfTransaction= services.tx.one<Date>(
-          `select timestamp from vulcan2x.block b where id = 1;`
+          `select timestamp from vulcan2x.block b where id = ${event.block_id};`
         );
 
-        const networkSpecyficAdresses = getAddressesFromConfig(services);
-        
+        // const networkSpecyficAdresses = getAddressesFromConfig(services);
+              
+
         const urn = await dependencies.getUrnForCdp(
           (services as any).provider as Provider,
           event.cdp_id.toString(),
-          // Can it be correct? 
-          networkSpecyficAdresses.CDP_MANAGER,
+          dependencies.managerAddress,
         );
+
+        console.log('urn')
+        console.log(urn)
 
         return {
           kind: 'TRIGGER_ADDED',
@@ -256,6 +261,7 @@ export function triggerEventsCombineTransformer (
           log_index: event.log_index,
         };
       });
+
 
       const vaultEventsColumnSet = createVaultEventsColumnSet(services);
       const query = services.pg.helpers.insert(triggerAddedVaultEvents, vaultEventsColumnSet);

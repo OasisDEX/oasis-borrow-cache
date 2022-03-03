@@ -16,7 +16,6 @@ describe('Trigger events combine transformer', () => {
         await executeSQL(
             services.db,
             `
-
             INSERT INTO vulcan2x.block(id, number, hash, timestamp) VALUES(1, 1, '0x01', '2019-07-02 11:18:01+00');
             INSERT INTO vulcan2x.block(id, number, hash, timestamp) VALUES(2, 2, '0x02', '2019-07-02 11:18:02+00');
             INSERT INTO vulcan2x.block(id, number, hash, timestamp) VALUES(3, 3, '0x03', '2022-01-27 11:18:02+00');
@@ -37,7 +36,6 @@ describe('Trigger events combine transformer', () => {
             
             INSERT INTO automation_bot.trigger_executed_events (id, trigger_id, cdp_id, vault_closed_event, log_index, tx_id, block_id)
                 VALUES(1, 2, 80, NULL, 4, 4, 4);
-                
             `
         )
     });
@@ -48,26 +46,17 @@ describe('Trigger events combine transformer', () => {
         // Working right now, figured out how to pass this function as parameter in dependency and 
         // now implementing it and soon expect to have fully functional unit test
 
-        const promiseReturningMockUrn = new Promise<string>((resolve, reject) => { promiseReturningMockUrn.then(value => {
-            console.log('resolved', value);
-            value = '0x007'
-            resolve(value);
-          });
-          promiseReturningMockUrn.catch(error => {
-            reject(error);
-          });});
-       
-
         const getUrnForCdpMock = mockFn<(provider: Provider,
             id: string,
             managerAddress: string) 
             => Promise<string>>();
-        getUrnForCdpMock.returns(promiseReturningMockUrn)
-        
+        getUrnForCdpMock.returns(new Promise(() => {
+            return Promise.resolve('0x007')
+        }))
 
         // no need to mock transformer instance as it's output is mocked already ? 
         // const transformerInstance = automationBotTransformer(constants.AddressZero, constants.)
-        const combineTransformerInstance = triggerEventsCombineTransformer(constants.AddressZero, {getUrnForCdp: getUrnForCdpMock})
+        const combineTransformerInstance = triggerEventsCombineTransformer(constants.AddressZero, {getUrnForCdp: getUrnForCdpMock, managerAddress: "0x123456"})
 
         const mockedLogs = require('../../fixture/automationBot-combine-log.json');
 
