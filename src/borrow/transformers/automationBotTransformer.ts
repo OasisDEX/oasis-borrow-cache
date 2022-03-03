@@ -135,6 +135,10 @@ interface TriggerAdded {
   trigger_id: number;
   cdp_id: number;
   trigger_data: number;
+  log_index: number;
+  tx_id: number;
+  block_id: number;
+  timestamp: Date;
 }
 
 interface TriggerExecuted {
@@ -142,6 +146,10 @@ interface TriggerExecuted {
   trigger_id: number;
   cdp_id: number;
   vault_closed_event: number;
+  log_index: number;
+  tx_id: number;
+  block_id: number;
+  timestamp: Date;
 }
 
 // TODO: Question add interface BaseTriggerEvent and inheritance ? ~ŁW
@@ -149,6 +157,9 @@ interface TriggerRemoved {
   id: number;
   trigger_id: number;
   cdp_id: number;
+  log_index: number;
+  tx_id: number;
+  block_id: number;
 }
 
 export const triggerEventsCombineTransformer: (
@@ -203,6 +214,55 @@ export const triggerEventsCombineTransformer: (
       );
       
       // How should it look like in events
+      // add trigger added events
+
+
+      const triggerAddedVaultEvents = trigger_added_events.map((event) => {
+        const transactionId = event.tx_id;
+        const timestampOfTransaction= services.tx.one<Date>(
+          `select timestamp from vulcan2x.block b where id = 1;`
+        );
+
+        return {
+          kind: 'TRIGGER_ADDED',
+          rate: null,
+          collateral_amount: null,
+          dai_amount: null,
+          urn: '',
+          ilk: '',
+          timestamp: timestampOfTransaction,
+          tx_id: event.tx_id,
+          block_id: event.block_id,
+          log_index: event.log_index,
+        };
+      });
+
+      const vaultEventsColumnSet = createVaultEventsColumnSet(services);
+      const query = services.pg.helpers.insert(triggerAddedVaultEvents, vaultEventsColumnSet);
+      await services.tx.none(query);
     }
   }
+}
+
+function createVaultEventsColumnSet(services: LocalServices) {
+  return new services.pg.helpers.ColumnSet(
+    [
+      'kind',
+      'collateral_amount',
+      'dai_amount',
+      'urn',
+      'timestamp',
+      'tx_id',
+      'block_id',
+      'log_index',
+      'rate',
+      'ilk',
+    ],
+    {
+      table: {
+        table: 'events',
+        schema: 'vault',
+      },
+    }
+  );
 }

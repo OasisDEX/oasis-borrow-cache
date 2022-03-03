@@ -43,12 +43,14 @@ describe('Trigger events combine transformer', () => {
 
     afterEach(() => destroyTestServices(services));
 
-    it.only('adds TriggerAdded events to history as TRIGGER_ADDED', async() => {
+    it.only('adds 2 TriggerAdded events to history as TRIGGER_ADDED', async() => {
         // no need to mock transformer instance as it's output is mocked already ? 
         // const transformerInstance = automationBotTransformer(constants.AddressZero, constants.)
         const combineTransformerInstance = triggerEventsCombineTransformer(constants.AddressZero)
 
-        // await combineTransformerInstance.transform(txServices, data)
+        const mockedLogs = require('../../fixture/automationBot-combine-log.json');
+
+        await combineTransformerInstance.transform(txServices, mockedLogs)
 
         const trigger_added_events = await getSQL(services.db, `SELECT * FROM vault.events WHERE kind = 'TRIGGER_ADDED';`);
 
