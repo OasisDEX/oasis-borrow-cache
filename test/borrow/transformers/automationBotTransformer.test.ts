@@ -61,13 +61,13 @@ describe('Trigger events combine transformer', () => {
         const getUrnForCdpMock = mockFn<(provider: Provider,
             id: string,
             managerAddress: string) 
-            => {Promise: string}>();
+            => Promise<string>>();
         getUrnForCdpMock.returns(promiseReturningMockUrn)
         
 
         // no need to mock transformer instance as it's output is mocked already ? 
         // const transformerInstance = automationBotTransformer(constants.AddressZero, constants.)
-        const combineTransformerInstance = triggerEventsCombineTransformer(constants.AddressZero, getUrnForCdpMock.resolvesTo())
+        const combineTransformerInstance = triggerEventsCombineTransformer(constants.AddressZero, {getUrnForCdp: getUrnForCdpMock})
 
         const mockedLogs = require('../../fixture/automationBot-combine-log.json');
 

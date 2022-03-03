@@ -169,7 +169,7 @@ interface CombineTransformerDependencies {
     provider: Provider,
     id: string,
     managerAddress: string
-    ) => {Promise: string}
+    ) => Promise<string>
 }
 
 export function triggerEventsCombineTransformer (
