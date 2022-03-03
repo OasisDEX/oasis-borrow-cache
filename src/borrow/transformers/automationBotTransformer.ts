@@ -8,8 +8,10 @@ import {
 } from '@oasisdex/spock-utils/dist/extractors/rawEventDataExtractor';
 import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
-import { normalizeAddressDefinition } from '../../utils';
+import { getAddressesFromConfig, normalizeAddressDefinition } from '../../utils';
 import { getMultiplyTransformerName } from './multiply';
+// import { getUrnForCdp } from '../dependencies/getUrnForCdp';
+import { Provider } from 'ethers/providers';
 
 const automationBotAbi = require('../../../abis/automation-bot.json');
 
@@ -162,9 +164,18 @@ interface TriggerRemoved {
   block_id: number;
 }
 
-export const triggerEventsCombineTransformer: (
+interface CombineTransformerDependencies {
+  getUrnForCdp: (
+    provider: Provider,
+    id: string,
+    managerAddress: string
+    ) => {Promise: string}
+}
+
+export function triggerEventsCombineTransformer (
   addresses: string | SimpleProcessorDefinition,
-) => BlockTransformer = addresses => {
+  dependencies: CombineTransformerDependencies
+) : BlockTransformer{
   const deps = normalizeAddressDefinition(addresses);
 
   return {
@@ -216,19 +227,28 @@ export const triggerEventsCombineTransformer: (
       // How should it look like in events
       // add trigger added events
 
+    
 
-      const triggerAddedVaultEvents = trigger_added_events.map((event) => {
-        const transactionId = event.tx_id;
+      const triggerAddedVaultEvents = trigger_added_events.map(async (event) => {
         const timestampOfTransaction= services.tx.one<Date>(
           `select timestamp from vulcan2x.block b where id = 1;`
         );
 
+        const networkSpecyficAdresses = getAddressesFromConfig(services);
+        
+        const urn = await dependencies.getUrnForCdp(
+          (services as any).provider as Provider,
+          event.cdp_id.toString(),
+          // Can it be correct? 
+          networkSpecyficAdresses.CDP_MANAGER,
+        );
+
         return {
           kind: 'TRIGGER_ADDED',
-          rate: null,
-          collateral_amount: null,
-          dai_amount: null,
-          urn: '',
+          rate: '',
+          collateral_amount: '',
+          dai_amount: '',
+          urn: urn,
           ilk: '',
           timestamp: timestampOfTransaction,
           tx_id: event.tx_id,

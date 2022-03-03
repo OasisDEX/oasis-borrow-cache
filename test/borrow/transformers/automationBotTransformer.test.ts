@@ -1,7 +1,8 @@
 import { Services, TransactionalServices } from "@oasisdex/spock-etl/dist/services/types";
 import { destroyTestServices, executeSQL, getSQL } from "@oasisdex/spock-test-utils";
-import { expect } from 'earljs';
+import { expect, mockFn } from 'earljs';
 import { constants } from "ethers";
+import { Provider } from "ethers/providers";
 import { automationBotTransformer, triggerEventsCombineTransformer } from "../../../src/borrow/transformers/automationBotTransformer";
 import { createServices } from "../../utils/createServices";
 
@@ -44,6 +45,13 @@ describe('Trigger events combine transformer', () => {
     afterEach(() => destroyTestServices(services));
 
     it.only('adds 2 TriggerAdded events to history as TRIGGER_ADDED', async() => {
+        // Working right now, figured out how to pass this function as parameter in dependency and 
+        // now implementing it and soon expect to have fully functional unit test
+        const getUrnForCdp = mockFn<(provider: Provider,
+            id: string,
+            managerAddress: string) => number>()
+
+
         // no need to mock transformer instance as it's output is mocked already ? 
         // const transformerInstance = automationBotTransformer(constants.AddressZero, constants.)
         const combineTransformerInstance = triggerEventsCombineTransformer(constants.AddressZero)
