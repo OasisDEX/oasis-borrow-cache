@@ -232,12 +232,13 @@ export function triggerEventsCombineTransformer (
     // console.log(trigger_added_events)
 
       const triggerAddedVaultEvents = trigger_added_events.map(async (event) => {
-        const timestampOfTransaction= services.tx.one<Date>(
+        const timestampOfTransaction= await services.tx.one<Date>(
           `select timestamp from vulcan2x.block b where id = ${event.block_id};`
         );
 
         // const networkSpecyficAdresses = getAddressesFromConfig(services);
-              
+        console.log('timestampOfTransaction')
+        console.log(timestampOfTransaction)
 
         const urn = await dependencies.getUrnForCdp(
           (services as any).provider as Provider,
