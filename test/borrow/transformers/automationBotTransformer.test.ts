@@ -43,8 +43,6 @@ describe('Trigger events combine transformer', () => {
     afterEach(() => destroyTestServices(services));
 
     it.only('adds 2 TriggerAdded events to history as TRIGGER_ADDED', async() => {
-        // Working right now, figured out how to pass this function as parameter in dependency and 
-        // now implementing it and soon expect to have fully functional unit test
 
         const getUrnForCdpMock = mockFn<(provider: Provider,
             id: string,
@@ -53,8 +51,6 @@ describe('Trigger events combine transformer', () => {
         
         getUrnForCdpMock.resolvesTo('0x007')
 
-        // no need to mock transformer instance as it's output is mocked already ? 
-        // const transformerInstance = automationBotTransformer(constants.AddressZero, constants.)
         const combineTransformerInstance = triggerEventsCombineTransformer(constants.AddressZero, {getUrnForCdp: getUrnForCdpMock, managerAddress: "0x123456"})
 
         const mockedLogs = require('../../fixture/automationBot-combine-log.json');
