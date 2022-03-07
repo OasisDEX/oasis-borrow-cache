@@ -224,7 +224,7 @@ export function triggerEventsCombineTransformer (
       );
 
      const triggerAddedVaultEvents = await Promise.all(loadAsVaultEvents(trigger_added_events, services, 'TRIGGER_ADDED'));
-
+     const triggerExecutedVaultEvents = await Promise.all(loadAsVaultEvents(trigger_executed_events, services, 'TRIGGER_EXECUTED'));
 
       const vaultEventsColumnSet = createVaultEventsColumnSet(services);
       const query = services.pg.helpers.insert(triggerAddedVaultEvents, vaultEventsColumnSet);
@@ -232,8 +232,8 @@ export function triggerEventsCombineTransformer (
     }
   }
 
-  function loadAsVaultEvents(trigger_added_events: TriggerAdded[], services: LocalServices, kindOfEvent: string): Promise<{ kind: string; rate: number; collateral_amount: number; dai_amount: number; urn: string; ilk: string; timestamp: Date; tx_id: number; block_id: number; log_index: number; }>[] {
-    return trigger_added_events.map(async (event) => {
+  function loadAsVaultEvents(trigger_events: TriggerAdded[] | TriggerExecuted[], services: LocalServices, kindOfEvent: string): Promise<{ kind: string; rate: number; collateral_amount: number; dai_amount: number; urn: string; ilk: string; timestamp: Date; tx_id: number; block_id: number; log_index: number; }>[] {
+    return trigger_events.map(async (event) => {
 
       const timestampOfTransaction = await services.tx.one<{ timestamp: Date; }>(
         `select timestamp from vulcan2x.block b where id = ${event.block_id};`
