@@ -154,7 +154,6 @@ interface TriggerExecuted {
   timestamp: Date;
 }
 
-// TODO: Question add interface BaseTriggerEvent and inheritance ? ~ŁW
 interface TriggerRemoved {
   id: number;
   trigger_id: number;
@@ -224,41 +223,41 @@ export function triggerEventsCombineTransformer (
         ),
       );
 
-     const triggerAddedVaultEvents = await Promise.all(trigger_added_events.map(async (event) => {
-    
-        const timestampOfTransaction= await services.tx.one(
-          `select timestamp from vulcan2x.block b where id = ${event.block_id};`
-        );
-
-        const urn = await dependencies.getUrnForCdp(
-          (services as any).provider as Provider,
-          event.cdp_id.toString(),
-          dependencies.managerAddress,
-        );
-
-        return {
-          kind: 'TRIGGER_ADDED',
-          rate: 0,
-          collateral_amount: 0,
-          dai_amount: 0,
-          urn: urn,
-          ilk: '',
-          timestamp: timestampOfTransaction.timestamp,
-          tx_id: event.tx_id,
-          block_id: event.block_id,
-          log_index: event.log_index,
-        };
-      }));
+     const triggerAddedVaultEvents = await Promise.all(loadAsVaultEvents(trigger_added_events, services, 'TRIGGER_ADDED'));
 
 
       const vaultEventsColumnSet = createVaultEventsColumnSet(services);
-      console.log('triggerAddedVaultEvents')
-      console.log(triggerAddedVaultEvents)
       const query = services.pg.helpers.insert(triggerAddedVaultEvents, vaultEventsColumnSet);
-      console.log('query')
-      console.log(query)
       await services.tx.none(query);
     }
+  }
+
+  function loadAsVaultEvents(trigger_added_events: TriggerAdded[], services: LocalServices, kindOfEvent: string): Promise<{ kind: string; rate: number; collateral_amount: number; dai_amount: number; urn: string; ilk: string; timestamp: Date; tx_id: number; block_id: number; log_index: number; }>[] {
+    return trigger_added_events.map(async (event) => {
+
+      const timestampOfTransaction = await services.tx.one<{ timestamp: Date; }>(
+        `select timestamp from vulcan2x.block b where id = ${event.block_id};`
+      );
+
+      const urn = await dependencies.getUrnForCdp(
+        (services as any).provider as Provider,
+        event.cdp_id.toString(),
+        dependencies.managerAddress
+      );
+
+      return {
+        kind: kindOfEvent,
+        rate: 0,
+        collateral_amount: 0,
+        dai_amount: 0,
+        urn: urn,
+        ilk: '',
+        timestamp: timestampOfTransaction.timestamp,
+        tx_id: event.tx_id,
+        block_id: event.block_id,
+        log_index: event.log_index,
+      };
+    });
   }
 }
 
