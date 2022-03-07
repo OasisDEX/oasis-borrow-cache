@@ -50,9 +50,8 @@ describe('Trigger events combine transformer', () => {
             id: string,
             managerAddress: string) 
             => Promise<string>>();
-        getUrnForCdpMock.returns(new Promise(() => {
-            return Promise.resolve('0x007')
-        }))
+        
+        getUrnForCdpMock.resolvesTo('0x007')
 
         // no need to mock transformer instance as it's output is mocked already ? 
         // const transformerInstance = automationBotTransformer(constants.AddressZero, constants.)
@@ -63,6 +62,9 @@ describe('Trigger events combine transformer', () => {
         await combineTransformerInstance.transform(txServices, mockedLogs)
 
         const trigger_added_events = await getSQL(services.db, `SELECT * FROM vault.events WHERE kind = 'TRIGGER_ADDED';`);
+
+        console.log('trigger_added_events')
+        console.log(trigger_added_events)
 
         expect(trigger_added_events[0].id).toEqual(1)
         expect(trigger_added_events[1].id).toEqual(2)
