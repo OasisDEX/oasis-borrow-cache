@@ -193,7 +193,6 @@ export function triggerEventsCombineTransformer (
 
       const minBlock = min(blocks);
       const maxBlock = max(blocks);
-      // TODO select with TriggerAdded, Executed etc... then add it all to events as in vatTransformer.ts ~ŁW
       
       const trigger_added_events = flatten(
         await services.tx.multi<TriggerAdded>(
@@ -224,24 +223,12 @@ export function triggerEventsCombineTransformer (
           `,
         ),
       );
-      
-      // How should it look like in events
-      // add trigger added events
-
-    // console.log('trigger_added_events')
-    // console.log(trigger_added_events)
 
      const triggerAddedVaultEvents = await Promise.all(trigger_added_events.map(async (event) => {
-      console.log('event')  
-      console.log(event)  
-      console.log('query')
-      console.log(`select timestamp from vulcan2x.block b where id = ${event.block_id};`)
-        
-        const timestampOfTransaction= await services.tx.one<Date>(
+    
+        const timestampOfTransaction= await services.tx.one(
           `select timestamp from vulcan2x.block b where id = ${event.block_id};`
         );
-        console.log('timestampOfTransaction')
-        console.log(timestampOfTransaction)
 
         const urn = await dependencies.getUrnForCdp(
           (services as any).provider as Provider,
@@ -249,17 +236,14 @@ export function triggerEventsCombineTransformer (
           dependencies.managerAddress,
         );
 
-        console.log('urn')
-        console.log(urn)
-// return 1;
         return {
           kind: 'TRIGGER_ADDED',
-          rate: '',
-          collateral_amount: '',
-          dai_amount: '',
+          rate: 0,
+          collateral_amount: 0,
+          dai_amount: 0,
           urn: urn,
           ilk: '',
-          timestamp: timestampOfTransaction,
+          timestamp: timestampOfTransaction.timestamp,
           tx_id: event.tx_id,
           block_id: event.block_id,
           log_index: event.log_index,
@@ -271,6 +255,8 @@ export function triggerEventsCombineTransformer (
       console.log('triggerAddedVaultEvents')
       console.log(triggerAddedVaultEvents)
       const query = services.pg.helpers.insert(triggerAddedVaultEvents, vaultEventsColumnSet);
+      console.log('query')
+      console.log(query)
       await services.tx.none(query);
     }
   }
