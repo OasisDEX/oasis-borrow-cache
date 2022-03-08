@@ -6,6 +6,8 @@ import { Provider } from "ethers/providers";
 import { automationBotTransformer, triggerEventsCombineTransformer } from "../../../src/borrow/transformers/automationBotTransformer";
 import { createServices } from "../../utils/createServices";
 
+const MOCKED_LOGS = require('../../fixture/automationBot-combine-log.json');
+
 describe('Trigger events combine transformer', () => {
     let services: Services;
     let txServices: TransactionalServices;
@@ -43,43 +45,48 @@ describe('Trigger events combine transformer', () => {
     afterEach(() => destroyTestServices(services));
 
     it.only('adds 2 TriggerAdded events to history as TRIGGER_ADDED', async() => {
-
-        const getUrnForCdpMock = mockFn<(provider: Provider,
-            id: string,
-            managerAddress: string) 
-            => Promise<string>>();
-        
-        getUrnForCdpMock.resolvesTo('0x007')
-
-        const combineTransformerInstance = triggerEventsCombineTransformer(constants.AddressZero, {getUrnForCdp: getUrnForCdpMock, managerAddress: "0x123456"})
-
-        const mockedLogs = require('../../fixture/automationBot-combine-log.json');
-
-        await combineTransformerInstance.transform(txServices, mockedLogs)
+        const combineTransformerInstance = triggerEventsCombineTransformer(constants.AddressZero, {getUrnForCdp: getUrnForCdpMock(), managerAddress: "0x123456"})
+        await combineTransformerInstance.transform(txServices, MOCKED_LOGS)
 
         const trigger_added_events = await getSQL(services.db, `SELECT * FROM vault.events WHERE kind = 'TRIGGER_ADDED';`);
 
-        console.log('trigger_added_events')
-        console.log(trigger_added_events)
-
         expect(trigger_added_events[0].id).toEqual(1)
+        expect(trigger_added_events[0].block_id).toEqual(1)
+        expect(trigger_added_events[0].tx_id).toEqual(1)
         expect(trigger_added_events[1].id).toEqual(2)
+        expect(trigger_added_events[1].block_id).toEqual(2)
+        expect(trigger_added_events[1].tx_id).toEqual(2)
         expect(trigger_added_events[0].kind).toEqual('TRIGGER_ADDED')
         expect(trigger_added_events[1].kind).toEqual('TRIGGER_ADDED')
-        
-        
     });
-
-    it('adds TriggerExecuted events to history as TRIGGER_EXECUTED', async () => {
-
-    });
-
 
     it('adds TriggerRemoved events to history as TRIGGER_REMOVED', async () => {
         
     });
 
+    it.only('adds TriggerExecuted events to history as TRIGGER_EXECUTED', async () => {
+        const combineTransformerInstance = triggerEventsCombineTransformer(constants.AddressZero, {getUrnForCdp: getUrnForCdpMock(), managerAddress: "0x123456"})
+        await combineTransformerInstance.transform(txServices, MOCKED_LOGS)
+
+        const trigger_executed_events = await getSQL(services.db, `SELECT * FROM vault.events WHERE kind = 'TRIGGER_EXECUTED';`);
+        console.log('trigger_executed_events')
+        console.log(trigger_executed_events)
+
+        expect(trigger_executed_events[0].block_id).toEqual(4)
+        expect(trigger_executed_events[0].tx_id).toEqual(4)
+        expect(trigger_executed_events[0].kind).toEqual('TRIGGER_EXECUTED')
+    });
+
+
     it('combines TriggerAdded, TriggerExecuted, TriggerRemoved events', async () => {
 
     });
 })
+
+function getUrnForCdpMock() {
+    const getUrnForCdpMock = mockFn<(provider: Provider,
+        id: string,
+        managerAddress: string) => Promise<string>>();
+    getUrnForCdpMock.resolvesTo('0x007');
+    return getUrnForCdpMock;
+}

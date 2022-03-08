@@ -226,8 +226,9 @@ export function triggerEventsCombineTransformer (
      const triggerAddedVaultEvents = await Promise.all(loadAsVaultEvents(trigger_added_events, services, 'TRIGGER_ADDED'));
      const triggerExecutedVaultEvents = await Promise.all(loadAsVaultEvents(trigger_executed_events, services, 'TRIGGER_EXECUTED'));
 
-      const vaultEventsColumnSet = createVaultEventsColumnSet(services);
-      const query = services.pg.helpers.insert(triggerAddedVaultEvents, vaultEventsColumnSet);
+      const vaultEventsColumnSet = createVaultEventsColumnSet(services)
+      const allTriggerEvents = triggerAddedVaultEvents.concat(triggerExecutedVaultEvents)
+      const query = services.pg.helpers.insert(allTriggerEvents, vaultEventsColumnSet)
       await services.tx.none(query);
     }
   }
