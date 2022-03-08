@@ -46,7 +46,7 @@ describe('Trigger events combine transformer', () => {
 
     afterEach(() => destroyTestServices(services));
 
-    it.only('adds 2 TriggerAdded events to history as TRIGGER_ADDED', async() => {
+    it('adds 2 TriggerAdded events to history as TRIGGER_ADDED', async() => {
         const trigger_added_events = await getSQL(services.db, `SELECT * FROM vault.events WHERE kind = 'TRIGGER_ADDED';`)
 
         expect(trigger_added_events[0].id).toEqual(1)
@@ -59,7 +59,7 @@ describe('Trigger events combine transformer', () => {
         expect(trigger_added_events[1].kind).toEqual('TRIGGER_ADDED')
     });
 
-    it.only('adds TriggerRemoved events to history as TRIGGER_REMOVED', async () => {
+    it('adds TriggerRemoved events to history as TRIGGER_REMOVED', async () => {
         const trigger_removed_events = await getSQL(services.db, `SELECT * FROM vault.events WHERE kind = 'TRIGGER_REMOVED';`)
         
         expect(trigger_removed_events[0].block_id).toEqual(3)
@@ -68,7 +68,7 @@ describe('Trigger events combine transformer', () => {
 
     });
 
-    it.only('adds TriggerExecuted events to history as TRIGGER_EXECUTED', async () => {
+    it('adds TriggerExecuted events to history as TRIGGER_EXECUTED', async () => {
 
         const trigger_executed_events = await getSQL(services.db, `SELECT * FROM vault.events WHERE kind = 'TRIGGER_EXECUTED';`)
 
