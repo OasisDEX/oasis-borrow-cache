@@ -234,7 +234,7 @@ export function triggerEventsCombineTransformer (
     }
   }
 
-  function loadAsVaultEvents(trigger_events: TriggerAdded[] | TriggerExecuted[] | TriggerRemoved[], services: LocalServices, kindOfEvent: string): Promise<{ kind: string; rate: number; collateral_amount: number; dai_amount: number; urn: string; ilk: string; timestamp: Date; tx_id: number; block_id: number; log_index: number; }>[] {
+  function loadAsVaultEvents(trigger_events: TriggerAdded[] | TriggerExecuted[] | TriggerRemoved[], services: LocalServices, kindOfEvent: string): Promise<{ kind: string; collateral_amount: number; dai_amount: number; urn: string; ilk: string; timestamp: Date; tx_id: number; block_id: number; log_index: number; }>[] {
     return trigger_events.map(async (event) => {
 
       const timestampOfTransaction = await services.tx.one<{ timestamp: Date; }>(
@@ -249,7 +249,6 @@ export function triggerEventsCombineTransformer (
 
       return {
         kind: kindOfEvent,
-        rate: 0,
         collateral_amount: 0,
         dai_amount: 0,
         urn: urn,
@@ -274,7 +273,6 @@ function createVaultEventsColumnSet(services: LocalServices) {
       'tx_id',
       'block_id',
       'log_index',
-      'rate',
       'ilk',
     ],
     {

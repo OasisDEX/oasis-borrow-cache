@@ -177,7 +177,7 @@ export const vatCombineTransformer: (
         `,
           [blocks],
         ),
-      ); //TODO delete [blocks] ? ~ŁW
+      );
 
       const rates = flatten(
         await services.tx.multi<Rate>(

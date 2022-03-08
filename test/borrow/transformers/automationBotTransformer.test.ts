@@ -8,7 +8,7 @@ import { createServices } from "../../utils/createServices";
 
 const MOCKED_LOGS = require('../../fixture/automationBot-combine-log.json');
 
-describe('Trigger events combine transformer', () => {
+describe.only('Trigger events combine transformer', () => {
     let services: Services;
     let txServices: TransactionalServices;
 
