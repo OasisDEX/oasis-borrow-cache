@@ -217,7 +217,7 @@ export function triggerEventsCombineTransformer (
         await services.tx.multi<TriggerRemoved>(
           `
           select *
-          from automation_bot.approval_removed_events are2 
+          from automation_bot.trigger_removed_events tre 
           where block_id >= ${minBlock} and block_id <= ${maxBlock};
           `,
         ),
@@ -225,15 +225,16 @@ export function triggerEventsCombineTransformer (
 
      const triggerAddedVaultEvents = await Promise.all(loadAsVaultEvents(trigger_added_events, services, 'TRIGGER_ADDED'));
      const triggerExecutedVaultEvents = await Promise.all(loadAsVaultEvents(trigger_executed_events, services, 'TRIGGER_EXECUTED'));
+     const triggerRemovedVaultEvents = await Promise.all(loadAsVaultEvents(trigger_removed_events, services, 'TRIGGER_REMOVED'));
 
       const vaultEventsColumnSet = createVaultEventsColumnSet(services)
-      const allTriggerEvents = triggerAddedVaultEvents.concat(triggerExecutedVaultEvents)
+      const allTriggerEvents = triggerAddedVaultEvents.concat(triggerExecutedVaultEvents, triggerRemovedVaultEvents)
       const query = services.pg.helpers.insert(allTriggerEvents, vaultEventsColumnSet)
       await services.tx.none(query);
     }
   }
 
-  function loadAsVaultEvents(trigger_events: TriggerAdded[] | TriggerExecuted[], services: LocalServices, kindOfEvent: string): Promise<{ kind: string; rate: number; collateral_amount: number; dai_amount: number; urn: string; ilk: string; timestamp: Date; tx_id: number; block_id: number; log_index: number; }>[] {
+  function loadAsVaultEvents(trigger_events: TriggerAdded[] | TriggerExecuted[] | TriggerRemoved[], services: LocalServices, kindOfEvent: string): Promise<{ kind: string; rate: number; collateral_amount: number; dai_amount: number; urn: string; ilk: string; timestamp: Date; tx_id: number; block_id: number; log_index: number; }>[] {
     return trigger_events.map(async (event) => {
 
       const timestampOfTransaction = await services.tx.one<{ timestamp: Date; }>(

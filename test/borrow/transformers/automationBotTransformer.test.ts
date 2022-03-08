@@ -24,9 +24,9 @@ describe('Trigger events combine transformer', () => {
             INSERT INTO vulcan2x.block(id, number, hash, timestamp) VALUES(4, 4, '0x04', '2022-02-22 02:20:02+00');
             INSERT INTO vulcan2x.transaction (id, hash, to_address, from_address, block_id, nonce, value, gas_limit, gas_price, data) 
               VALUES(1, '0x01', '0x01', '0x00', 1, 1, 0, 0, 0, ''),
-              (2, '0x02', '0x01', '0x00', 1, 1, 0, 0, 0, ''),
-              (3, '0x03', '0x01', '0x00', 2, 1, 0, 0, 0, ''),
-              (4, '0x04', '0x01', '0x00', 2, 1, 0, 0, 0, '');
+              (2, '0x02', '0x01', '0x00', 2, 1, 0, 0, 0, ''),
+              (3, '0x03', '0x01', '0x00', 3, 1, 0, 0, 0, ''),
+              (4, '0x04', '0x01', '0x00', 4, 1, 0, 0, 0, '');
 
             INSERT INTO automation_bot.trigger_added_events (trigger_id,cdp_id,trigger_data,log_index,tx_id,block_id,command_address)
                 VALUES (1,55,'0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000057000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000bb',1,1,1,'0xa655b783183e5dbdf3a36727bdb7cdcffd854497');
@@ -40,15 +40,14 @@ describe('Trigger events combine transformer', () => {
                 VALUES(1, 2, 80, NULL, 4, 4, 4);
             `
         )
+        const combineTransformerInstance = triggerEventsCombineTransformer(constants.AddressZero, {getUrnForCdp: getUrnForCdpMock(), managerAddress: "0x123456"})
+        await combineTransformerInstance.transform(txServices, MOCKED_LOGS)
     });
 
     afterEach(() => destroyTestServices(services));
 
     it.only('adds 2 TriggerAdded events to history as TRIGGER_ADDED', async() => {
-        const combineTransformerInstance = triggerEventsCombineTransformer(constants.AddressZero, {getUrnForCdp: getUrnForCdpMock(), managerAddress: "0x123456"})
-        await combineTransformerInstance.transform(txServices, MOCKED_LOGS)
-
-        const trigger_added_events = await getSQL(services.db, `SELECT * FROM vault.events WHERE kind = 'TRIGGER_ADDED';`);
+        const trigger_added_events = await getSQL(services.db, `SELECT * FROM vault.events WHERE kind = 'TRIGGER_ADDED';`)
 
         expect(trigger_added_events[0].id).toEqual(1)
         expect(trigger_added_events[0].block_id).toEqual(1)
@@ -60,27 +59,24 @@ describe('Trigger events combine transformer', () => {
         expect(trigger_added_events[1].kind).toEqual('TRIGGER_ADDED')
     });
 
-    it('adds TriggerRemoved events to history as TRIGGER_REMOVED', async () => {
+    it.only('adds TriggerRemoved events to history as TRIGGER_REMOVED', async () => {
+        const trigger_removed_events = await getSQL(services.db, `SELECT * FROM vault.events WHERE kind = 'TRIGGER_REMOVED';`)
         
+        expect(trigger_removed_events[0].block_id).toEqual(3)
+        expect(trigger_removed_events[0].tx_id).toEqual(3)
+        expect(trigger_removed_events[0].kind).toEqual('TRIGGER_REMOVED')
+
     });
 
     it.only('adds TriggerExecuted events to history as TRIGGER_EXECUTED', async () => {
-        const combineTransformerInstance = triggerEventsCombineTransformer(constants.AddressZero, {getUrnForCdp: getUrnForCdpMock(), managerAddress: "0x123456"})
-        await combineTransformerInstance.transform(txServices, MOCKED_LOGS)
 
-        const trigger_executed_events = await getSQL(services.db, `SELECT * FROM vault.events WHERE kind = 'TRIGGER_EXECUTED';`);
-        console.log('trigger_executed_events')
-        console.log(trigger_executed_events)
+        const trigger_executed_events = await getSQL(services.db, `SELECT * FROM vault.events WHERE kind = 'TRIGGER_EXECUTED';`)
 
         expect(trigger_executed_events[0].block_id).toEqual(4)
         expect(trigger_executed_events[0].tx_id).toEqual(4)
         expect(trigger_executed_events[0].kind).toEqual('TRIGGER_EXECUTED')
     });
 
-
-    it('combines TriggerAdded, TriggerExecuted, TriggerRemoved events', async () => {
-
-    });
 })
 
 function getUrnForCdpMock() {
