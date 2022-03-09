@@ -10,7 +10,6 @@ import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
 import { getAddressesFromConfig, normalizeAddressDefinition } from '../../utils';
 import { getMultiplyTransformerName } from './multiply';
-// import { getUrnForCdp } from '../dependencies/getUrnForCdp';
 import { Provider } from 'ethers/providers';
 
 const automationBotAbi = require('../../../abis/automation-bot.json');
