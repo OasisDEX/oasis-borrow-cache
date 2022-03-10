@@ -39,7 +39,7 @@ import {
   eventEnhancerTransformer,
   eventEnhancerTransformerEthPrice,
 } from './borrow/transformers/eventEnhancer';
-import { automationBotTransformer } from './borrow/transformers/automationBotTransformer';
+import { automationBotTransformer, triggerEventsCombineTransformer } from './borrow/transformers/automationBotTransformer';
 import { dsProxyTransformer } from './borrow/transformers/dsProxyTransformer';
 import { partialABI } from './utils';
 import { multiplyTransformer } from './borrow/transformers/multiply';
@@ -198,6 +198,7 @@ export const config: UserProvidedSpockConfig = {
     flipTransformer(),
     flipNoteTransformer(),
     automationBotTransformer(automationBot, multiply),
+    triggerEventsCombineTransformer(automationBot, {managerAddress: goerliAddresses.CDP_MANAGER, getUrnForCdp}),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
     ...multiplyTransformer(multiply, {
       cdpManager: cdpManagers[0].address,
