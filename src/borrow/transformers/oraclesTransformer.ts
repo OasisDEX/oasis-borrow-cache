@@ -18,6 +18,8 @@ import { providers } from 'ethers';
 const oracleAbi = require('../../../abis/oracle.json');
 const lpOracleAbi = require('../../../abis/lp-oracle.json');
 
+const OSM_NEXT_PRICE_STORAGE_SLOT = 4;
+
 interface Price {
   price: string;
   next_price: string;
@@ -84,7 +86,11 @@ async function getNextPriceFromStorage(
   blockNumber: number,
 ) {
   const provider: providers.Provider = (services as any).provider;
-  const priceHex = await provider.getStorageAt(log.address, 3, blockNumber);
+  const priceHex = await provider.getStorageAt(
+    log.address,
+    OSM_NEXT_PRICE_STORAGE_SLOT,
+    blockNumber,
+  );
   return storageHexToBigNumber(priceHex).div(wad);
 }
 
