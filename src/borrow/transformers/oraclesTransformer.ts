@@ -13,12 +13,14 @@ import BigNumber from 'bignumber.js';
 import { wad } from '../../utils/precision';
 import { normalizeAddressDefinition } from '../../utils';
 import { getCustomExtractorNameBasedOnTopicIgnoreConflicts } from '../customExtractors';
+import { providers } from 'ethers';
 
 const oracleAbi = require('../../../abis/oracle.json');
 const lpOracleAbi = require('../../../abis/lp-oracle.json');
 
 interface Price {
   price: string;
+  next_price: string;
   token: string;
   timestamp: string;
   osm_address: string;
@@ -31,20 +33,39 @@ function isLPToken(token: string): boolean {
   return token.startsWith('UNIV2') || token.startsWith('GUNIV3');
 }
 
-async function getTimeStamp(services: LocalServices, block_id: number): Promise<string> {
-  const value = await services.tx.oneOrNone(
-    `SELECT timestamp FROM vulcan2x.block WHERE id = \${block_id}`,
-    {
-      block_id: block_id,
-    },
-  );
+function storageHexToBigNumber(uint256: string) {
+  const matches = uint256.match(/^0x(\w+)$/);
+  if (!matches?.length) {
+    throw new Error(`invalid uint256: ${uint256}`);
+  }
 
-  return value.timestamp;
+  const match = matches[0];
+  return match.length <= 32
+    ? new BigNumber(uint256)
+    : new BigNumber(`0x${match.substring(match.length - 32, match.length)}`);
 }
 
-async function savePriceToDb(services: LocalServices, row: Price): Promise<void> {
+async function savePrices(
+  services: LocalServices,
+  log: PersistedLog,
+  token: string,
+  price: BigNumber,
+  nextPrice: BigNumber,
+  timestamp: string,
+): Promise<void> {
+  const row: Price = {
+    token,
+    timestamp,
+    price: price.toString(),
+    next_price: nextPrice.toString(),
+    osm_address: log.address,
+    log_index: log.log_index,
+    tx_id: log.tx_id,
+    block_id: log.block_id,
+  };
+
   const cs = new services.pg.helpers.ColumnSet(
-    ['price', 'token', 'timestamp', 'osm_address', 'tx_id', 'block_id', 'log_index'],
+    ['price', 'next_price', 'token', 'timestamp', 'osm_address', 'tx_id', 'block_id', 'log_index'],
     {
       table: {
         schema: 'oracles',
@@ -57,34 +78,36 @@ async function savePriceToDb(services: LocalServices, row: Price): Promise<void>
   await services.tx.none(query);
 }
 
-async function savePrice(
+async function getNextPriceFromStorage(
   services: LocalServices,
   log: PersistedLog,
-  price: BigNumber,
-  token: string,
-): Promise<void> {
-  const timestamp = await getTimeStamp(services, log.block_id);
-  const row: Price = {
-    price: price.toString(),
-    token,
-    timestamp: timestamp,
-    osm_address: log.address,
-    log_index: log.log_index,
-    tx_id: log.tx_id,
-    block_id: log.block_id,
-  };
-
-  await savePriceToDb(services, row);
+  blockNumber: number,
+) {
+  const provider: providers.Provider = (services as any).provider;
+  const priceHex = await provider.getStorageAt(log.address, 3, blockNumber);
+  return storageHexToBigNumber(priceHex).div(wad);
 }
 
 const handlers = (token: string) => ({
   async LogValue(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
-    const price = new BigNumber(event.params.val).div(wad);
-    await savePrice(services, log, price, token);
+    const block = await services.tx.oneOrNone(
+      `select * from vulcan2x.block where id = ${log.block_id}`,
+    );
+    const [price, nextPrice] = [
+      new BigNumber(event.params.val).div(wad),
+      await getNextPriceFromStorage(services, log, block.number),
+    ];
+    await savePrices(services, log, token, price, nextPrice, block.timestamp);
   },
   async Value(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
-    const price = new BigNumber(event.params.curVal).div(wad);
-    await savePrice(services, log, price, token);
+    const block = await services.tx.oneOrNone(
+      `select * from vulcan2x.block where id = ${log.block_id}`,
+    );
+    const [price, nextPrice] = [
+      new BigNumber(event.params.curVal).div(wad),
+      new BigNumber(event.params.nxtVal).div(wad),
+    ];
+    await savePrices(services, log, token, price, nextPrice, block.timestamp);
   },
 });
 
