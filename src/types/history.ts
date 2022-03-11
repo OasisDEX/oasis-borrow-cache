@@ -137,6 +137,19 @@ interface MigrateEvent extends HistoryEventBase {
   kind: 'MIGRATE';
 }
 
+interface StoplossTriggerAddedEvent extends HistoryEventBase {
+  kind: 'STOP_LOSS_TRIGGER_ADDED';
+}
+
+
+interface StoplossTriggerRemovedEvent extends HistoryEventBase {
+  kind: 'STOP_LOSS_TRIGGER_REMOVED';
+}
+
+interface StoplossTriggerExecutedEvent extends HistoryEventBase {
+  kind: 'STOP_LOSS_TRIGGER_EXECUTED';
+}
+
 export type Event =
   | VaultOpenedEvent
   | WithdrawEvent
@@ -152,4 +165,7 @@ export type Event =
   | AuctionStartedEvent
   | WithdrawPaybackEvent
   | DepositGenerateEvent
-  | PaybackEvent;
+  | PaybackEvent
+  | StoplossTriggerAddedEvent
+  | StoplossTriggerRemovedEvent
+  | StoplossTriggerExecutedEvent;

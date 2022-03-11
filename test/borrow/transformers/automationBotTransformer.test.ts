@@ -3,7 +3,7 @@ import { destroyTestServices, executeSQL, getSQL } from "@oasisdex/spock-test-ut
 import { expect, mockFn } from 'earljs';
 import { constants } from "ethers";
 import { Provider } from "ethers/providers";
-import { automationBotTransformer, triggerEventsCombineTransformer } from "../../../src/borrow/transformers/automationBotTransformer";
+import { triggerEventsCombineTransformer } from "../../../src/borrow/transformers/automationBotTransformer";
 import { createServices } from "../../utils/createServices";
 
 const MOCKED_LOGS = require('../../fixture/automationBot-combine-log.json');
@@ -46,8 +46,8 @@ describe.only('Trigger events combine transformer', () => {
 
     afterEach(() => destroyTestServices(services));
 
-    it('adds 2 TriggerAdded events to history as TRIGGER_ADDED', async() => {
-        const trigger_added_events = await getSQL(services.db, `SELECT * FROM vault.events WHERE kind = 'TRIGGER_ADDED';`)
+    it('adds 2 TriggerAdded events to history as SL_TRIGGER_ADDED', async() => {
+        const trigger_added_events = await getSQL(services.db, `SELECT * FROM vault.events WHERE kind = 'SL_TRIGGER_ADDED';`)
 
         expect(trigger_added_events[0].id).toEqual(1)
         expect(trigger_added_events[0].block_id).toEqual(1)
@@ -55,26 +55,26 @@ describe.only('Trigger events combine transformer', () => {
         expect(trigger_added_events[1].id).toEqual(2)
         expect(trigger_added_events[1].block_id).toEqual(2)
         expect(trigger_added_events[1].tx_id).toEqual(2)
-        expect(trigger_added_events[0].kind).toEqual('TRIGGER_ADDED')
-        expect(trigger_added_events[1].kind).toEqual('TRIGGER_ADDED')
+        expect(trigger_added_events[0].kind).toEqual('SL_TRIGGER_ADDED')
+        expect(trigger_added_events[1].kind).toEqual('SL_TRIGGER_ADDED')
     });
 
-    it('adds TriggerRemoved events to history as TRIGGER_REMOVED', async () => {
-        const trigger_removed_events = await getSQL(services.db, `SELECT * FROM vault.events WHERE kind = 'TRIGGER_REMOVED';`)
+    it('adds TriggerRemoved events to history as SL_TRIGGER_REMOVED', async () => {
+        const trigger_removed_events = await getSQL(services.db, `SELECT * FROM vault.events WHERE kind = 'SL_TRIGGER_REMOVED';`)
         
         expect(trigger_removed_events[0].block_id).toEqual(3)
         expect(trigger_removed_events[0].tx_id).toEqual(3)
-        expect(trigger_removed_events[0].kind).toEqual('TRIGGER_REMOVED')
+        expect(trigger_removed_events[0].kind).toEqual('SL_TRIGGER_REMOVED')
 
     });
 
-    it('adds TriggerExecuted events to history as TRIGGER_EXECUTED', async () => {
+    it('adds TriggerExecuted events to history as SL_TRIGGER_EXECUTED', async () => {
 
-        const trigger_executed_events = await getSQL(services.db, `SELECT * FROM vault.events WHERE kind = 'TRIGGER_EXECUTED';`)
+        const trigger_executed_events = await getSQL(services.db, `SELECT * FROM vault.events WHERE kind = 'SL_TRIGGER_EXECUTED';`)
 
         expect(trigger_executed_events[0].block_id).toEqual(4)
         expect(trigger_executed_events[0].tx_id).toEqual(4)
-        expect(trigger_executed_events[0].kind).toEqual('TRIGGER_EXECUTED')
+        expect(trigger_executed_events[0].kind).toEqual('SL_TRIGGER_EXECUTED')
     });
 
 })

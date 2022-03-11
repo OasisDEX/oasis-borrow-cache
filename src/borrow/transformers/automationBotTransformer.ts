@@ -222,9 +222,9 @@ export function triggerEventsCombineTransformer (
         ),
       );
 
-     const triggerAddedVaultEvents = await Promise.all(loadAsVaultEvents(trigger_added_events, services, 'TRIGGER_ADDED'));
-     const triggerExecutedVaultEvents = await Promise.all(loadAsVaultEvents(trigger_executed_events, services, 'TRIGGER_EXECUTED'));
-     const triggerRemovedVaultEvents = await Promise.all(loadAsVaultEvents(trigger_removed_events, services, 'TRIGGER_REMOVED'));
+     const triggerAddedVaultEvents = await Promise.all(loadAsVaultEvents(trigger_added_events, services, 'SL_TRIGGER_ADDED'));
+     const triggerExecutedVaultEvents = await Promise.all(loadAsVaultEvents(trigger_executed_events, services, 'SL_TRIGGER_EXECUTED'));
+     const triggerRemovedVaultEvents = await Promise.all(loadAsVaultEvents(trigger_removed_events, services, 'SL_TRIGGER_REMOVED'));
 
       const vaultEventsColumnSet = createVaultEventsColumnSet(services)
       const allTriggerEvents = triggerAddedVaultEvents.concat(triggerExecutedVaultEvents, triggerRemovedVaultEvents)
