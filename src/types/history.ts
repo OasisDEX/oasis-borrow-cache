@@ -138,16 +138,16 @@ interface MigrateEvent extends HistoryEventBase {
 }
 
 interface StoplossTriggerAddedEvent extends HistoryEventBase {
-  kind: 'STOP_LOSS_TRIGGER_ADDED';
+  kind: 'SL_TRIGGER_ADDED';
 }
 
 
 interface StoplossTriggerRemovedEvent extends HistoryEventBase {
-  kind: 'STOP_LOSS_TRIGGER_REMOVED';
+  kind: 'SL_TRIGGER_REMOVED';
 }
 
 interface StoplossTriggerExecutedEvent extends HistoryEventBase {
-  kind: 'STOP_LOSS_TRIGGER_EXECUTED';
+  kind: 'SL_TRIGGER_EXECUTED';
 }
 
 export type Event =
