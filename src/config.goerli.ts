@@ -45,6 +45,7 @@ import { partialABI } from './utils';
 import { multiplyTransformer } from './borrow/transformers/multiply';
 import { getIlkForCdp } from './borrow/dependencies/getIlkForCdp';
 import { getLiquidationRatio } from './borrow/dependencies/getLiquidationRatio';
+import { multiplyHistoryTransformer } from './borrow/transformers/multiplyHistoryTransformer';
 
 const AutomationBotABI = require('../abis/automation-bot.json');
 
@@ -210,6 +211,11 @@ export const config: UserProvidedSpockConfig = {
     eventEnhancerTransformer(vat, dogs[0], cdpManagers, oraclesTransformers),
     eventEnhancerTransformerEthPrice(vat, dogs[0], cdpManagers, oraclesTransformers),
     ...dsProxyTransformer(),
+    multiplyHistoryTransformer(vat.address, {
+      dogs,
+      multiplyProxyActionsAddress: [...multiply],
+      exchangeAddress: [addresses.exchange],
+    }),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),
