@@ -221,14 +221,15 @@ export const config: UserProvidedSpockConfig = {
     }),
     ...exchangeTransformer(exchange),
     ...oraclesTransformer(oracles),
-    eventEnhancerTransformer(vat, dogs[0], cdpManagers, oraclesTransformers),
-    eventEnhancerTransformerEthPrice(vat, dogs[0], cdpManagers, oraclesTransformers),
+    eventEnhancerTransformer(vat, dogs[0], undefined, cdpManagers, oraclesTransformers),
+    eventEnhancerTransformerEthPrice(vat, dogs[0], undefined, cdpManagers, oraclesTransformers),
     multiplyHistoryTransformer(vat.address, {
       dogs,
       multiplyProxyActionsAddress: [...multiply, ...guni],
       exchangeAddress: [...exchange],
+      automationBotAddresses: [], // Empty on purpose as automation bot is not deployed on mainnet yet ~ŁW
     }),
-    eventEnhancerGasPrice(vat, cdpManagers),
+    eventEnhancerGasPrice(vat, cdpManagers, undefined), // TODO hack to make history for automation bot work, there's no automationBot on mainnet right now
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),

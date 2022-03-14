@@ -221,14 +221,15 @@ export const config: UserProvidedSpockConfig = {
     }),
     ...exchangeTransformer(exchange),
     ...oraclesTransformer(oracles),
-    eventEnhancerTransformer(vat, dogs[0], cdpManagers, oraclesTransformers),
-    eventEnhancerTransformerEthPrice(vat, dogs[0], cdpManagers, oraclesTransformers),
+    eventEnhancerTransformer(vat, dogs[0], undefined, cdpManagers, oraclesTransformers),
+    eventEnhancerTransformerEthPrice(vat, dogs[0], undefined, cdpManagers, oraclesTransformers), //TODO fix undefined when possible ~ŁW
     multiplyHistoryTransformer(vat.address, {
       dogs,
       multiplyProxyActionsAddress: [...multiply, ...guni],
       exchangeAddress: [...exchange],
+      automationBotAddresses: [], // By default it's empty
     }),
-    eventEnhancerGasPrice(vat, cdpManagers),
+    eventEnhancerGasPrice(vat, cdpManagers, undefined), // this is hack as automation bot is only on goerli ~ŁW
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),

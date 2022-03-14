@@ -28,6 +28,7 @@ import { zero } from '../../utils/constants';
 import { BigNumber } from 'bignumber.js';
 import { getDaiTransfer } from '../../utils/getDaiTransfer';
 import { getExchangeTransformerName } from './exchange';
+import { automationBotTransformer, getTriggerEventsCombineTransformerName } from './automationBotTransformer';
 
 export const multiplyHistoryTransformerName = `multiply-history`;
 
@@ -37,6 +38,7 @@ export const multiplyHistoryTransformer: (
     dogs: SimpleProcessorDefinition[];
     multiplyProxyActionsAddress: SimpleProcessorDefinition[];
     exchangeAddress: SimpleProcessorDefinition[];
+    automationBotAddresses: SimpleProcessorDefinition[],
   },
 ) => BlockTransformer = (vatAddress, dependencies) => {
   return {
@@ -45,6 +47,7 @@ export const multiplyHistoryTransformer: (
     transformerDependencies: [
       eventEnhancerTransformerName,
       eventEnhancerEthPriceTransformerName,
+      ...dependencies.automationBotAddresses.map(automationBot => getTriggerEventsCombineTransformerName(automationBot)),
       ...dependencies.dogs.map(dog => getAuctions2TransformerName(dog)),
       ...dependencies.multiplyProxyActionsAddress.map(mpa => getMultiplyTransformerName(mpa)),
       ...dependencies.exchangeAddress.map(exchange => getExchangeTransformerName(exchange)),
@@ -131,3 +134,4 @@ export const multiplyHistoryTransformer: (
     },
   };
 };
+

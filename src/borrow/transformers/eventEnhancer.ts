@@ -24,15 +24,17 @@ import { getVatCombineTransformerName, getVatMoveTransformerName } from './vatTr
 import { Event } from 'src/types/history';
 import { multiplyHistoryTransformerName } from './multiplyHistoryTransformer';
 import { isDefined } from '../../utils/isDefined';
+import { getTriggerEventsCombineTransformerName } from './automationBotTransformer';
 
 export const eventEnhancerTransformerName = `event-enhancer-transformer-v2`;
 
 export const eventEnhancerTransformer: (
   vat: SimpleProcessorDefinition,
   dog: SimpleProcessorDefinition,
+  automationBot: SimpleProcessorDefinition | undefined,
   managers: SimpleProcessorDefinition[],
   oraclesTransformers: string[],
-) => BlockTransformer = (vat, dog, managers, oraclesTransformers) => {
+) => BlockTransformer = (vat, dog, automationBot, managers, oraclesTransformers) => {
   return {
     name: eventEnhancerTransformerName,
     dependencies: [getExtractorName(vat.address), getExtractorName(dog.address)],
@@ -40,6 +42,7 @@ export const eventEnhancerTransformer: (
       getVatCombineTransformerName(vat),
       getVatMoveTransformerName(vat),
       getAuctions2TransformerName(dog),
+      automationBot ? getTriggerEventsCombineTransformerName(automationBot) : getTriggerEventsCombineTransformerName({address: 'UNAVAILABLE_FOR_THAT_NETWORK', startingBlock: 0}), // TODO clean it when possible ~ŁW
       ...managers.map(getOpenCdpTransformerName),
       ...oraclesTransformers,
     ],
@@ -74,9 +77,10 @@ export const eventEnhancerEthPriceTransformerName = `event-enhancer-transformer-
 export const eventEnhancerTransformerEthPrice: (
   vat: SimpleProcessorDefinition,
   dog: SimpleProcessorDefinition,
+  automationBot: SimpleProcessorDefinition | undefined,
   managers: SimpleProcessorDefinition[],
   oraclesTransformers: string[],
-) => BlockTransformer = (vat, dog, managers: SimpleProcessorDefinition[], oraclesTransformers) => {
+) => BlockTransformer = (vat, dog, automationBot, managers: SimpleProcessorDefinition[], oraclesTransformers) => {
   return {
     name: eventEnhancerEthPriceTransformerName,
     dependencies: [getExtractorName(vat.address)],
@@ -84,6 +88,7 @@ export const eventEnhancerTransformerEthPrice: (
       getVatCombineTransformerName(vat),
       getVatMoveTransformerName(vat),
       getAuctions2TransformerName(dog),
+      automationBot ? getTriggerEventsCombineTransformerName(automationBot) : getTriggerEventsCombineTransformerName({address: 'UNAVAILABLE_FOR_THAT_NETWORK', startingBlock: 0}), // TODO clean it when possible ~ŁW
       ...managers.map(getOpenCdpTransformerName),
       ...oraclesTransformers,
     ],
@@ -130,7 +135,8 @@ function isVatEvent(event: Event): boolean {
 export const eventEnhancerGasPrice: (
   vat: SimpleProcessorDefinition,
   managers: SimpleProcessorDefinition[],
-) => BlockTransformer = (vat, managers: SimpleProcessorDefinition[]) => {
+  automationBot: SimpleProcessorDefinition | undefined,
+) => BlockTransformer = (vat, managers: SimpleProcessorDefinition[], automationBot) => {
   return {
     name: eventEnhancerGasPriceName,
     dependencies: [getExtractorName(vat.address)],
@@ -138,6 +144,7 @@ export const eventEnhancerGasPrice: (
       getVatCombineTransformerName(vat),
       ...managers.map(getOpenCdpTransformerName),
       multiplyHistoryTransformerName,
+      automationBot ? getTriggerEventsCombineTransformerName(automationBot) : getTriggerEventsCombineTransformerName({address: 'UNAVAILABLE_FOR_THAT_NETWORK', startingBlock: 0}), // TODO clean it when possible ~ŁW
     ],
     startingBlock: vat.startingBlock,
     transform: async (services, _logs) => {

@@ -36,6 +36,7 @@ import {
   oraclesTransformer,
 } from './borrow/transformers/oraclesTransformer';
 import {
+  eventEnhancerGasPrice,
   eventEnhancerTransformer,
   eventEnhancerTransformerEthPrice,
 } from './borrow/transformers/eventEnhancer';
@@ -208,14 +209,16 @@ export const config: UserProvidedSpockConfig = {
       getLiquidationRatio,
     }),
     ...oraclesTransformer(oracles),
-    eventEnhancerTransformer(vat, dogs[0], cdpManagers, oraclesTransformers),
-    eventEnhancerTransformerEthPrice(vat, dogs[0], cdpManagers, oraclesTransformers),
+    eventEnhancerTransformer(vat, dogs[0], automationBot, cdpManagers, oraclesTransformers),
+    eventEnhancerTransformerEthPrice(vat, dogs[0], automationBot, cdpManagers, oraclesTransformers),
     ...dsProxyTransformer(),
     multiplyHistoryTransformer(vat.address, {
       dogs,
       multiplyProxyActionsAddress: [...multiply],
-      exchangeAddress: [addresses.exchange],
+      exchangeAddress: [/*addresses.exchange*/], // TODO ŁW - is there exchange address on goerli?
+      automationBotAddresses: [automationBot]
     }),
+    eventEnhancerGasPrice(vat, cdpManagers, automationBot), 
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),
