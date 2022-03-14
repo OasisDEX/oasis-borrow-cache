@@ -128,6 +128,7 @@ export type MultiplyEvent =
 export type MultiplyMethods =
   | 'openMultiplyVault'
   | 'increaseMultiple'
+  | 'increaseMultipleDepositCollateral'
   | 'decreaseMultiple'
   | 'closeVaultExitCollateral'
   | 'closeVaultExitDai'
