@@ -50,12 +50,7 @@ const AutomationBotABI = require('../abis/automation-bot.json');
 
 const goerliAddresses = require('./addresses/goerli.json');
 
-const COMMAND_ALIAS_CREATION_QUERY = `CREATE TABLE automation_bot.command_alias (
-	command_address varchar(66) PRIMARY KEY,
-	kind varchar(66) NULL
-);`
-
-const  COMMAND_ALIAS_INSERTION = `insert  into automation_bot.command_alias(command_address , kind) values ('0xa655b783183E5DBDf3A36727bdB7CDCfFd854497', 'stop-loss');`
+// const  COMMAND_ALIAS_INSERTION = `insert  into automation_bot.command_alias(command_address , kind) values ('0xa655b783183E5DBDf3A36727bdB7CDCfFd854497', 'stop-loss');`
 
 const GOERLI_STARTING_BLOCKS = {
   GENESIS: Number(process.env.GENESIS) || 5273074,
@@ -138,6 +133,10 @@ const automationBot = {
   address: goerliAddresses.AUTOMATION_BOT,
   startingBlock: GOERLI_STARTING_BLOCKS.AUTOMATION_BOT,
 };
+
+const commandMapping = {
+  '0xa655b783183E5DBDf3A36727bdB7CDCfFd854497': 'stop-loss'
+}
 
 const multiply = [
   {
@@ -228,19 +227,16 @@ export const config: UserProvidedSpockConfig = {
   },
   addresses,
   onStart: async (services) => {
-    // TODO ŁW - add command_aliases table here
-    await services.db.none(COMMAND_ALIAS_CREATION_QUERY);
-    await services.db.none(COMMAND_ALIAS_INSERTION);
-    // throw 'stop'
+   await initializeCommandAliases(services);
+    throw 'apud'
   },
 };
 
-
-// -- automation_bot.command_alias definition
-
-// CREATE TABLE automation_bot.command_alias (
-// 	command_address varchar(66) PRIMARY KEY,
-// 	kind varchar(66) NULL
-// );
-
-// insert  into automation_bot.command_alias(command_address , kind) values ('0xa655b783183E5DBDf3A36727bdB7CDCfFd854497', 'stop-loss');
+async function initializeCommandAliases(services: any) {
+  const promises = Object.entries(commandMapping).map(([key, value]) => {
+    const query = `insert  into automation_bot.command_alias(command_address , kind) values ('${key}', '${value}');`;
+    const result = services.db.none(query);
+    return result;
+  });
+  await Promise.all(promises);
+}
