@@ -6,6 +6,13 @@
  	kind varchar(66) NULL
  );
 
+-- alias
+
+-- select tae.command_address,  alias.kind 
+-- from automation_bot.trigger_added_events tae
+-- left join automation_bot.command_alias alias
+-- on tae.command_address = alias .command_address 
+
 -- CREATE view api.trigger_events as (
 -- 	SELECT id , trigger_id , cdp_id, tx_id , block_id, command_address , 'added' as event_type  from automation_bot.trigger_added_events tae
 -- 	UNION
