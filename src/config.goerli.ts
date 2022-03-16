@@ -50,6 +50,13 @@ const AutomationBotABI = require('../abis/automation-bot.json');
 
 const goerliAddresses = require('./addresses/goerli.json');
 
+const COMMAND_ALIAS_CREATION_QUERY = `CREATE TABLE automation_bot.command_alias (
+	command_address varchar(66) PRIMARY KEY,
+	kind varchar(66) NULL
+);`
+
+const  COMMAND_ALIAS_INSERTION = `insert  into automation_bot.command_alias(command_address , kind) values ('0xa655b783183E5DBDf3A36727bdB7CDCfFd854497', 'stop-loss');`
+
 const GOERLI_STARTING_BLOCKS = {
   GENESIS: Number(process.env.GENESIS) || 5273074,
   CDP_MANAGER: 5273301,
@@ -220,5 +227,20 @@ export const config: UserProvidedSpockConfig = {
     },
   },
   addresses,
-  onStart: () => {},
+  onStart: async (services) => {
+    // TODO ŁW - add command_aliases table here
+    await services.db.none(COMMAND_ALIAS_CREATION_QUERY);
+    await services.db.none(COMMAND_ALIAS_INSERTION);
+    // throw 'stop'
+  },
 };
+
+
+// -- automation_bot.command_alias definition
+
+// CREATE TABLE automation_bot.command_alias (
+// 	command_address varchar(66) PRIMARY KEY,
+// 	kind varchar(66) NULL
+// );
+
+// insert  into automation_bot.command_alias(command_address , kind) values ('0xa655b783183E5DBDf3A36727bdB7CDCfFd854497', 'stop-loss');
