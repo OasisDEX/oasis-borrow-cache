@@ -31,9 +31,9 @@ async function handleTriggerAdded(
 
   await services.tx.none(
     `INSERT INTO automation_bot.trigger_added_events(
-      trigger_id, cdp_id, command_address, trigger_data, log_index, tx_id, block_id, kind, event_type
+      trigger_id, cdp_id, command_address, trigger_data, log_index, tx_id, block_id
     ) VALUES (
-        \${trigger_id}, \${cdp_id}, \${command_address}, \${trigger_data}, \${log_index}, \${tx_id}, \${block_id}, 'stop-loss', 'added'
+        \${trigger_id}, \${cdp_id}, \${command_address}, \${trigger_data}, \${log_index}, \${tx_id}, \${block_id},
     );`,
     values,
   );
@@ -54,9 +54,9 @@ async function handleTriggerRemoved(
   };
   await services.tx.none(
     `INSERT INTO automation_bot.trigger_removed_events(
-        trigger_id, cdp_id, log_index, tx_id, block_id, kind, event_type
+        trigger_id, cdp_id, log_index, tx_id, block_id
     ) VALUES (
-        \${trigger_id}, \${cdp_id}, \${log_index}, \${tx_id}, \${block_id}, 'stop-loss', 'removed'
+        \${trigger_id}, \${cdp_id}, \${log_index}, \${tx_id}, \${block_id}
     );`,
     values,
   );
@@ -86,9 +86,9 @@ async function handleTriggerExecuted(
   };
   await services.tx.none(
     `INSERT INTO automation_bot.trigger_executed_events(
-        trigger_id, cdp_id, vault_closed_event, log_index, tx_id, block_id, kind, event_type
+        trigger_id, cdp_id, vault_closed_event, log_index, tx_id, block_id
     ) VALUES (
-        \${trigger_id}, \${cdp_id}, \${close_event_id}, \${log_index}, \${tx_id}, \${block_id}, 'stop-loss', 'executed'
+        \${trigger_id}, \${cdp_id}, \${close_event_id}, \${log_index}, \${tx_id}, \${block_id}
     );`,
     values,
   );
