@@ -6,7 +6,7 @@
  	kind varchar(66) NULL
  );
 
-CREATE view api.trigger_events AS 
+CREATE VIEW api.trigger_events AS 
 	SELECT id , trigger_id , cdp_id, tx_id , block_id , 'added' AS event_type, tae.command_address,  alias.kind  from automatiON_bot.trigger_added_events tae
 	LEFT JOIN automation_bot.command_alias alias
 	ON tae.command_address = alias.command_address
