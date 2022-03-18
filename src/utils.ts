@@ -4,6 +4,7 @@ import { SimpleProcessorDefinition } from '@oasisdex/spock-utils/dist/extractors
 import { SpockConfig } from '@oasisdex/spock-etl/dist/services/config';
 
 import config from './config';
+import { Services } from '@oasisdex/spock-etl/dist/services/types';
 
 export function normalizeAddressDefinition(
   def: string | SimpleProcessorDefinition,
@@ -33,4 +34,13 @@ export function partialABI(abi: ParamType[], fragments: ABIFragment[]) {
   return abi.filter(({ name, type }) =>
     fragments.some(fragment => fragment.name === name && fragment.type === type),
   );
+}
+
+export async function initializeCommandAliases(services: Services, commandMapping: Object) {
+  const promises = Object.entries(commandMapping).map(([key, value]) => {
+    const query = `insert  into automation_bot.command_alias(command_address , kind) values ('${key}', '${value}');`;
+    const result = services.db.none(query);
+    return result;
+  });
+  await Promise.all(promises);
 }

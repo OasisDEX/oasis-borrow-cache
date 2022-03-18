@@ -41,7 +41,7 @@ import {
 } from './borrow/transformers/eventEnhancer';
 import { automationBotTransformer } from './borrow/transformers/automationBotTransformer';
 import { dsProxyTransformer } from './borrow/transformers/dsProxyTransformer';
-import { partialABI } from './utils';
+import { initializeCommandAliases, partialABI } from './utils';
 import { multiplyTransformer } from './borrow/transformers/multiply';
 import { getIlkForCdp } from './borrow/dependencies/getIlkForCdp';
 import { getLiquidationRatio } from './borrow/dependencies/getLiquidationRatio';
@@ -225,15 +225,6 @@ export const config: UserProvidedSpockConfig = {
   },
   addresses,
   onStart: async (services) => {
-   await initializeCommandAliases(services);
+   await initializeCommandAliases(services, commandMapping);
   },
 };
-
-async function initializeCommandAliases(services: any) {
-  const promises = Object.entries(commandMapping).map(([key, value]) => {
-    const query = `insert  into automation_bot.command_alias(command_address , kind) values ('${key}', '${value}');`;
-    const result = services.db.none(query);
-    return result;
-  });
-  await Promise.all(promises);
-}

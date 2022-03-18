@@ -15,7 +15,7 @@ CREATE VIEW api.trigger_events AS (
 	LEFT JOIN vulcan2x.block b 
 	ON b.id = tae.block_id 
 	UNION
-	SELECT  tre.id , tre.trigger_id , tre.cdp_id, tre.log_index , tx.hash , b."number", b."timestamp" ,'removes' AS event_type, tae.command_address, alias.kind  from automation_bot.trigger_removed_events tre 
+	SELECT  tre.id , tre.trigger_id , tre.cdp_id, tre.log_index , tx.hash , b."number", b."timestamp" ,'removed' AS event_type, tae.command_address, alias.kind  from automation_bot.trigger_removed_events tre 
 	LEFT JOIN automation_bot.trigger_added_events  tae
 	ON tre.id = tae.id
 	LEFT JOIN automation_bot.command_alias alias
@@ -33,5 +33,5 @@ CREATE VIEW api.trigger_events AS (
 	LEFT JOIN vulcan2x."transaction" tx
 	ON tx.id = tee.tx_id 
 	LEFT JOIN vulcan2x.block b 
-	ON b.id = tee.block_id;
+	ON b.id = tee.block_id
 );
