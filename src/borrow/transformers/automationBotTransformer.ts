@@ -33,7 +33,7 @@ async function handleTriggerAdded(
     `INSERT INTO automation_bot.trigger_added_events(
       trigger_id, cdp_id, command_address, trigger_data, log_index, tx_id, block_id
     ) VALUES (
-        \${trigger_id}, \${cdp_id}, \${command_address}, \${trigger_data}, \${log_index}, \${tx_id}, \${block_id},
+        \${trigger_id}, \${cdp_id}, \${command_address}, \${trigger_data}, \${log_index}, \${tx_id}, \${block_id}
     );`,
     values,
   );
