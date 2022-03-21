@@ -133,7 +133,8 @@ const automationBot = {
 };
 
 const commandMapping = {
-  '0xa655b783183E5DBDf3A36727bdB7CDCfFd854497': 'stop-loss'
+  command_address: '0xa655b783183E5DBDf3A36727bdB7CDCfFd854497',
+  kind: 'stop-loss'
 }
 
 const multiply = [

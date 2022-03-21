@@ -37,10 +37,19 @@ export function partialABI(abi: ParamType[], fragments: ABIFragment[]) {
 }
 
 export async function initializeCommandAliases(services: Services, commandMapping: Object) {
-  const promises = Object.entries(commandMapping).map(([key, value]) => {
-    const query = `insert  into automation_bot.command_alias(command_address , kind) values ('${key}', '${value}');`;
-    const result = services.db.none(query);
-    return result;
-  });
-  await Promise.all(promises);
+  const cs = new services.pg.helpers.ColumnSet(
+    [
+      'command_address',
+      'kind'
+    ],
+    {
+      table: {
+        table: 'command_alias',
+        schema: 'automation_bot',
+      },
+    }
+  )
+
+  const query = services.pg.helpers.insert(commandMapping, cs);
+      await services.db.none(query);
 }
