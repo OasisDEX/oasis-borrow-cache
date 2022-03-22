@@ -132,10 +132,18 @@ const automationBot = {
   startingBlock: GOERLI_STARTING_BLOCKS.AUTOMATION_BOT,
 };
 
-const commandMapping = {
-  command_address: '0xa655b783183E5DBDf3A36727bdB7CDCfFd854497',
-  kind: 'stop-loss'
-}
+const commandMapping = 
+  [
+    {
+      command_address: '0xa655b783183E5DBDf3A36727bdB7CDCfFd854497',
+      kind: 'stop-loss'
+    },
+    {
+      command_address: '0xd0ca9883e4918894dd517847eb3673d656ec9f2d',
+      kind: 'stop-loss'
+    }
+  ]
+
 
 const multiply = [
   {
