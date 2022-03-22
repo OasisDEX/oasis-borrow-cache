@@ -41,7 +41,7 @@ import {
 } from './borrow/transformers/eventEnhancer';
 import { automationBotTransformer } from './borrow/transformers/automationBotTransformer';
 import { dsProxyTransformer } from './borrow/transformers/dsProxyTransformer';
-import { partialABI } from './utils';
+import { initializeCommandAliases, partialABI } from './utils';
 import { multiplyTransformer } from './borrow/transformers/multiply';
 import { getIlkForCdp } from './borrow/dependencies/getIlkForCdp';
 import { getLiquidationRatio } from './borrow/dependencies/getLiquidationRatio';
@@ -132,6 +132,11 @@ const automationBot = {
   startingBlock: GOERLI_STARTING_BLOCKS.AUTOMATION_BOT,
 };
 
+const commandMapping = {
+  command_address: '0xa655b783183E5DBDf3A36727bdB7CDCfFd854497',
+  kind: 'stop-loss'
+}
+
 const multiply = [
   {
     address: goerliAddresses.MULTIPLY_PROXY_ACTIONS,
@@ -220,5 +225,7 @@ export const config: UserProvidedSpockConfig = {
     },
   },
   addresses,
-  onStart: () => {},
+  onStart: async (services) => {
+   await initializeCommandAliases(services, commandMapping);
+  },
 };
