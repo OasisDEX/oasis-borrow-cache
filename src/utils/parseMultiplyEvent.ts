@@ -24,6 +24,7 @@ interface Dependencies {
 const isEventNameIncreaseOrOpen = function(name: string): boolean {
   return (
     name === 'increaseMultiple' ||
+    name === 'increaseMultipleDepositCollateral' ||
     name === 'openMultiplyVault' ||
     name === 'openMultiplyGuniVault' ||
     name === 'increaseMultipleGuni'
@@ -155,6 +156,7 @@ export async function parseMultiplyEvent(
       };
     case 'increaseMultipleGuni':
     case 'increaseMultiple':
+    case 'increaseMultipleDepositCollateral':
       return {
         ...common,
         kind: 'INCREASE_MULTIPLE',

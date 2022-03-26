@@ -18,7 +18,7 @@ import { auctionTransformer, catTransformer } from './borrow/transformers/catTra
 import {
   AbiInfo,
   makeRawEventExtractorBasedOnTopicIgnoreConflicts,
-  makeRowEventBasedOnDSNoteTopic,
+  makeRawEventBasedOnDSNoteTopic,
 } from './borrow/customExtractors';
 import { flipNoteTransformer, flipTransformer } from './borrow/transformers/flipperTransformer';
 import { getIlkInfo } from './borrow/dependencies/getIlkInfo';
@@ -104,7 +104,7 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors(dogs),
     ...makeRawLogExtractors([vat]),
     ...makeRawEventBasedOnTopicExtractor(flipper),
-    ...makeRowEventBasedOnDSNoteTopic(flipperNotes),
+    ...makeRawEventBasedOnDSNoteTopic(flipperNotes),
     ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(
       clippers,
       dogs.map(dog => dog.address.toLowerCase()),

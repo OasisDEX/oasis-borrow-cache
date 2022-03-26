@@ -18,7 +18,7 @@ import { auctionTransformer, catTransformer } from './borrow/transformers/catTra
 import {
   AbiInfo,
   makeRawEventExtractorBasedOnTopicIgnoreConflicts,
-  makeRowEventBasedOnDSNoteTopic,
+  makeRawEventBasedOnDSNoteTopic,
 } from './borrow/customExtractors';
 import { flipNoteTransformer, flipTransformer } from './borrow/transformers/flipperTransformer';
 import { getIlkInfo } from './borrow/dependencies/getIlkInfo';
@@ -39,34 +39,49 @@ import {
   eventEnhancerTransformer,
   eventEnhancerTransformerEthPrice,
 } from './borrow/transformers/eventEnhancer';
+import { automationBotTransformer } from './borrow/transformers/automationBotTransformer';
+import { dsProxyTransformer } from './borrow/transformers/dsProxyTransformer';
+import { initializeCommandAliases, partialABI } from './utils';
+import { multiplyTransformer } from './borrow/transformers/multiply';
+import { getIlkForCdp } from './borrow/dependencies/getIlkForCdp';
+import { getLiquidationRatio } from './borrow/dependencies/getLiquidationRatio';
+
+const AutomationBotABI = require('../abis/automation-bot.json');
 
 const goerliAddresses = require('./addresses/goerli.json');
 
-const GENESIS = Number(process.env.GENESIS) || 5273074;
+const GOERLI_STARTING_BLOCKS = {
+  GENESIS: Number(process.env.GENESIS) || 5273074,
+  CDP_MANAGER: 5273301,
+  MCD_CAT: 5273080,
+  MCD_DOG: 5273080,
+  AUTOMATION_BOT: 6359598,
+  MULTIPLY_PROXY_ACTIONS: 6187206,
+};
 
 const vat = {
   address: goerliAddresses.MCD_VAT,
-  startingBlock: GENESIS,
+  startingBlock: GOERLI_STARTING_BLOCKS.GENESIS,
 };
 
 const cdpManagers = [
   {
     address: goerliAddresses.CDP_MANAGER,
-    startingBlock: 5273301,
+    startingBlock: GOERLI_STARTING_BLOCKS.CDP_MANAGER,
   },
 ];
 
 const cats = [
   {
     address: goerliAddresses.MCD_CAT,
-    startingBlock: 5273080,
+    startingBlock: GOERLI_STARTING_BLOCKS.MCD_CAT,
   },
 ];
 
 const dogs = [
   {
     address: goerliAddresses.MCD_DOG,
-    startingBlock: 5273080,
+    startingBlock: GOERLI_STARTING_BLOCKS.MCD_DOG,
   },
 ];
 
@@ -74,7 +89,7 @@ const clippers = [
   {
     name: 'clipper',
     abi: require('../abis/clipper.json'),
-    startingBlock: GENESIS,
+    startingBlock: GOERLI_STARTING_BLOCKS.GENESIS,
   },
 ];
 
@@ -82,7 +97,7 @@ const flipper = [
   {
     name: 'flipper',
     abi: require('../abis/flipper.json'),
-    startingBlock: GENESIS,
+    startingBlock: GOERLI_STARTING_BLOCKS.GENESIS,
   },
 ];
 
@@ -90,12 +105,12 @@ const oracle = [
   {
     name: 'oracle',
     abi: require('../abis/oracle.json'),
-    startingBlock: GENESIS,
+    startingBlock: GOERLI_STARTING_BLOCKS.GENESIS,
   },
   {
     name: 'lp-oracle',
     abi: require('../abis/lp-oracle.json'),
-    startingBlock: GENESIS,
+    startingBlock: GOERLI_STARTING_BLOCKS.GENESIS,
   },
 ];
 
@@ -108,7 +123,43 @@ const flipperNotes: AbiInfo[] = [
       'deal(uint256)',
     ],
     abi: require('../abis/flipper.json'),
-    startingBlock: GENESIS,
+    startingBlock: GOERLI_STARTING_BLOCKS.GENESIS,
+  },
+];
+
+const automationBot = {
+  address: goerliAddresses.AUTOMATION_BOT,
+  startingBlock: GOERLI_STARTING_BLOCKS.AUTOMATION_BOT,
+};
+
+const commandMapping = 
+  [
+    {
+      command_address: '0xa655b783183E5DBDf3A36727bdB7CDCfFd854497',
+      kind: 'stop-loss'
+    },
+    {
+      command_address: '0xd0ca9883e4918894dd517847eb3673d656ec9f2d',
+      kind: 'stop-loss'
+    }
+  ]
+
+
+const multiply = [
+  {
+    address: goerliAddresses.MULTIPLY_PROXY_ACTIONS,
+    startingBlock: GOERLI_STARTING_BLOCKS.MULTIPLY_PROXY_ACTIONS,
+  },
+];
+
+const dsProxy = [
+  {
+    name: 'automation-bot',
+    abi: partialABI(AutomationBotABI, [
+      { name: 'ApprovalGranted', type: 'event' },
+      { name: 'ApprovalRemoved', type: 'event' },
+    ]),
+    startingBlock: GOERLI_STARTING_BLOCKS.AUTOMATION_BOT,
   },
 ];
 
@@ -120,20 +171,22 @@ const addresses = {
 
 const oracles = getOraclesAddresses(goerliAddresses).map(description => ({
   ...description,
-  startingBlock: GENESIS,
+  startingBlock: GOERLI_STARTING_BLOCKS.GENESIS,
 }));
 
 const oraclesTransformers = oracles.map(getOracleTransformerName);
 
 export const config: UserProvidedSpockConfig = {
-  startingBlock: GENESIS,
+  startingBlock: GOERLI_STARTING_BLOCKS.GENESIS,
   extractors: [
     ...makeRawLogExtractors(cdpManagers),
     ...makeRawLogExtractors(cats),
     ...makeRawLogExtractors(dogs),
     ...makeRawLogExtractors([vat]),
+    ...makeRawLogExtractors([automationBot]),
+    ...makeRawLogExtractors(multiply),
     ...makeRawEventBasedOnTopicExtractor(flipper),
-    ...makeRowEventBasedOnDSNoteTopic(flipperNotes),
+    ...makeRawEventBasedOnDSNoteTopic(flipperNotes),
     ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(
       clippers,
       dogs.map(dog => dog.address.toLowerCase()),
@@ -142,6 +195,7 @@ export const config: UserProvidedSpockConfig = {
       oracle,
       dogs.map(dog => dog.address.toLowerCase()),
     ),
+    ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(dsProxy, [goerliAddresses.AUTOMATION_BOT]),
   ],
   transformers: [
     ...openCdpTransformer(cdpManagers, { getUrnForCdp }),
@@ -156,10 +210,18 @@ export const config: UserProvidedSpockConfig = {
     vatRawMoveTransformer(vat),
     flipTransformer(),
     flipNoteTransformer(),
+    automationBotTransformer(automationBot, multiply),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
+    ...multiplyTransformer(multiply, {
+      cdpManager: cdpManagers[0].address,
+      vat: vat.address,
+      getIlkForCdp,
+      getLiquidationRatio,
+    }),
     ...oraclesTransformer(oracles),
     eventEnhancerTransformer(vat, dogs[0], cdpManagers, oraclesTransformers),
     eventEnhancerTransformerEthPrice(vat, dogs[0], cdpManagers, oraclesTransformers),
+    ...dsProxyTransformer(),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),
@@ -171,5 +233,7 @@ export const config: UserProvidedSpockConfig = {
     },
   },
   addresses,
-  onStart: () => {},
+  onStart: async (services) => {
+   await initializeCommandAliases(services, commandMapping);
+  },
 };
