@@ -36,6 +36,7 @@ import {
   oraclesTransformer,
 } from './borrow/transformers/oraclesTransformer';
 import {
+  eventEnhancerGasPrice,
   eventEnhancerTransformer,
   eventEnhancerTransformerEthPrice,
 } from './borrow/transformers/eventEnhancer';
@@ -45,6 +46,8 @@ import { initializeCommandAliases, partialABI } from './utils';
 import { multiplyTransformer } from './borrow/transformers/multiply';
 import { getIlkForCdp } from './borrow/dependencies/getIlkForCdp';
 import { getLiquidationRatio } from './borrow/dependencies/getLiquidationRatio';
+import { exchangeTransformer } from './borrow/transformers/exchange';
+import { multiplyHistoryTransformer } from './borrow/transformers/multiplyHistoryTransformer';
 
 const AutomationBotABI = require('../abis/automation-bot.json');
 
@@ -58,6 +61,12 @@ const GOERLI_STARTING_BLOCKS = {
   AUTOMATION_BOT: 6359598,
   MULTIPLY_PROXY_ACTIONS: 6187206,
 };
+
+const OASIS_CONTRACTS = {
+  MULTIPLY_V1: '0x24E54706B100e2061Ed67fAe6894791ec421B421',
+  MULTIPLY_V2: '0xc9628adc0a9f95D1d912C5C19aaBFF85E420a853',
+  EXCHANGE_V1: '0x1F55deAeE5e878e45dcafb9A620b383C84e4005a',
+}
 
 const vat = {
   address: goerliAddresses.MCD_VAT,
@@ -147,8 +156,19 @@ const commandMapping =
 
 const multiply = [
   {
-    address: goerliAddresses.MULTIPLY_PROXY_ACTIONS,
-    startingBlock: GOERLI_STARTING_BLOCKS.MULTIPLY_PROXY_ACTIONS,
+    address: OASIS_CONTRACTS.MULTIPLY_V1,
+    startingBlock: 6187206,
+  },
+  {
+    address: OASIS_CONTRACTS.MULTIPLY_V2,
+    startingBlock: 6465516,
+  },
+];
+
+const exchange = [
+  {
+    address: OASIS_CONTRACTS.EXCHANGE_V1,
+    startingBlock: 6465517,
   },
 ];
 
@@ -185,6 +205,7 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors([vat]),
     ...makeRawLogExtractors([automationBot]),
     ...makeRawLogExtractors(multiply),
+    ...makeRawLogExtractors(exchange),
     ...makeRawEventBasedOnTopicExtractor(flipper),
     ...makeRawEventBasedOnDSNoteTopic(flipperNotes),
     ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(
@@ -218,10 +239,17 @@ export const config: UserProvidedSpockConfig = {
       getIlkForCdp,
       getLiquidationRatio,
     }),
+    ...exchangeTransformer(exchange),
     ...oraclesTransformer(oracles),
     eventEnhancerTransformer(vat, dogs[0], cdpManagers, oraclesTransformers),
     eventEnhancerTransformerEthPrice(vat, dogs[0], cdpManagers, oraclesTransformers),
     ...dsProxyTransformer(),
+    multiplyHistoryTransformer(vat.address, {
+      dogs,
+      multiplyProxyActionsAddress: [...multiply],
+      exchangeAddress: [...exchange],
+    }),
+    eventEnhancerGasPrice(vat, cdpManagers),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),
