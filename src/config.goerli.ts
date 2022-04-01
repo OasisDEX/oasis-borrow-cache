@@ -66,7 +66,7 @@ const OASIS_CONTRACTS = {
   MULTIPLY_V1: '0x24E54706B100e2061Ed67fAe6894791ec421B421',
   MULTIPLY_V2: '0xc9628adc0a9f95D1d912C5C19aaBFF85E420a853',
   EXCHANGE_V1: '0x1F55deAeE5e878e45dcafb9A620b383C84e4005a',
-}
+};
 
 const vat = {
   address: goerliAddresses.MCD_VAT,
@@ -141,18 +141,16 @@ const automationBot = {
   startingBlock: GOERLI_STARTING_BLOCKS.AUTOMATION_BOT,
 };
 
-const commandMapping = 
-  [
-    {
-      command_address: '0xa655b783183E5DBDf3A36727bdB7CDCfFd854497',
-      kind: 'stop-loss'
-    },
-    {
-      command_address: '0xd0ca9883e4918894dd517847eb3673d656ec9f2d',
-      kind: 'stop-loss'
-    }
-  ]
-
+const commandMapping = [
+  {
+    command_address: '0xa655b783183E5DBDf3A36727bdB7CDCfFd854497',
+    kind: 'stop-loss',
+  },
+  {
+    command_address: '0xd0ca9883e4918894dd517847eb3673d656ec9f2d',
+    kind: 'stop-loss',
+  },
+];
 
 const multiply = [
   {
@@ -261,7 +259,7 @@ export const config: UserProvidedSpockConfig = {
     },
   },
   addresses,
-  onStart: async (services) => {
-   await initializeCommandAliases(services, commandMapping);
+  onStart: async services => {
+    await initializeCommandAliases(services, commandMapping);
   },
 };

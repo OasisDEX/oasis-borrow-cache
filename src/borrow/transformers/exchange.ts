@@ -107,7 +107,7 @@ const handlers = {
 };
 
 export function getExchangeTransformerName(deps: SimpleProcessorDefinition): string {
-  return `exchange-${deps.address}`
+  return `exchange-${deps.address}`;
 }
 
 export const exchangeTransformer: (

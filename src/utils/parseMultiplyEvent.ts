@@ -18,7 +18,7 @@ import { daiPrecision, zero } from './constants';
 interface Dependencies {
   getTokenPrecision(tokenAddress: string): Promise<BigNumber>;
   getGasFee(hash: string): Promise<BigNumber>;
-  getDaiTransfer(txId: number): Promise<BigNumber>
+  getDaiTransfer(txId: number): Promise<BigNumber>;
 }
 
 const isEventNameIncreaseOrOpen = function(name: string): boolean {
@@ -49,7 +49,6 @@ export async function parseMultiplyEvent(
   assertAllowedEvent(lastEvent);
 
   const collateralChange = new BigNumber(lastEvent.collateral_amount);
-
 
   const oraclePrice = new BigNumber(lastEvent.oracle_price);
   const oazoFee = new BigNumber(multiplyEvent.oazo_fee).div(daiPrecision);
@@ -145,7 +144,7 @@ export async function parseMultiplyEvent(
         depositDai,
       };
     case 'openMultiplyGuniVault':
-      const guniDaiTransfer = await dependencies.getDaiTransfer(multiplyEvent.tx_id)
+      const guniDaiTransfer = await dependencies.getDaiTransfer(multiplyEvent.tx_id);
       return {
         ...common,
         kind: 'OPEN_MULTIPLY_GUNI_VAULT',
