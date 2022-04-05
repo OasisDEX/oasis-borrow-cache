@@ -130,6 +130,7 @@ export type MultiplyMethods =
   | 'increaseMultiple'
   | 'increaseMultipleDepositCollateral'
   | 'decreaseMultiple'
+  | 'decreaseMultipleWithdrawCollateral'
   | 'closeVaultExitCollateral'
   | 'closeVaultExitDai'
   | 'openMultiplyGuniVault'

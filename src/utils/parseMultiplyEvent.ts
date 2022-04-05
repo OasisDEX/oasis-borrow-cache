@@ -34,6 +34,7 @@ const isEventNameIncreaseOrOpen = function(name: string): boolean {
 const isEventNameDecreaseOrClose = function(name: string): boolean {
   return (
     name === 'decreaseMultiple' ||
+    name === 'decreaseMultipleWithdrawCollateral' ||
     name === 'closeVaultExitCollateral' ||
     name === 'closeVaultExitDai' ||
     name === 'closeGuniVaultExitDai'
@@ -164,6 +165,7 @@ export async function parseMultiplyEvent(
         depositDai,
       };
     case 'decreaseMultiple':
+    case 'decreaseMultipleWithdrawCollateral':
       return {
         ...common,
         kind: 'DECREASE_MULTIPLE',
