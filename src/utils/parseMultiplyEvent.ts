@@ -25,6 +25,7 @@ const isEventNameIncreaseOrOpen = function(name: string): boolean {
   return (
     name === 'increaseMultiple' ||
     name === 'increaseMultipleDepositCollateral' ||
+    name === 'increaseMultipleDepositDai' ||
     name === 'openMultiplyVault' ||
     name === 'openMultiplyGuniVault' ||
     name === 'increaseMultipleGuni'
@@ -35,6 +36,7 @@ const isEventNameDecreaseOrClose = function(name: string): boolean {
   return (
     name === 'decreaseMultiple' ||
     name === 'decreaseMultipleWithdrawCollateral' ||
+    name === 'decreaseMultipleWithdrawDai' ||
     name === 'closeVaultExitCollateral' ||
     name === 'closeVaultExitDai' ||
     name === 'closeGuniVaultExitDai'
@@ -157,6 +159,7 @@ export async function parseMultiplyEvent(
     case 'increaseMultipleGuni':
     case 'increaseMultiple':
     case 'increaseMultipleDepositCollateral':
+    case 'increaseMultipleDepositDai':
       return {
         ...common,
         kind: 'INCREASE_MULTIPLE',
@@ -166,6 +169,7 @@ export async function parseMultiplyEvent(
       };
     case 'decreaseMultiple':
     case 'decreaseMultipleWithdrawCollateral':
+    case 'decreaseMultipleWithdrawDai':
       return {
         ...common,
         kind: 'DECREASE_MULTIPLE',
