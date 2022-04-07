@@ -36,6 +36,7 @@ import {
   oraclesTransformer,
 } from './borrow/transformers/oraclesTransformer';
 import {
+  eventEnhancerGasPrice,
   eventEnhancerTransformer,
   eventEnhancerTransformerEthPrice,
 } from './borrow/transformers/eventEnhancer';
@@ -45,6 +46,8 @@ import { initializeCommandAliases, partialABI } from './utils';
 import { multiplyTransformer } from './borrow/transformers/multiply';
 import { getIlkForCdp } from './borrow/dependencies/getIlkForCdp';
 import { getLiquidationRatio } from './borrow/dependencies/getLiquidationRatio';
+import { exchangeTransformer } from './borrow/transformers/exchange';
+import { multiplyHistoryTransformer } from './borrow/transformers/multiplyHistoryTransformer';
 
 const AutomationBotABI = require('../abis/automation-bot.json');
 
@@ -57,6 +60,12 @@ const GOERLI_STARTING_BLOCKS = {
   MCD_DOG: 5273080,
   AUTOMATION_BOT: 6359598,
   MULTIPLY_PROXY_ACTIONS: 6187206,
+};
+
+const OASIS_CONTRACTS = {
+  MULTIPLY_V1: '0x24E54706B100e2061Ed67fAe6894791ec421B421',
+  MULTIPLY_V2: '0xc9628adc0a9f95D1d912C5C19aaBFF85E420a853',
+  EXCHANGE_V1: '0x1F55deAeE5e878e45dcafb9A620b383C84e4005a',
 };
 
 const vat = {
@@ -132,23 +141,32 @@ const automationBot = {
   startingBlock: GOERLI_STARTING_BLOCKS.AUTOMATION_BOT,
 };
 
-const commandMapping = 
-  [
-    {
-      command_address: '0xa655b783183E5DBDf3A36727bdB7CDCfFd854497',
-      kind: 'stop-loss'
-    },
-    {
-      command_address: '0xd0ca9883e4918894dd517847eb3673d656ec9f2d',
-      kind: 'stop-loss'
-    }
-  ]
-
+const commandMapping = [
+  {
+    command_address: '0xa655b783183E5DBDf3A36727bdB7CDCfFd854497',
+    kind: 'stop-loss',
+  },
+  {
+    command_address: '0xd0ca9883e4918894dd517847eb3673d656ec9f2d',
+    kind: 'stop-loss',
+  },
+];
 
 const multiply = [
   {
-    address: goerliAddresses.MULTIPLY_PROXY_ACTIONS,
-    startingBlock: GOERLI_STARTING_BLOCKS.MULTIPLY_PROXY_ACTIONS,
+    address: OASIS_CONTRACTS.MULTIPLY_V1,
+    startingBlock: 6187206,
+  },
+  {
+    address: OASIS_CONTRACTS.MULTIPLY_V2,
+    startingBlock: 6465516,
+  },
+];
+
+const exchange = [
+  {
+    address: OASIS_CONTRACTS.EXCHANGE_V1,
+    startingBlock: 6465517,
   },
 ];
 
@@ -185,6 +203,7 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors([vat]),
     ...makeRawLogExtractors([automationBot]),
     ...makeRawLogExtractors(multiply),
+    ...makeRawLogExtractors(exchange),
     ...makeRawEventBasedOnTopicExtractor(flipper),
     ...makeRawEventBasedOnDSNoteTopic(flipperNotes),
     ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(
@@ -218,10 +237,17 @@ export const config: UserProvidedSpockConfig = {
       getIlkForCdp,
       getLiquidationRatio,
     }),
+    ...exchangeTransformer(exchange),
     ...oraclesTransformer(oracles),
     eventEnhancerTransformer(vat, dogs[0], cdpManagers, oraclesTransformers),
     eventEnhancerTransformerEthPrice(vat, dogs[0], cdpManagers, oraclesTransformers),
     ...dsProxyTransformer(),
+    multiplyHistoryTransformer(vat.address, {
+      dogs,
+      multiplyProxyActionsAddress: [...multiply],
+      exchangeAddress: [...exchange],
+    }),
+    eventEnhancerGasPrice(vat, cdpManagers),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),
@@ -233,7 +259,7 @@ export const config: UserProvidedSpockConfig = {
     },
   },
   addresses,
-  onStart: async (services) => {
-   await initializeCommandAliases(services, commandMapping);
+  onStart: async services => {
+    await initializeCommandAliases(services, commandMapping);
   },
 };

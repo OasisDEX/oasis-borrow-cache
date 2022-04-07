@@ -5,6 +5,7 @@ import { SpockConfig } from '@oasisdex/spock-etl/dist/services/config';
 
 import config from './config';
 import { Services } from '@oasisdex/spock-etl/dist/services/types';
+import { isAwaitExpression } from 'typescript';
 
 export function normalizeAddressDefinition(
   def: string | SimpleProcessorDefinition,
@@ -51,5 +52,6 @@ export async function initializeCommandAliases(services: Services, commandMappin
   )
 
   const query = services.pg.helpers.insert(commandMapping, cs);
+      await services.db.none(`DELETE FROM automation_bot.command_alias`);
       await services.db.none(query);
 }

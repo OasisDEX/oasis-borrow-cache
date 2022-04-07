@@ -18,13 +18,14 @@ import { daiPrecision, zero } from './constants';
 interface Dependencies {
   getTokenPrecision(tokenAddress: string): Promise<BigNumber>;
   getGasFee(hash: string): Promise<BigNumber>;
-  getDaiTransfer(txId: number): Promise<BigNumber>
+  getDaiTransfer(txId: number): Promise<BigNumber>;
 }
 
 const isEventNameIncreaseOrOpen = function(name: string): boolean {
   return (
     name === 'increaseMultiple' ||
     name === 'increaseMultipleDepositCollateral' ||
+    name === 'increaseMultipleDepositDai' ||
     name === 'openMultiplyVault' ||
     name === 'openMultiplyGuniVault' ||
     name === 'increaseMultipleGuni'
@@ -34,6 +35,8 @@ const isEventNameIncreaseOrOpen = function(name: string): boolean {
 const isEventNameDecreaseOrClose = function(name: string): boolean {
   return (
     name === 'decreaseMultiple' ||
+    name === 'decreaseMultipleWithdrawCollateral' ||
+    name === 'decreaseMultipleWithdrawDai' ||
     name === 'closeVaultExitCollateral' ||
     name === 'closeVaultExitDai' ||
     name === 'closeGuniVaultExitDai'
@@ -49,7 +52,6 @@ export async function parseMultiplyEvent(
   assertAllowedEvent(lastEvent);
 
   const collateralChange = new BigNumber(lastEvent.collateral_amount);
-
 
   const oraclePrice = new BigNumber(lastEvent.oracle_price);
   const oazoFee = new BigNumber(multiplyEvent.oazo_fee).div(daiPrecision);
@@ -145,7 +147,7 @@ export async function parseMultiplyEvent(
         depositDai,
       };
     case 'openMultiplyGuniVault':
-      const guniDaiTransfer = await dependencies.getDaiTransfer(multiplyEvent.tx_id)
+      const guniDaiTransfer = await dependencies.getDaiTransfer(multiplyEvent.tx_id);
       return {
         ...common,
         kind: 'OPEN_MULTIPLY_GUNI_VAULT',
@@ -157,6 +159,7 @@ export async function parseMultiplyEvent(
     case 'increaseMultipleGuni':
     case 'increaseMultiple':
     case 'increaseMultipleDepositCollateral':
+    case 'increaseMultipleDepositDai':
       return {
         ...common,
         kind: 'INCREASE_MULTIPLE',
@@ -165,6 +168,8 @@ export async function parseMultiplyEvent(
         depositDai,
       };
     case 'decreaseMultiple':
+    case 'decreaseMultipleWithdrawCollateral':
+    case 'decreaseMultipleWithdrawDai':
       return {
         ...common,
         kind: 'DECREASE_MULTIPLE',
