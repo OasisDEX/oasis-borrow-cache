@@ -58,7 +58,7 @@ const GOERLI_STARTING_BLOCKS = {
   CDP_MANAGER: 5273301,
   MCD_CAT: 5273080,
   MCD_DOG: 5273080,
-  AUTOMATION_BOT: 6359598,
+  AUTOMATION_BOT: 6707333,
   MULTIPLY_PROXY_ACTIONS: 6187206,
 };
 
@@ -143,11 +143,7 @@ const automationBot = {
 
 const commandMapping = [
   {
-    command_address: '0xa655b783183E5DBDf3A36727bdB7CDCfFd854497',
-    kind: 'stop-loss',
-  },
-  {
-    command_address: '0xd0ca9883e4918894dd517847eb3673d656ec9f2d',
+    command_address: '0x31285A87fB70a62b5AaA43199e53221c197E1e3f',
     kind: 'stop-loss',
   },
 ];
