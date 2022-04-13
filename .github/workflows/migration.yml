@@ -44,5 +44,5 @@ jobs:
           VL_DB_DATABASE: database
           VL_DB_USER: user
           VL_DB_PASSWORD: password
-          VL_DB_HOST: localhost
+          VL_DB_HOST: postgres
           VL_DB_PORT: 5432
