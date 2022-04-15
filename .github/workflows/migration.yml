@@ -1,0 +1,48 @@
+name: Test Migrations
+
+on:
+  push:
+    branches: [ dev, master ]
+  pull_request:
+    branches: [ dev, master ]
+
+jobs:
+  migrations:
+    runs-on: ubuntu-latest
+    container: node:12.13
+
+    services:
+      postgres:
+        image: postgres:10.6
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: database
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Cache YARN dependencies
+        uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Install Modules
+        run: yarn --no-progress --non-interactive --frozen-lockfile
+
+      - name: Run Migrations
+        run: yarn migrate
+        env:
+          VL_DB_DATABASE: database
+          VL_DB_USER: user
+          VL_DB_PASSWORD: password
+          VL_DB_HOST: postgres
+          VL_DB_PORT: 5432
