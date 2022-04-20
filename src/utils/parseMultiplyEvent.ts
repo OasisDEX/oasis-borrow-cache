@@ -53,6 +53,7 @@ export async function parseMultiplyEvent(
 
   const collateralChange = new BigNumber(lastEvent.collateral_amount);
 
+  const rate = new BigNumber(lastEvent.rate)
   const oraclePrice = new BigNumber(lastEvent.oracle_price);
   const oazoFee = new BigNumber(multiplyEvent.oazo_fee).div(daiPrecision);
   const loanFee = new BigNumber(multiplyEvent.due).minus(multiplyEvent.borrowed).div(daiPrecision);
@@ -94,35 +95,35 @@ export async function parseMultiplyEvent(
     beforeLockedCollateral: lastEvent.beforeLockedCollateral,
     lockedCollateral: lastEvent.lockedCollateral,
     beforeCollateralizationRatio: getCollateralizationRatio(
-      lastEvent.beforeDebt,
+      lastEvent.beforeDebt.times(rate),
       lastEvent.beforeLockedCollateral,
       oraclePrice,
     ),
     collateralizationRatio: getCollateralizationRatio(
-      lastEvent.debt,
+      lastEvent.debt.times(rate),
       lastEvent.lockedCollateral,
       oraclePrice,
     ),
     beforeDebt: lastEvent.beforeDebt,
     debt: lastEvent.debt,
     beforeMultiple: getMultiple(
-      lastEvent.beforeDebt,
+      lastEvent.beforeDebt.times(rate),
       lastEvent.beforeLockedCollateral,
       oraclePrice,
     ),
-    multiple: getMultiple(lastEvent.debt, lastEvent.lockedCollateral, oraclePrice),
+    multiple: getMultiple(lastEvent.debt.times(rate), lastEvent.lockedCollateral, oraclePrice),
     beforeLiquidationPrice: getLiquidationPrice(
-      lastEvent.beforeDebt,
+      lastEvent.beforeDebt.times(rate),
       lastEvent.beforeLockedCollateral,
       liquidationRatio,
     ),
     liquidationRatio,
     liquidationPrice: getLiquidationPrice(
-      lastEvent.debt,
+      lastEvent.debt.times(rate),
       lastEvent.lockedCollateral,
       liquidationRatio,
     ),
-    netValue: getNetValue(lastEvent.debt, lastEvent.lockedCollateral, marketPrice),
+    netValue: getNetValue(lastEvent.debt.times(rate), lastEvent.lockedCollateral, marketPrice),
 
     oazoFee,
     loanFee,
@@ -154,7 +155,7 @@ export async function parseMultiplyEvent(
         depositDai: guniDaiTransfer,
         depositCollateral: collateralChange,
         bought,
-        netValue: getNetValue(lastEvent.debt, lastEvent.lockedCollateral, oraclePrice),
+        netValue: getNetValue(lastEvent.debt.times(rate), lastEvent.lockedCollateral, oraclePrice),
       };
     case 'increaseMultipleGuni':
     case 'increaseMultiple':
