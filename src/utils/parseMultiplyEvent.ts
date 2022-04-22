@@ -95,35 +95,45 @@ export async function parseMultiplyEvent(
     beforeLockedCollateral: lastEvent.beforeLockedCollateral,
     lockedCollateral: lastEvent.lockedCollateral,
     beforeCollateralizationRatio: getCollateralizationRatio(
-      lastEvent.beforeDebt.times(rate),
+      lastEvent.beforeDebt,
       lastEvent.beforeLockedCollateral,
       oraclePrice,
+      rate,
     ),
     collateralizationRatio: getCollateralizationRatio(
-      lastEvent.debt.times(rate),
+      lastEvent.debt,
       lastEvent.lockedCollateral,
       oraclePrice,
+      rate,
     ),
     beforeDebt: lastEvent.beforeDebt,
     debt: lastEvent.debt,
     beforeMultiple: getMultiple(
-      lastEvent.beforeDebt.times(rate),
+      lastEvent.beforeDebt,
       lastEvent.beforeLockedCollateral,
       oraclePrice,
+      rate
     ),
-    multiple: getMultiple(lastEvent.debt.times(rate), lastEvent.lockedCollateral, oraclePrice),
+    multiple: getMultiple(
+      lastEvent.debt,
+      lastEvent.lockedCollateral,
+      oraclePrice,
+      rate
+    ),
     beforeLiquidationPrice: getLiquidationPrice(
-      lastEvent.beforeDebt.times(rate),
+      lastEvent.beforeDebt,
       lastEvent.beforeLockedCollateral,
       liquidationRatio,
+      rate,
     ),
     liquidationRatio,
     liquidationPrice: getLiquidationPrice(
-      lastEvent.debt.times(rate),
+      lastEvent.debt,
       lastEvent.lockedCollateral,
       liquidationRatio,
+      rate,
     ),
-    netValue: getNetValue(lastEvent.debt.times(rate), lastEvent.lockedCollateral, marketPrice),
+    netValue: getNetValue(lastEvent.debt, lastEvent.lockedCollateral, marketPrice, rate),
 
     oazoFee,
     loanFee,
@@ -155,7 +165,7 @@ export async function parseMultiplyEvent(
         depositDai: guniDaiTransfer,
         depositCollateral: collateralChange,
         bought,
-        netValue: getNetValue(lastEvent.debt.times(rate), lastEvent.lockedCollateral, oraclePrice),
+        netValue: getNetValue(lastEvent.debt, lastEvent.lockedCollateral, oraclePrice, rate),
       };
     case 'increaseMultipleGuni':
     case 'increaseMultiple':
