@@ -53,6 +53,7 @@ export async function parseMultiplyEvent(
 
   const collateralChange = new BigNumber(lastEvent.collateral_amount);
 
+  const rate = new BigNumber(lastEvent.rate)
   const oraclePrice = new BigNumber(lastEvent.oracle_price);
   const oazoFee = new BigNumber(multiplyEvent.oazo_fee).div(daiPrecision);
   const loanFee = new BigNumber(multiplyEvent.due).minus(multiplyEvent.borrowed).div(daiPrecision);
@@ -97,11 +98,13 @@ export async function parseMultiplyEvent(
       lastEvent.beforeDebt,
       lastEvent.beforeLockedCollateral,
       oraclePrice,
+      rate,
     ),
     collateralizationRatio: getCollateralizationRatio(
       lastEvent.debt,
       lastEvent.lockedCollateral,
       oraclePrice,
+      rate,
     ),
     beforeDebt: lastEvent.beforeDebt,
     debt: lastEvent.debt,
@@ -109,20 +112,28 @@ export async function parseMultiplyEvent(
       lastEvent.beforeDebt,
       lastEvent.beforeLockedCollateral,
       oraclePrice,
+      rate
     ),
-    multiple: getMultiple(lastEvent.debt, lastEvent.lockedCollateral, oraclePrice),
+    multiple: getMultiple(
+      lastEvent.debt,
+      lastEvent.lockedCollateral,
+      oraclePrice,
+      rate
+    ),
     beforeLiquidationPrice: getLiquidationPrice(
       lastEvent.beforeDebt,
       lastEvent.beforeLockedCollateral,
       liquidationRatio,
+      rate,
     ),
     liquidationRatio,
     liquidationPrice: getLiquidationPrice(
       lastEvent.debt,
       lastEvent.lockedCollateral,
       liquidationRatio,
+      rate,
     ),
-    netValue: getNetValue(lastEvent.debt, lastEvent.lockedCollateral, marketPrice),
+    netValue: getNetValue(lastEvent.debt, lastEvent.lockedCollateral, marketPrice, rate),
 
     oazoFee,
     loanFee,
@@ -154,7 +165,7 @@ export async function parseMultiplyEvent(
         depositDai: guniDaiTransfer,
         depositCollateral: collateralChange,
         bought,
-        netValue: getNetValue(lastEvent.debt, lastEvent.lockedCollateral, oraclePrice),
+        netValue: getNetValue(lastEvent.debt, lastEvent.lockedCollateral, oraclePrice, rate),
       };
     case 'increaseMultipleGuni':
     case 'increaseMultiple':
