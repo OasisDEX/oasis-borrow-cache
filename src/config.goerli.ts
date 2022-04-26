@@ -143,7 +143,7 @@ const automationBot = {
 
 const commandMapping = [
   {
-    command_address: '0x31285A87fB70a62b5AaA43199e53221c197E1e3f',
+    command_address: '0x31285A87fB70a62b5AaA43199e53221c197E1e3f'.toLowerCase(),
     kind: 'stop-loss',
   },
 ];
