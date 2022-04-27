@@ -45,6 +45,8 @@ import {
   eventEnhancerTransformerEthPrice,
 } from './borrow/transformers/eventEnhancer';
 import { multiplyHistoryTransformer } from './borrow/transformers/multiplyHistoryTransformer';
+import { initializeCommandAliases } from './utils';
+import { automationBotTransformer } from './borrow/transformers/automationBotTransformer';
 
 const mainnetAddresses = require('./addresses/mainnet.json');
 
@@ -122,6 +124,18 @@ const flipperNotes: AbiInfo[] = [
   },
 ];
 
+const automationBot = {
+  address: mainnetAddresses.AUTOMATION_BOT,
+  startingBlock: 14583413,
+};
+
+const commandMapping = [
+  {
+    command_address: '0xa553c3f4e65a1fc951b236142c1f69c1bca5bf2b'.toLowerCase(),
+    kind: 'stop-loss',
+  },
+];
+
 const addresses = {
   ...mainnetAddresses,
   MIGRATION: '0xc73e0383f3aff3215e6f04b0331d58cecf0ab849',
@@ -182,6 +196,7 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors(cats),
     ...makeRawLogExtractors(dogs),
     ...makeRawLogExtractors([vat]),
+    ...makeRawLogExtractors([automationBot]),
     ...makeRawEventBasedOnTopicExtractor(flipper),
     ...makeRawEventBasedOnDSNoteTopic(flipperNotes),
     ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(
@@ -206,6 +221,7 @@ export const config: UserProvidedSpockConfig = {
     vatRawMoveTransformer(vat),
     flipTransformer(),
     flipNoteTransformer(),
+    automationBotTransformer(automationBot, multiply),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
     ...multiplyTransformer(multiply, {
       cdpManager: cdpManagers[0].address,
@@ -240,5 +256,7 @@ export const config: UserProvidedSpockConfig = {
     },
   },
   addresses,
-  onStart: () => {},
+  onStart: async services => {
+    await initializeCommandAliases(services, commandMapping);
+  },
 };
