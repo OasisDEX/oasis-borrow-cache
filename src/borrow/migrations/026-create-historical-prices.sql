@@ -1,7 +1,7 @@
 create view api.historic_token_prices as with token as (
     select distinct token
     from oracles.prices
-    where timestamp > CURRENT_DATE - 92
+    where timestamp > CURRENT_DATE - interval '92 days'
 ),
 price as (
     select distinct on(token) token,
@@ -17,8 +17,7 @@ price_7 as (
 
     from oracles.prices
     where
-    timestamp < current_date - interval '6 days'
-    and timestamp > current_date - interval '8 days'
+    timestamp between current_date - interval '8 days' and current_date - interval '6 days'
     group by token
 ),
 price_30 as (
@@ -26,8 +25,9 @@ price_30 as (
         avg(price) as price
 
     from oracles.prices
-    where timestamp < current_date - interval '29 days'
-    and timestamp > current_date - interval '31 days'
+    where
+
+    timestamp between current_date - interval '31 days' and current_date - interval '29 days'
     group by token
 ),
 price_90 as (
@@ -35,8 +35,9 @@ select distinct on(token) token,
         avg(price) as price
 
     from oracles.prices
-	where timestamp < current_date - interval '89 days'
-    and timestamp > current_date - interval '91 days'
+	where
+
+	timestamp between current_date - interval '91 days' and current_date - interval '89 days'
     group by token
 )
 select t.token,
