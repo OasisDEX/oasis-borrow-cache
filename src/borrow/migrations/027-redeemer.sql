@@ -16,7 +16,7 @@ CREATE TABLE redeemer.claim (
 CREATE INDEX claims ON redeemer.claim("user");
 
 CREATE VIEW api.claims AS
-    SELECT c.week, c.user, c.amount / 10^18 as amount, c.redeemer, t.hash as tx_hash, b.timestamp
+    SELECT c.week, c.user as address, c.amount / 10^18 as amount, c.redeemer, t.hash as tx_hash, b.timestamp
     FROM redeemer.claim c
     LEFT JOIN vulcan2x.block b ON c.block_id = b.id
     LEFT JOIN vulcan2x.transaction t ON c.tx_id = t.id
