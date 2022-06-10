@@ -48,6 +48,7 @@ import { getIlkForCdp } from './borrow/dependencies/getIlkForCdp';
 import { getLiquidationRatio } from './borrow/dependencies/getLiquidationRatio';
 import { exchangeTransformer } from './borrow/transformers/exchange';
 import { multiplyHistoryTransformer } from './borrow/transformers/multiplyHistoryTransformer';
+import { redeemerTransformer } from './borrow/transformers/referralRedeemer';
 
 const AutomationBotABI = require('../abis/automation-bot.json');
 
@@ -84,6 +85,17 @@ const cats = [
   {
     address: goerliAddresses.MCD_CAT,
     startingBlock: GOERLI_STARTING_BLOCKS.MCD_CAT,
+  },
+];
+
+const redeemer = [
+  {
+    address: '0x5C9141C77F9c04f171f62B6fdFf5E4462e9FD83A',
+    startingBlock: 6893402,
+  },
+  {
+    address: '0x0A0647e629A0825353B76dEeC232b29df960ac2d',
+    startingBlock: 6991463,
   },
 ];
 
@@ -195,6 +207,7 @@ export const config: UserProvidedSpockConfig = {
   extractors: [
     ...makeRawLogExtractors(cdpManagers),
     ...makeRawLogExtractors(cats),
+    ...makeRawLogExtractors(redeemer),
     ...makeRawLogExtractors(dogs),
     ...makeRawLogExtractors([vat]),
     ...makeRawLogExtractors([automationBot]),
@@ -244,6 +257,7 @@ export const config: UserProvidedSpockConfig = {
       exchangeAddress: [...exchange],
     }),
     eventEnhancerGasPrice(vat, cdpManagers),
+    ...redeemerTransformer(redeemer),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),
