@@ -67,6 +67,7 @@ const OASIS_CONTRACTS = {
   MULTIPLY_V1: '0x24E54706B100e2061Ed67fAe6894791ec421B421',
   MULTIPLY_V2: '0xc9628adc0a9f95D1d912C5C19aaBFF85E420a853',
   EXCHANGE_V1: '0x1F55deAeE5e878e45dcafb9A620b383C84e4005a',
+  EXCHANGE_V2: '0x2b0b4c5c58fe3CF8863c4948887099A09b84A69c',
 };
 
 const vat = {
@@ -175,6 +176,10 @@ const exchange = [
   {
     address: OASIS_CONTRACTS.EXCHANGE_V1,
     startingBlock: 6465517,
+  },
+  {
+    address: OASIS_CONTRACTS.EXCHANGE_V2,
+    startingBlock: 7101342,
   },
 ];
 
