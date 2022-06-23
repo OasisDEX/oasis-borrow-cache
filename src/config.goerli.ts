@@ -163,6 +163,10 @@ const commandMapping = [
     command_address: '0x7c86781A95b7E55E6C2F7297Ae6773e1dbcEAb13'.toLowerCase(),
     kind: 'basic-buy',
   },
+  {
+    command_address: '0x000000000000000000000000000000000000dead'.toLowerCase(),
+    kind: 'basic-sell',
+  },
 ];
 
 const multiply = [
