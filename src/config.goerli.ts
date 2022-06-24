@@ -164,7 +164,7 @@ const commandMapping = [
     kind: 'basic-buy',
   },
   {
-    command_address: '0x000000000000000000000000000000000000dead'.toLowerCase(),
+    command_address: '0xd4f94e013c7F47B989Ea79C6527E065C027794c7'.toLowerCase(),
     kind: 'basic-sell',
   },
 ];
