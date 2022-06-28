@@ -1,0 +1,1 @@
+drop function api.get_historical_token_prices(token varchar, reference_date date, days integer[])
