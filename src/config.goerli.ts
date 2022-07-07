@@ -67,6 +67,7 @@ const OASIS_CONTRACTS = {
   MULTIPLY_V1: '0x24E54706B100e2061Ed67fAe6894791ec421B421',
   MULTIPLY_V2: '0xc9628adc0a9f95D1d912C5C19aaBFF85E420a853',
   EXCHANGE_V1: '0x1F55deAeE5e878e45dcafb9A620b383C84e4005a',
+  EXCHANGE_V2: '0x2b0b4c5c58fe3CF8863c4948887099A09b84A69c',
 };
 
 const vat = {
@@ -158,6 +159,22 @@ const commandMapping = [
     command_address: '0x31285A87fB70a62b5AaA43199e53221c197E1e3f'.toLowerCase(),
     kind: 'stop-loss',
   },
+  {
+    command_address: '0x7c86781A95b7E55E6C2F7297Ae6773e1dbcEAb13'.toLowerCase(),
+    kind: 'basic-buy',
+  },
+  {
+    command_address: '0xe3ae7218d8e4a482e212ef1cbf2fcd0fb9882cc7'.toLowerCase(),
+    kind: 'basic-buy',
+  },
+  {
+    command_address: '0xd4f94e013c7F47B989Ea79C6527E065C027794c7'.toLowerCase(),
+    kind: 'basic-sell',
+  },
+  {
+    command_address: '0x6f878d8eb84e48da49900a6392b8f9ed262a50d7'.toLowerCase(),
+    kind: 'basic-sell',
+  },
 ];
 
 const multiply = [
@@ -175,6 +192,10 @@ const exchange = [
   {
     address: OASIS_CONTRACTS.EXCHANGE_V1,
     startingBlock: 6465517,
+  },
+  {
+    address: OASIS_CONTRACTS.EXCHANGE_V2,
+    startingBlock: 7101342,
   },
 ];
 
