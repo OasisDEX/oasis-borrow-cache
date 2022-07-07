@@ -164,7 +164,15 @@ const commandMapping = [
     kind: 'basic-buy',
   },
   {
+    command_address: '0xe3ae7218d8e4a482e212ef1cbf2fcd0fb9882cc7'.toLowerCase(),
+    kind: 'basic-buy',
+  },
+  {
     command_address: '0xd4f94e013c7F47B989Ea79C6527E065C027794c7'.toLowerCase(),
+    kind: 'basic-sell',
+  },
+  {
+    command_address: '0x6f878d8eb84e48da49900a6392b8f9ed262a50d7'.toLowerCase(),
     kind: 'basic-sell',
   },
 ];
