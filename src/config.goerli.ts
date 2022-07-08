@@ -156,26 +156,34 @@ const automationBot = {
 
 const commandMapping = [
   {
-    command_address: '0x31285A87fB70a62b5AaA43199e53221c197E1e3f'.toLowerCase(),
+    command_address: '0x31285A87fB70a62b5AaA43199e53221c197E1e3f',
     kind: 'stop-loss',
   },
   {
-    command_address: '0x7c86781A95b7E55E6C2F7297Ae6773e1dbcEAb13'.toLowerCase(),
+    command_address: '0x7c86781A95b7E55E6C2F7297Ae6773e1dbcEAb13',
     kind: 'basic-buy',
   },
   {
-    command_address: '0xe3ae7218d8e4a482e212ef1cbf2fcd0fb9882cc7'.toLowerCase(),
+    command_address: '0xe3ae7218d8e4a482e212ef1cbf2fcd0fb9882cc7',
     kind: 'basic-buy',
   },
   {
-    command_address: '0xd4f94e013c7F47B989Ea79C6527E065C027794c7'.toLowerCase(),
+    command_address: '0x4bf8529d19E1f1E714AA078f2118160115258f69',
+    kind: 'basic-buy',
+  },
+  {
+    command_address: '0xd4f94e013c7F47B989Ea79C6527E065C027794c7',
     kind: 'basic-sell',
   },
   {
-    command_address: '0x6f878d8eb84e48da49900a6392b8f9ed262a50d7'.toLowerCase(),
+    command_address: '0x6f878d8eb84e48da49900a6392b8f9ed262a50d7',
     kind: 'basic-sell',
   },
-];
+  {
+    command_address: '0xF56Cce713c3f02FF8F68c60908C11F7729044c0C',
+    kind: 'basic-sell',
+  },
+].map(({ command_address, kind }) => ({ command_address: command_address.toLowerCase(), kind }));
 
 const multiply = [
   {
