@@ -99,7 +99,7 @@ const redeemer = [
     startingBlock: 6991463,
   },
   { 
-    address: '0x80e0D271Ad55B255838dE5EC163FbAA48e2b28d4',
+    address: '0x23440aC6c8a10EA89132da74B705CBc6D99a805b',
     startingBlock: 7224992 
   },
 ];
