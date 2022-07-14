@@ -98,6 +98,10 @@ const redeemer = [
     address: '0x0A0647e629A0825353B76dEeC232b29df960ac2d',
     startingBlock: 6991463,
   },
+  { 
+    address: '0x80e0D271Ad55B255838dE5EC163FbAA48e2b28d4',
+    startingBlock: 7224992 
+  },
 ];
 
 const dogs = [
