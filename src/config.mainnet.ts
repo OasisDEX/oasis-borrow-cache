@@ -139,7 +139,15 @@ const commandMapping = [
     kind: 'basic-buy',
   },
   {
+    command_address: '0xd36729c7cAc24e47DC32FfD7D433F965CAaeB912',
+    kind: 'basic-buy',
+  },
+  {
     command_address: '0xa6bd41b821972e83d30598c5683efbbe6ad70fb8',
+    kind: 'basic-sell',
+  },
+  {
+    command_address: '0xF9469da48f9D2eA87e195e3DD522226e876A1185',
     kind: 'basic-sell',
   },
 ].map(({ command_address, kind }) => ({ command_address: command_address.toLowerCase(), kind }));
