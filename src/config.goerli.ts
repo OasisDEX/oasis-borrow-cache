@@ -98,6 +98,10 @@ const redeemer = [
     address: '0x0A0647e629A0825353B76dEeC232b29df960ac2d',
     startingBlock: 6991463,
   },
+  { 
+    address: '0x23440aC6c8a10EA89132da74B705CBc6D99a805b',
+    startingBlock: 7224992 
+  },
 ];
 
 const dogs = [
@@ -156,26 +160,42 @@ const automationBot = {
 
 const commandMapping = [
   {
-    command_address: '0x31285A87fB70a62b5AaA43199e53221c197E1e3f'.toLowerCase(),
+    command_address: '0x31285A87fB70a62b5AaA43199e53221c197E1e3f',
     kind: 'stop-loss',
   },
   {
-    command_address: '0x7c86781A95b7E55E6C2F7297Ae6773e1dbcEAb13'.toLowerCase(),
+    command_address: '0x7c86781A95b7E55E6C2F7297Ae6773e1dbcEAb13',
     kind: 'basic-buy',
   },
   {
-    command_address: '0xe3ae7218d8e4a482e212ef1cbf2fcd0fb9882cc7'.toLowerCase(),
+    command_address: '0xe3ae7218d8e4a482e212ef1cbf2fcd0fb9882cc7',
     kind: 'basic-buy',
   },
   {
-    command_address: '0xd4f94e013c7F47B989Ea79C6527E065C027794c7'.toLowerCase(),
+    command_address: '0x98b2b67795171380a4bfb5B8cD2F59aEA768b3ED',
+    kind: 'basic-buy',
+  },
+  {
+    command_address: '0x2003dC19056bA986B7d10AB4704897d685DD62D9',
+    kind: 'basic-buy',
+  },
+  {
+    command_address: '0xd4f94e013c7F47B989Ea79C6527E065C027794c7',
     kind: 'basic-sell',
   },
   {
-    command_address: '0x6f878d8eb84e48da49900a6392b8f9ed262a50d7'.toLowerCase(),
+    command_address: '0x6f878d8eb84e48da49900a6392b8f9ed262a50d7',
     kind: 'basic-sell',
   },
-];
+  {
+    command_address: '0x3da3e38bBe1100DE5247617b4554115C0e452416',
+    kind: 'basic-sell',
+  },
+  {
+    command_address: '0xB52B1c61c667d570FF62745b19A0c58011A4b32C',
+    kind: 'basic-sell',
+  },
+].map(({ command_address, kind }) => ({ command_address: command_address.toLowerCase(), kind }));
 
 const multiply = [
   {
