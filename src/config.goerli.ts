@@ -172,6 +172,10 @@ const commandMapping = [
     kind: 'basic-buy',
   },
   {
+    command_address: '0x2003dC19056bA986B7d10AB4704897d685DD62D9',
+    kind: 'basic-buy',
+  },
+  {
     command_address: '0xd4f94e013c7F47B989Ea79C6527E065C027794c7',
     kind: 'basic-sell',
   },
@@ -181,6 +185,10 @@ const commandMapping = [
   },
   {
     command_address: '0x3da3e38bBe1100DE5247617b4554115C0e452416',
+    kind: 'basic-sell',
+  },
+  {
+    command_address: '0xB52B1c61c667d570FF62745b19A0c58011A4b32C',
     kind: 'basic-sell',
   },
 ].map(({ command_address, kind }) => ({ command_address: command_address.toLowerCase(), kind }));
