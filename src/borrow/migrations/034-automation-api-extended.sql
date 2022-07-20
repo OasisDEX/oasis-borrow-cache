@@ -1,5 +1,4 @@
 DROP VIEW api.trigger_events ;
--- The only what differs from previous script is using trigger_id instead of id in joins to get kind ~ŁW
 
 CREATE VIEW api.trigger_events AS (
 	SELECT tae.id , trigger_id , cdp_id, tae.log_index, tx.hash , b."number", b."timestamp" , 'added' AS event_type, tae.command_address,  alias.kind, tae.trigger_data from automation_bot.trigger_added_events tae
