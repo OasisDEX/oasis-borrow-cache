@@ -47,6 +47,7 @@ import {
 import { multiplyHistoryTransformer } from './borrow/transformers/multiplyHistoryTransformer';
 import { initializeCommandAliases } from './utils';
 import { automationBotTransformer } from './borrow/transformers/automationBotTransformer';
+import { redeemerTransformer } from './borrow/transformers/referralRedeemer';
 
 const mainnetAddresses = require('./addresses/mainnet.json');
 
@@ -205,12 +206,20 @@ const oracles = getOraclesAddresses(mainnetAddresses).map(description => ({
 
 const oraclesTransformers = oracles.map(getOracleTransformerName);
 
+const redeemer = [
+  {
+    address: '0xd9fabf81ed15ea71fbad0c1f77529a4755a38054',
+    startingBlock: 15178804,
+  },
+];
+
 export const config: UserProvidedSpockConfig = {
   startingBlock: GENESIS,
   extractors: [
     ...makeRawLogExtractors(cdpManagers),
     ...makeRawLogExtractors(cats),
     ...makeRawLogExtractors(dogs),
+    ...makeRawLogExtractors(redeemer),
     ...makeRawLogExtractors([vat]),
     ...makeRawLogExtractors([automationBot]),
     ...makeRawEventBasedOnTopicExtractor(flipper),
@@ -261,6 +270,7 @@ export const config: UserProvidedSpockConfig = {
       exchangeAddress: [...exchange],
     }),
     eventEnhancerGasPrice(vat, cdpManagers),
+    ...redeemerTransformer(redeemer),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),
