@@ -98,9 +98,9 @@ const redeemer = [
     address: '0x0A0647e629A0825353B76dEeC232b29df960ac2d',
     startingBlock: 6991463,
   },
-  { 
+  {
     address: '0x23440aC6c8a10EA89132da74B705CBc6D99a805b',
-    startingBlock: 7224992 
+    startingBlock: 7224992,
   },
 ];
 
@@ -193,6 +193,10 @@ const commandMapping = [
   },
   {
     command_address: '0xB52B1c61c667d570FF62745b19A0c58011A4b32C',
+    kind: 'basic-sell',
+  },
+  {
+    command_address: '0x2eCC5086CE10194175607d0D082fC27c3416693d',
     kind: 'basic-sell',
   },
 ].map(({ command_address, kind }) => ({ command_address: command_address.toLowerCase(), kind }));
