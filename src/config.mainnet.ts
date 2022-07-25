@@ -151,6 +151,10 @@ const commandMapping = [
     command_address: '0xF9469da48f9D2eA87e195e3DD522226e876A1185',
     kind: 'basic-sell',
   },
+  {
+    command_address: '0x5588d89A3C68E5a87Cafe6b79EF8cAA667a702f1',
+    kind: 'basic-sell',
+  },
 ].map(({ command_address, kind }) => ({ command_address: command_address.toLowerCase(), kind }));
 
 const addresses = {
