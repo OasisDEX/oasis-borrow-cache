@@ -41,6 +41,7 @@ import {
   eventEnhancerTransformerEthPrice,
 } from './borrow/transformers/eventEnhancer';
 import { automationBotTransformer } from './borrow/transformers/automationBotTransformer';
+import { automationAggregatorBotTransformer } from './borrow/transformers/automationAggregatorBotTransformer';
 import { dsProxyTransformer } from './borrow/transformers/dsProxyTransformer';
 import { initializeCommandAliases, partialABI } from './utils';
 import { multiplyTransformer } from './borrow/transformers/multiply';
@@ -60,6 +61,7 @@ const GOERLI_STARTING_BLOCKS = {
   MCD_CAT: 5273080,
   MCD_DOG: 5273080,
   AUTOMATION_BOT: 6707333,
+  AUTOMATION_AGGREGATOR_BOT: 7253401,
   MULTIPLY_PROXY_ACTIONS: 6187206,
 };
 
@@ -98,9 +100,9 @@ const redeemer = [
     address: '0x0A0647e629A0825353B76dEeC232b29df960ac2d',
     startingBlock: 6991463,
   },
-  { 
+  {
     address: '0x23440aC6c8a10EA89132da74B705CBc6D99a805b',
-    startingBlock: 7224992 
+    startingBlock: 7224992,
   },
 ];
 
@@ -156,6 +158,11 @@ const flipperNotes: AbiInfo[] = [
 const automationBot = {
   address: goerliAddresses.AUTOMATION_BOT,
   startingBlock: GOERLI_STARTING_BLOCKS.AUTOMATION_BOT,
+};
+
+const automationAggregatorBot = {
+  address: goerliAddresses.AUTOMATION_AGGREGATOR_BOT,
+  startingBlock: GOERLI_STARTING_BLOCKS.AUTOMATION_AGGREGATOR_BOT,
 };
 
 const commandMapping = [
@@ -252,6 +259,7 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors(dogs),
     ...makeRawLogExtractors([vat]),
     ...makeRawLogExtractors([automationBot]),
+    ...makeRawLogExtractors([automationAggregatorBot]),
     ...makeRawLogExtractors(multiply),
     ...makeRawLogExtractors(exchange),
     ...makeRawEventBasedOnTopicExtractor(flipper),
@@ -280,6 +288,7 @@ export const config: UserProvidedSpockConfig = {
     flipTransformer(),
     flipNoteTransformer(),
     automationBotTransformer(automationBot, multiply),
+    automationAggregatorBotTransformer(automationAggregatorBot, multiply),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
     ...multiplyTransformer(multiply, {
       cdpManager: cdpManagers[0].address,
