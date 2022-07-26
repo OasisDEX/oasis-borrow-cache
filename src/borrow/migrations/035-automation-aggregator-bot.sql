@@ -19,9 +19,11 @@ CREATE TABLE automation_aggregator_bot.trigger_group_removed_events (
     block_id integer not null REFERENCES vulcan2x.block(id) ON DELETE CASCADE,
     unique (tx_id, log_index)
 );
-CREATE TABLE automation_bot.groupped_triggers (
+CREATE TABLE automation_bot.trigger_group_added (
     id serial primary key,
     group_id decimal(78, 0) not null,
     trigger_id decimal(78, 0),
+    group_type decimal(78, 0),
+    cdp_id decimal(78, 0) not null,
     unique (group_id, trigger_id)
 );

@@ -40,10 +40,10 @@ async function handleTriggerGroupAdded(
 
   values.trigger_ids.map(async (item: BigInt) => {
     await services.tx.none(
-      `INSERT INTO automation_bot.groupped_triggers(
-      group_id, trigger_id
+      `INSERT INTO automation_bot.trigger_group_added(
+      group_id, trigger_id, group_type, cdp_id
     ) VALUES (
-        \${group_id}, ${Number(item)}
+        \${group_id}, ${Number(item)}, \${group_type}, \${cdp_id}
     );`,
       values,
     );
