@@ -288,7 +288,7 @@ export const config: UserProvidedSpockConfig = {
     flipTransformer(),
     flipNoteTransformer(),
     automationBotTransformer(automationBot, multiply),
-    automationAggregatorBotTransformer(automationAggregatorBot, multiply),
+    automationAggregatorBotTransformer(automationAggregatorBot, { automationBot }),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
     ...multiplyTransformer(multiply, {
       cdpManager: cdpManagers[0].address,

@@ -9,9 +9,15 @@ import {
 import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
 import { normalizeAddressDefinition } from '../../utils';
-import { getMultiplyTransformerName } from './multiply';
 
 const AutomationAggregatorBotAbi = require('../../../abis/automation-aggragator-bot.json');
+
+interface Dependencies {
+  automationBot: {
+    address: string;
+    startingBlock: number;
+  };
+}
 
 async function handleTriggerGroupAdded(
   params: Dictionary<any>,
@@ -19,7 +25,7 @@ async function handleTriggerGroupAdded(
   services: LocalServices,
 ) {
   const values = {
-    group_id: params.groupId.toString(),
+    group_id: params.groupId.toNumber(),
     group_type: params.groupTypeId.toString(),
     cdp_id: (1).toString(), // TODO: params.cdpId.toString(),
     trigger_ids: params.triggerIds.map((item: BigInt) => Number(item)),
@@ -29,6 +35,42 @@ async function handleTriggerGroupAdded(
     block_id: log.block_id,
   };
 
+  const data: object[] = [];
+  values.trigger_ids.forEach((element: number) => {
+    data.push({
+      group_id: values.group_id,
+      trigger_id: element,
+      group_type: values.group_type,
+      cdp_id: values.cdp_id,
+    });
+  });
+  const cs = new services.pg.helpers.ColumnSet(['group_id', 'trigger_id', 'group_type', 'cdp_id'], {
+    table: {
+      schema: 'automation_bot',
+      table: 'trigger_group_added',
+    },
+  });
+  const query = services.pg.helpers.insert(data, cs);
+
+  const updateData: object[] = [];
+  values.trigger_ids.forEach((element: number) => {
+    updateData.push({
+      group_id: values.group_id,
+      trigger_id: element,
+    });
+  });
+
+  const updateCs = new services.pg.helpers.ColumnSet(['group_id', '?trigger_id'], {
+    table: {
+      schema: 'automation_bot',
+      table: 'trigger_added_events',
+    },
+  });
+  const updateQuery =
+    services.pg.helpers.update(updateData, updateCs) + ' WHERE v.trigger_id = t.trigger_id';
+
+  await services.tx.none(query);
+  await services.tx.none(updateQuery);
   await services.tx.none(
     `INSERT INTO automation_aggregator_bot.trigger_group_added_events(
       group_id, group_type, cdp_id, trigger_ids, log_index, tx_id, block_id
@@ -37,17 +79,6 @@ async function handleTriggerGroupAdded(
     );`,
     values,
   );
-
-  values.trigger_ids.map(async (item: BigInt) => {
-    await services.tx.none(
-      `INSERT INTO automation_bot.trigger_group_added(
-      group_id, trigger_id, group_type, cdp_id
-    ) VALUES (
-        \${group_id}, ${Number(item)}, \${group_type}, \${cdp_id}
-    );`,
-      values,
-    );
-  });
 }
 
 async function handleTriggerGroupRemoved(
@@ -85,18 +116,17 @@ const automationAggregatorBotHandlers = {
 
 export const getAutomationAggregatorBotTransformerName = (address: string) =>
   `automationAggregatorBotTransformer-${address}`;
+
 export const automationAggregatorBotTransformer: (
   address: string | SimpleProcessorDefinition,
-  multiplyProxyActionsAddress: SimpleProcessorDefinition[],
-) => BlockTransformer = (address, multiplyProxyActionsAddress) => {
+  dependencies: Dependencies,
+) => BlockTransformer = (address, dependencies) => {
   const deps = normalizeAddressDefinition(address);
 
   return {
     name: getAutomationAggregatorBotTransformerName(deps.address),
     dependencies: [getExtractorName(deps.address)],
-    transformerDependencies: multiplyProxyActionsAddress.map(mpa =>
-      getMultiplyTransformerName(mpa),
-    ),
+    transformerDependencies: [`automationBotTransformer-${dependencies.automationBot.address}`],
     transform: async (services, logs) => {
       await handleEvents(
         services,

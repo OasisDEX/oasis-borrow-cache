@@ -27,3 +27,5 @@ CREATE TABLE automation_bot.trigger_group_added (
     cdp_id decimal(78, 0) not null,
     unique (group_id, trigger_id)
 );
+ALTER TABLE automation_bot.trigger_added_events
+    ADD COLUMN group_id decimal(78, 0);
