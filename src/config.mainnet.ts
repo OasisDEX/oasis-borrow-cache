@@ -48,6 +48,7 @@ import { multiplyHistoryTransformer } from './borrow/transformers/multiplyHistor
 import { initializeCommandAliases } from './utils';
 import { automationBotTransformer } from './borrow/transformers/automationBotTransformer';
 import { redeemerTransformer } from './borrow/transformers/referralRedeemer';
+import { lidoTransformer } from './borrow/transformers/lidoTransformer';
 
 const mainnetAddresses = require('./addresses/mainnet.json');
 
@@ -217,6 +218,13 @@ const redeemer = [
   },
 ];
 
+const lido = [
+  {
+    address: '0x442af784a788a5bd6f42a01ebe9f287a871243fb',
+    startingBlock: 11473216,
+  }
+]
+
 export const config: UserProvidedSpockConfig = {
   startingBlock: GENESIS,
   extractors: [
@@ -224,6 +232,7 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors(cats),
     ...makeRawLogExtractors(dogs),
     ...makeRawLogExtractors(redeemer),
+    ...makeRawLogExtractors(lido),
     ...makeRawLogExtractors([vat]),
     ...makeRawLogExtractors([automationBot]),
     ...makeRawEventBasedOnTopicExtractor(flipper),
@@ -275,6 +284,7 @@ export const config: UserProvidedSpockConfig = {
     }),
     eventEnhancerGasPrice(vat, cdpManagers),
     ...redeemerTransformer(redeemer),
+    ...lidoTransformer(lido),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),
