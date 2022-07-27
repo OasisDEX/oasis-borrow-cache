@@ -49,6 +49,7 @@ import { initializeCommandAliases } from './utils';
 import { automationBotTransformer } from './borrow/transformers/automationBotTransformer';
 import { redeemerTransformer } from './borrow/transformers/referralRedeemer';
 import { lidoTransformer } from './borrow/transformers/lidoTransformer';
+import { aaveLendingPoolTransformer } from './borrow/transformers/aaveTransformer';
 
 const mainnetAddresses = require('./addresses/mainnet.json');
 
@@ -225,6 +226,13 @@ const lido = [
   }
 ]
 
+const aaveLendingPool = [
+  {
+    address: '0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9',
+    startingBlock: 11362579,
+  }
+]
+
 export const config: UserProvidedSpockConfig = {
   startingBlock: GENESIS,
   extractors: [
@@ -233,6 +241,7 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors(dogs),
     ...makeRawLogExtractors(redeemer),
     ...makeRawLogExtractors(lido),
+    ...makeRawLogExtractors(aaveLendingPool),
     ...makeRawLogExtractors([vat]),
     ...makeRawLogExtractors([automationBot]),
     ...makeRawEventBasedOnTopicExtractor(flipper),
@@ -285,6 +294,7 @@ export const config: UserProvidedSpockConfig = {
     eventEnhancerGasPrice(vat, cdpManagers),
     ...redeemerTransformer(redeemer),
     ...lidoTransformer(lido),
+    ...aaveLendingPoolTransformer(aaveLendingPool),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),
