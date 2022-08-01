@@ -70,7 +70,8 @@ SELECT b.group_id,
     b.trigger_id,
     b.trigger_type,
     b.command_address,
-    b.trigger_data
+    b.trigger_data,
+    b.block_id
 FROM automation_bot.trigger_added_events b
     LEFT JOIN automation_aggregator_bot.trigger_group_added_events a ON a.group_id = b.group_id
     LEFT JOIN automation_bot.trigger_removed_events r ON b.trigger_id = r.trigger_id
