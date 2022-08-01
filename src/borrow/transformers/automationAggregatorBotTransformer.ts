@@ -34,7 +34,7 @@ async function handleTriggerGroupAdded(
     tx_id: log.tx_id,
     block_id: log.block_id,
   };
-  
+
   // for constant multiple the first trigger type is 3 and second is 4 - hence index + 3
   let triggerAddedEventsUpdateData: object[] = [];
   switch (values.group_type) {
@@ -57,9 +57,6 @@ async function handleTriggerGroupAdded(
       });
     }
   }
-
-  console.log(values.group_type);
-  console.log(triggerAddedEventsUpdateData);
 
   const triggerAddedEventsUpdateCs = new services.pg.helpers.ColumnSet(
     ['group_id', 'trigger_type', '?trigger_id'],
