@@ -63,3 +63,18 @@ group by a.group_type,
     b.group_id,
     b.cdp_id
 order by b.group_id asc;
+CREATE VIEW api.active_trigger_ungroupped_groups AS
+select b.group_id,
+    a.group_type,
+    b.cdp_id,
+    b.trigger_id,
+    b.trigger_type,
+    b.command_address
+from automation_bot.trigger_added_events b
+    left join automation_aggregator_bot.trigger_group_added_events a on a.group_id = b.group_id
+    left join automation_bot.trigger_removed_events r ON b.trigger_id = r.trigger_id
+    left join automation_bot.trigger_executed_events e ON b.trigger_id = e.trigger_id
+where r.trigger_id is null
+    AND e.trigger_id is null
+    and b.group_id is not null
+order by b.group_id asc;
