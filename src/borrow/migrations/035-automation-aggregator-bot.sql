@@ -69,7 +69,8 @@ select b.group_id,
     b.cdp_id,
     b.trigger_id,
     b.trigger_type,
-    b.command_address
+    b.command_address,
+    b.trigger_data
 from automation_bot.trigger_added_events b
     left join automation_aggregator_bot.trigger_group_added_events a on a.group_id = b.group_id
     left join automation_bot.trigger_removed_events r ON b.trigger_id = r.trigger_id
