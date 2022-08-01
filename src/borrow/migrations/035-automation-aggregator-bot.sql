@@ -63,7 +63,7 @@ group by a.group_type,
     b.group_id,
     b.cdp_id
 order by b.group_id asc;
-CREATE VIEW api.active_trigger_ungroupped_groups AS
+CREATE VIEW api.active_groupped_triggers AS
 select b.group_id,
     a.group_type,
     b.cdp_id,
