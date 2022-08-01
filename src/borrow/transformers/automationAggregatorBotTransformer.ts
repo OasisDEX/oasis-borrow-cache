@@ -26,51 +26,56 @@ async function handleTriggerGroupAdded(
 ) {
   const values = {
     group_id: params.groupId.toNumber(),
-    group_type: params.groupTypeId.toString(),
-    cdp_id: (1).toString(), // TODO: params.cdpId.toString(),
+    group_type: params.groupType.toString(),
+    cdp_id: params.cdpId.toString(),
     trigger_ids: params.triggerIds.map((item: BigInt) => Number(item)),
 
     log_index: log.log_index,
     tx_id: log.tx_id,
     block_id: log.block_id,
   };
+  
+  // for constant multiple the first trigger type is 3 and second is 4 - hence index + 3
+  let triggerAddedEventsUpdateData: object[] = [];
+  switch (values.group_type) {
+    case '1': {
+      values.trigger_ids.forEach((element: number, index: number) => {
+        triggerAddedEventsUpdateData.push({
+          group_id: values.group_id,
+          trigger_id: element,
+          trigger_type: index + 3,
+        });
+      });
+    }
+    default: {
+      values.trigger_ids.forEach((element: number, index: number) => {
+        triggerAddedEventsUpdateData.push({
+          group_id: values.group_id,
+          trigger_id: element,
+          trigger_type: index + 3,
+        });
+      });
+    }
+  }
 
-  const data: object[] = [];
-  values.trigger_ids.forEach((element: number) => {
-    data.push({
-      group_id: values.group_id,
-      trigger_id: element,
-      group_type: values.group_type,
-      cdp_id: values.cdp_id,
-    });
-  });
-  const cs = new services.pg.helpers.ColumnSet(['group_id', 'trigger_id', 'group_type', 'cdp_id'], {
-    table: {
-      schema: 'automation_bot',
-      table: 'trigger_group_added',
+  console.log(values.group_type);
+  console.log(triggerAddedEventsUpdateData);
+
+  const triggerAddedEventsUpdateCs = new services.pg.helpers.ColumnSet(
+    ['group_id', 'trigger_type', '?trigger_id'],
+    {
+      table: {
+        schema: 'automation_bot',
+        table: 'trigger_added_events',
+      },
     },
-  });
-  const query = services.pg.helpers.insert(data, cs);
+  );
+  const triggerAddedEventsUpdateQuery =
+    services.pg.helpers.update(triggerAddedEventsUpdateData, triggerAddedEventsUpdateCs) +
+    ' WHERE v.trigger_id = t.trigger_id';
 
-  const updateData: object[] = [];
-  values.trigger_ids.forEach((element: number) => {
-    updateData.push({
-      group_id: values.group_id,
-      trigger_id: element,
-    });
-  });
+  await services.tx.none(triggerAddedEventsUpdateQuery);
 
-  const updateCs = new services.pg.helpers.ColumnSet(['group_id', '?trigger_id'], {
-    table: {
-      schema: 'automation_bot',
-      table: 'trigger_added_events',
-    },
-  });
-  const updateQuery =
-    services.pg.helpers.update(updateData, updateCs) + ' WHERE v.trigger_id = t.trigger_id';
-
-  await services.tx.none(query);
-  await services.tx.none(updateQuery);
   await services.tx.none(
     `INSERT INTO automation_aggregator_bot.trigger_group_added_events(
       group_id, group_type, cdp_id, trigger_ids, log_index, tx_id, block_id
@@ -81,6 +86,53 @@ async function handleTriggerGroupAdded(
   );
 }
 
+async function handleTriggerGroupUpdated(
+  params: Dictionary<any>,
+  log: PersistedLog,
+  services: LocalServices,
+) {
+  const values = {
+    group_id: params.groupId.toNumber(),
+    cdp_id: params.cdpId.toString(),
+    trigger_type: params.triggerType.toString(),
+    new_trigger_id: params.newTriggerId.toNumber(),
+
+    log_index: log.log_index,
+    tx_id: log.tx_id,
+    block_id: log.block_id,
+  };
+
+  await services.tx.none(
+    `INSERT INTO automation_aggregator_bot.trigger_group_updated_events(
+        group_id, cdp_id, new_trigger_id, trigger_type, log_index, tx_id, block_id
+      ) VALUES (
+          \${group_id}, \${cdp_id}, \${new_trigger_id},\${trigger_type}, \${log_index}, \${tx_id}, \${block_id}
+      );`,
+    values,
+  );
+
+  const triggerAddedEventsUpdateData: object = {
+    group_id: values.group_id,
+    trigger_id: values.new_trigger_id,
+    trigger_type: values.trigger_type,
+  };
+
+  const triggerAddedEventsUpdateCs = new services.pg.helpers.ColumnSet(
+    ['group_id', 'trigger_type', '?trigger_id'],
+    {
+      table: {
+        schema: 'automation_bot',
+        table: 'trigger_added_events',
+      },
+    },
+  );
+  const triggerAddedEventsUpdateQuery =
+    services.pg.helpers.update(triggerAddedEventsUpdateData, triggerAddedEventsUpdateCs) +
+    ` WHERE trigger_id = ${values.new_trigger_id}`;
+
+  await services.tx.none(triggerAddedEventsUpdateQuery);
+}
+
 async function handleTriggerGroupRemoved(
   params: Dictionary<any>,
   log: PersistedLog,
@@ -88,7 +140,7 @@ async function handleTriggerGroupRemoved(
 ) {
   const values = {
     group_id: params.groupId.toString(),
-    trigger_ids: params.triggerIds.map((item: BigInt) => Number(item)),
+    cdp_id: params.cdpId.toString(),
 
     log_index: log.log_index,
     tx_id: log.tx_id,
@@ -97,9 +149,9 @@ async function handleTriggerGroupRemoved(
 
   await services.tx.none(
     `INSERT INTO automation_aggregator_bot.trigger_group_removed_events(
-      group_id, trigger_ids, log_index, tx_id, block_id
+      group_id, cdp_id, log_index, tx_id, block_id
     ) VALUES (
-        \${group_id},  \array[\${trigger_ids}], \${log_index}, \${tx_id}, \${block_id}
+        \${group_id},   \${cdp_id},  \${log_index}, \${tx_id}, \${block_id}
     );`,
     values,
   );
@@ -111,6 +163,9 @@ const automationAggregatorBotHandlers = {
   },
   async TriggerGroupRemoved(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
     await handleTriggerGroupRemoved(event.params, log, services);
+  },
+  async TriggerGroupUpdated(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
+    await handleTriggerGroupUpdated(event.params, log, services);
   },
 };
 

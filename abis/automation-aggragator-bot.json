@@ -1,17 +1,31 @@
 [
   {
-    "inputs": [
-      { "internalType": "contract ServiceRegistry", "name": "_serviceRegistry", "type": "address" }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  {
     "anonymous": false,
     "inputs": [
-      { "indexed": false, "internalType": "uint256", "name": "groupId", "type": "uint256" },
-      { "indexed": false, "internalType": "uint16", "name": "groupTypeId", "type": "uint16" },
-      { "indexed": false, "internalType": "uint256[]", "name": "triggerIds", "type": "uint256[]" }
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "groupId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint16",
+        "name": "groupType",
+        "type": "uint16"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "cdpId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "triggerIds",
+        "type": "uint256[]"
+      }
     ],
     "name": "TriggerGroupAdded",
     "type": "event"
@@ -19,38 +33,75 @@
   {
     "anonymous": false,
     "inputs": [
-      { "indexed": false, "internalType": "uint256", "name": "groupId", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256[]", "name": "triggerIds", "type": "uint256[]" }
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "groupId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "cdpId",
+        "type": "uint256"
+      }
     ],
     "name": "TriggerGroupRemoved",
     "type": "event"
   },
   {
-    "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "name": "activeTriggerGroups",
-    "outputs": [
-      { "internalType": "bytes32", "name": "triggerGroupHash", "type": "bytes32" },
-      { "internalType": "uint256", "name": "cdpId", "type": "uint256" }
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "groupId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "cdpId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newTriggerId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "triggerType",
+        "type": "uint256"
+      }
     ],
-    "stateMutability": "view",
-    "type": "function"
+    "name": "TriggerGroupUpdated",
+    "type": "event"
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "cdpId", "type": "uint256" },
-      { "internalType": "uint16", "name": "groupTypeId", "type": "uint16" },
-      { "internalType": "uint256[]", "name": "triggerIds", "type": "uint256[]" }
-    ],
-    "name": "addRecord",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint16", "name": "groupTypeId", "type": "uint16" },
-      { "internalType": "uint256[]", "name": "replacedTriggerId", "type": "uint256[]" },
-      { "internalType": "bytes[]", "name": "triggersData", "type": "bytes[]" }
+      {
+        "internalType": "uint256",
+        "name": "groupId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint16",
+        "name": "groupType",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint256",
+        "name": "cdpId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "triggerIds",
+        "type": "uint256[]"
+      }
     ],
     "name": "addTriggerGroup",
     "outputs": [],
@@ -59,50 +110,21 @@
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "cdpId", "type": "uint256" },
-      { "internalType": "uint256", "name": "groupId", "type": "uint256" },
-      { "internalType": "uint256[]", "name": "triggerIds", "type": "uint256[]" }
-    ],
-    "name": "getTriggerGroupHash",
-    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "inputs": [{ "internalType": "uint16", "name": "groupTypeId", "type": "uint16" }],
-    "name": "getValidatorAddress",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "cdpId", "type": "uint256" },
-      { "internalType": "address", "name": "operator", "type": "address" },
-      { "internalType": "contract ManagerLike", "name": "manager", "type": "address" }
-    ],
-    "name": "isCdpAllowed",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "cdpId", "type": "uint256" },
-      { "internalType": "uint256", "name": "groupId", "type": "uint256" },
-      { "internalType": "uint256[]", "name": "triggerIds", "type": "uint256[]" }
-    ],
-    "name": "removeRecord",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "cdpId", "type": "uint256" },
-      { "internalType": "uint256", "name": "groupId", "type": "uint256" },
-      { "internalType": "uint256[]", "name": "triggerIds", "type": "uint256[]" },
-      { "internalType": "bool", "name": "removeAllowance", "type": "bool" }
+      {
+        "internalType": "uint256",
+        "name": "groupId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "cdpId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "triggerIds",
+        "type": "uint256[]"
+      }
     ],
     "name": "removeTriggerGroup",
     "outputs": [],
@@ -110,24 +132,41 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "self",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "serviceRegistry",
-    "outputs": [{ "internalType": "contract ServiceRegistry", "name": "", "type": "address" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "triggerGroupCounter",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "groupId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint16",
+        "name": "groupType",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint256",
+        "name": "cdpId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "oldTriggerId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "newTriggerId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "triggerType",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateTriggerGroup",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]
