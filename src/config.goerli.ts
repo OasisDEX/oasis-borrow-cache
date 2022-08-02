@@ -50,6 +50,8 @@ import { getLiquidationRatio } from './borrow/dependencies/getLiquidationRatio';
 import { exchangeTransformer } from './borrow/transformers/exchange';
 import { multiplyHistoryTransformer } from './borrow/transformers/multiplyHistoryTransformer';
 import { redeemerTransformer } from './borrow/transformers/referralRedeemer';
+import { aaveLendingPoolTransformer } from './borrow/transformers/aaveTransformer';
+import { lidoTransformer } from './borrow/transformers/lidoTransformer';
 
 const AutomationBotABI = require('../abis/automation-bot.json');
 
@@ -202,6 +204,10 @@ const commandMapping = [
     command_address: '0xB52B1c61c667d570FF62745b19A0c58011A4b32C',
     kind: 'basic-sell',
   },
+  {
+    command_address: '0x2eCC5086CE10194175607d0D082fC27c3416693d',
+    kind: 'basic-sell',
+  },
 ].map(({ command_address, kind }) => ({ command_address: command_address.toLowerCase(), kind }));
 
 const multiply = [
@@ -250,6 +256,20 @@ const oracles = getOraclesAddresses(goerliAddresses).map(description => ({
 
 const oraclesTransformers = oracles.map(getOracleTransformerName);
 
+const aaveLendingPool = [
+  {
+    address: "0x368EedF3f56ad10b9bC57eed4Dac65B26Bb667f6",
+    startingBlock: 7138747,
+  }
+]
+
+const lido = [
+  {
+    address: "0x24d8451bc07e7af4ba94f69acdd9ad3c6579d9fb",
+    startingBlock: 4533286 ,
+  }
+]
+
 export const config: UserProvidedSpockConfig = {
   startingBlock: GOERLI_STARTING_BLOCKS.GENESIS,
   extractors: [
@@ -262,6 +282,8 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors([automationAggregatorBot]),
     ...makeRawLogExtractors(multiply),
     ...makeRawLogExtractors(exchange),
+    ...makeRawLogExtractors(aaveLendingPool),
+    ...makeRawLogExtractors(lido),
     ...makeRawEventBasedOnTopicExtractor(flipper),
     ...makeRawEventBasedOnDSNoteTopic(flipperNotes),
     ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(
@@ -308,6 +330,8 @@ export const config: UserProvidedSpockConfig = {
     }),
     eventEnhancerGasPrice(vat, cdpManagers),
     ...redeemerTransformer(redeemer),
+    ...aaveLendingPoolTransformer(aaveLendingPool),
+    ...lidoTransformer(lido),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),

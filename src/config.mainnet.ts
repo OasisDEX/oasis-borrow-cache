@@ -48,6 +48,8 @@ import { multiplyHistoryTransformer } from './borrow/transformers/multiplyHistor
 import { initializeCommandAliases } from './utils';
 import { automationBotTransformer } from './borrow/transformers/automationBotTransformer';
 import { redeemerTransformer } from './borrow/transformers/referralRedeemer';
+import { lidoTransformer } from './borrow/transformers/lidoTransformer';
+import { aaveLendingPoolTransformer } from './borrow/transformers/aaveTransformer';
 
 const mainnetAddresses = require('./addresses/mainnet.json');
 
@@ -151,6 +153,10 @@ const commandMapping = [
     command_address: '0xF9469da48f9D2eA87e195e3DD522226e876A1185',
     kind: 'basic-sell',
   },
+  {
+    command_address: '0x5588d89A3C68E5a87Cafe6b79EF8cAA667a702f1',
+    kind: 'basic-sell',
+  },
 ].map(({ command_address, kind }) => ({ command_address: command_address.toLowerCase(), kind }));
 
 const addresses = {
@@ -213,6 +219,20 @@ const redeemer = [
   },
 ];
 
+const lido = [
+  {
+    address: '0x442af784a788a5bd6f42a01ebe9f287a871243fb',
+    startingBlock: 11473216,
+  }
+]
+
+const aaveLendingPool = [
+  {
+    address: '0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9',
+    startingBlock: 11362579,
+  }
+]
+
 export const config: UserProvidedSpockConfig = {
   startingBlock: GENESIS,
   extractors: [
@@ -220,6 +240,8 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors(cats),
     ...makeRawLogExtractors(dogs),
     ...makeRawLogExtractors(redeemer),
+    ...makeRawLogExtractors(lido),
+    ...makeRawLogExtractors(aaveLendingPool),
     ...makeRawLogExtractors([vat]),
     ...makeRawLogExtractors([automationBot]),
     ...makeRawEventBasedOnTopicExtractor(flipper),
@@ -271,6 +293,8 @@ export const config: UserProvidedSpockConfig = {
     }),
     eventEnhancerGasPrice(vat, cdpManagers),
     ...redeemerTransformer(redeemer),
+    ...lidoTransformer(lido),
+    ...aaveLendingPoolTransformer(aaveLendingPool),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),
