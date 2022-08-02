@@ -32,8 +32,6 @@ CREATE TABLE automation_aggregator_bot.trigger_group_updated_events (
 );
 ALTER TABLE automation_bot.trigger_added_events
 ADD COLUMN group_id decimal(78, 0);
-ALTER TABLE automation_bot.trigger_added_events
-ADD COLUMN trigger_type decimal(78, 0);
 DROP VIEW api.active_triggers;
 CREATE VIEW api.active_triggers as
 SELECT added.*
@@ -47,7 +45,6 @@ SELECT b.group_id,
     a.group_type,
     b.cdp_id,
     b.trigger_id,
-    b.trigger_type,
     b.command_address,
     b.trigger_data,
     b.block_id

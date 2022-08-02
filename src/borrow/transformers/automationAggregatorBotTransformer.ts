@@ -37,29 +37,16 @@ async function handleTriggerGroupAdded(
 
   // for constant multiple the first trigger type is 3 and second is 4 - hence index + 3
   let triggerAddedEventsUpdateData: object[] = [];
-  switch (values.group_type) {
-    case '1': {
-      values.trigger_ids.forEach((element: number, index: number) => {
-        triggerAddedEventsUpdateData.push({
-          group_id: values.group_id,
-          trigger_id: element,
-          trigger_type: index + 3,
-        });
-      });
-    }
-    default: {
-      values.trigger_ids.forEach((element: number, index: number) => {
-        triggerAddedEventsUpdateData.push({
-          group_id: values.group_id,
-          trigger_id: element,
-          trigger_type: index + 3,
-        });
-      });
-    }
-  }
+
+  values.trigger_ids.forEach((element: number, index: number) => {
+    triggerAddedEventsUpdateData.push({
+      group_id: values.group_id,
+      trigger_id: element,
+    });
+  });
 
   const triggerAddedEventsUpdateCs = new services.pg.helpers.ColumnSet(
-    ['group_id', 'trigger_type', '?trigger_id'],
+    ['group_id', '?trigger_id'],
     {
       table: {
         schema: 'automation_bot',
@@ -91,7 +78,6 @@ async function handleTriggerGroupUpdated(
   const values = {
     group_id: params.groupId.toNumber(),
     cdp_id: params.cdpId.toString(),
-    trigger_type: params.triggerType.toString(),
     new_trigger_id: params.newTriggerId.toNumber(),
 
     log_index: log.log_index,
@@ -101,9 +87,9 @@ async function handleTriggerGroupUpdated(
 
   await services.tx.none(
     `INSERT INTO automation_aggregator_bot.trigger_group_updated_events(
-        group_id, cdp_id, new_trigger_id, trigger_type, log_index, tx_id, block_id
+        group_id, cdp_id, new_trigger_id,  log_index, tx_id, block_id
       ) VALUES (
-          \${group_id}, \${cdp_id}, \${new_trigger_id},\${trigger_type}, \${log_index}, \${tx_id}, \${block_id}
+          \${group_id}, \${cdp_id}, \${new_trigger_id}, \${log_index}, \${tx_id}, \${block_id}
       );`,
     values,
   );
@@ -111,11 +97,10 @@ async function handleTriggerGroupUpdated(
   const triggerAddedEventsUpdateData: object = {
     group_id: values.group_id,
     trigger_id: values.new_trigger_id,
-    trigger_type: values.trigger_type,
   };
 
   const triggerAddedEventsUpdateCs = new services.pg.helpers.ColumnSet(
-    ['group_id', 'trigger_type', '?trigger_id'],
+    ['group_id', '?trigger_id'],
     {
       table: {
         schema: 'automation_bot',
