@@ -35,18 +35,16 @@ async function handleTriggerGroupAdded(
     block_id: log.block_id,
   };
 
-  // for constant multiple the first trigger type is 3 and second is 4 - hence index + 3
-  let triggerAddedEventsUpdateData: object[] = [];
-
-  values.trigger_ids.forEach((element: number, index: number) => {
-    triggerAddedEventsUpdateData.push({
+  const triggerAddedEventsUpdateData = values.trigger_ids.map((element: number) => {
+    return {
       group_id: values.group_id,
       trigger_id: element,
-    });
+      tx_id: values.tx_id,
+    };
   });
 
   const triggerAddedEventsUpdateCs = new services.pg.helpers.ColumnSet(
-    ['group_id', '?trigger_id'],
+    ['group_id', '?trigger_id', '?tx_id'],
     {
       table: {
         schema: 'automation_bot',
@@ -56,7 +54,7 @@ async function handleTriggerGroupAdded(
   );
   const triggerAddedEventsUpdateQuery =
     services.pg.helpers.update(triggerAddedEventsUpdateData, triggerAddedEventsUpdateCs) +
-    ' WHERE v.trigger_id = t.trigger_id';
+    ' WHERE v.trigger_id = t.trigger_id AND v.tx_id = t.tx_id';
 
   await services.tx.none(triggerAddedEventsUpdateQuery);
 
@@ -100,7 +98,7 @@ async function handleTriggerGroupUpdated(
   };
 
   const triggerAddedEventsUpdateCs = new services.pg.helpers.ColumnSet(
-    ['group_id', '?trigger_id'],
+    ['group_id', '?trigger_id', '?tx_id'],
     {
       table: {
         schema: 'automation_bot',
@@ -110,7 +108,7 @@ async function handleTriggerGroupUpdated(
   );
   const triggerAddedEventsUpdateQuery =
     services.pg.helpers.update(triggerAddedEventsUpdateData, triggerAddedEventsUpdateCs) +
-    ` WHERE trigger_id = ${values.new_trigger_id}`;
+    ` WHERE trigger_id = ${values.new_trigger_id} and tx_id = ${values.tx_id}`;
 
   await services.tx.none(triggerAddedEventsUpdateQuery);
 }
