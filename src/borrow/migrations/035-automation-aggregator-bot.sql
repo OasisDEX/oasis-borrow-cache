@@ -42,27 +42,6 @@ FROM automation_bot.trigger_added_events added
     LEFT JOIN automation_bot.trigger_executed_events executed ON added.trigger_id = executed.trigger_id
 WHERE removed.trigger_id IS NULL
     AND executed.trigger_id IS NULL;
-CREATE VIEW api.active_trigger_groups as
-SELECT b.group_id,
-    a.group_type,
-    b.cdp_id,
-    array_agg(b.trigger_id) trigger_ids,
-    array_agg(
-        b.trigger_type
-        ORDER BY b.trigger_type
-    ) trigger_types,
-    array_agg(b.command_address) trigger_commands
-FROM automation_bot.trigger_added_events b
-    LEFT JOIN automation_aggregator_bot.trigger_group_added_events a ON a.group_id = b.group_id
-    LEFT JOIN automation_bot.trigger_removed_events r ON b.trigger_id = r.trigger_id
-    LEFT JOIN automation_bot.trigger_executed_events e ON b.trigger_id = e.trigger_id
-WHERE r.trigger_id IS NULL
-    AND e.trigger_id IS NULL
-    AND b.group_id IS NOT NULL
-GROUP BY a.group_type,
-    b.group_id,
-    b.cdp_id
-ORDER BY b.group_id asc;
 CREATE VIEW api.active_groupped_triggers AS
 SELECT b.group_id,
     a.group_type,
