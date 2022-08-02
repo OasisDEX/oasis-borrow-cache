@@ -62,8 +62,8 @@ const GOERLI_STARTING_BLOCKS = {
   CDP_MANAGER: 5273301,
   MCD_CAT: 5273080,
   MCD_DOG: 5273080,
-  AUTOMATION_BOT: 7315183,
-  AUTOMATION_AGGREGATOR_BOT: 7315183,
+  AUTOMATION_BOT: 6707333,
+  AUTOMATION_AGGREGATOR_BOT: 7333522,
   MULTIPLY_PROXY_ACTIONS: 6187206,
 };
 
@@ -258,17 +258,17 @@ const oraclesTransformers = oracles.map(getOracleTransformerName);
 
 const aaveLendingPool = [
   {
-    address: "0x368EedF3f56ad10b9bC57eed4Dac65B26Bb667f6",
+    address: '0x368EedF3f56ad10b9bC57eed4Dac65B26Bb667f6',
     startingBlock: 7138747,
-  }
-]
+  },
+];
 
 const lido = [
   {
-    address: "0x24d8451bc07e7af4ba94f69acdd9ad3c6579d9fb",
-    startingBlock: 4533286 ,
-  }
-]
+    address: '0x24d8451bc07e7af4ba94f69acdd9ad3c6579d9fb',
+    startingBlock: 4533286,
+  },
+];
 
 export const config: UserProvidedSpockConfig = {
   startingBlock: GOERLI_STARTING_BLOCKS.GENESIS,
