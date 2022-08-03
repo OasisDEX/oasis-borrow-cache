@@ -47,6 +47,9 @@ import {
 import { multiplyHistoryTransformer } from './borrow/transformers/multiplyHistoryTransformer';
 import { initializeCommandAliases } from './utils';
 import { automationBotTransformer } from './borrow/transformers/automationBotTransformer';
+import { redeemerTransformer } from './borrow/transformers/referralRedeemer';
+import { lidoTransformer } from './borrow/transformers/lidoTransformer';
+import { aaveLendingPoolTransformer } from './borrow/transformers/aaveTransformer';
 
 const mainnetAddresses = require('./addresses/mainnet.json');
 
@@ -131,10 +134,30 @@ const automationBot = {
 
 const commandMapping = [
   {
-    command_address: '0xa553c3f4e65a1fc951b236142c1f69c1bca5bf2b'.toLowerCase(),
+    command_address: '0xa553c3f4e65a1fc951b236142c1f69c1bca5bf2b',
     kind: 'stop-loss',
   },
-];
+  {
+    command_address: '0x05fb55553e54afb33a5acc1f23b1f4fffd0d1af9',
+    kind: 'basic-buy',
+  },
+  {
+    command_address: '0xd36729c7cAc24e47DC32FfD7D433F965CAaeB912',
+    kind: 'basic-buy',
+  },
+  {
+    command_address: '0xa6bd41b821972e83d30598c5683efbbe6ad70fb8',
+    kind: 'basic-sell',
+  },
+  {
+    command_address: '0xF9469da48f9D2eA87e195e3DD522226e876A1185',
+    kind: 'basic-sell',
+  },
+  {
+    command_address: '0x5588d89A3C68E5a87Cafe6b79EF8cAA667a702f1',
+    kind: 'basic-sell',
+  },
+].map(({ command_address, kind }) => ({ command_address: command_address.toLowerCase(), kind }));
 
 const addresses = {
   ...mainnetAddresses,
@@ -189,12 +212,36 @@ const oracles = getOraclesAddresses(mainnetAddresses).map(description => ({
 
 const oraclesTransformers = oracles.map(getOracleTransformerName);
 
+const redeemer = [
+  {
+    address: '0xd9fabf81ed15ea71fbad0c1f77529a4755a38054',
+    startingBlock: 15178804,
+  },
+];
+
+const lido = [
+  {
+    address: '0x442af784a788a5bd6f42a01ebe9f287a871243fb',
+    startingBlock: 11473216,
+  }
+]
+
+const aaveLendingPool = [
+  {
+    address: '0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9',
+    startingBlock: 11362579,
+  }
+]
+
 export const config: UserProvidedSpockConfig = {
   startingBlock: GENESIS,
   extractors: [
     ...makeRawLogExtractors(cdpManagers),
     ...makeRawLogExtractors(cats),
     ...makeRawLogExtractors(dogs),
+    ...makeRawLogExtractors(redeemer),
+    ...makeRawLogExtractors(lido),
+    ...makeRawLogExtractors(aaveLendingPool),
     ...makeRawLogExtractors([vat]),
     ...makeRawLogExtractors([automationBot]),
     ...makeRawEventBasedOnTopicExtractor(flipper),
@@ -245,6 +292,9 @@ export const config: UserProvidedSpockConfig = {
       exchangeAddress: [...exchange],
     }),
     eventEnhancerGasPrice(vat, cdpManagers),
+    ...redeemerTransformer(redeemer),
+    ...lidoTransformer(lido),
+    ...aaveLendingPoolTransformer(aaveLendingPool),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),
