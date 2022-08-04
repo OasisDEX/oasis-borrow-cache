@@ -1,0 +1,1 @@
+alter table aave.reserve_data_updated add column reserve bytea not null;
