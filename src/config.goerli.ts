@@ -208,6 +208,14 @@ const commandMapping = [
     command_address: '0x2eCC5086CE10194175607d0D082fC27c3416693d',
     kind: 'basic-sell',
   },
+  {
+    command_address: '0x15c595cE24576924b2302BBcAD552E3dAdFA4469',
+    kind: 'cm-basic-sell',
+  },
+  {
+    command_address: '0xcbAAAe60EeAB8B3DF33fA84f704C0c43CEC29F73',
+    kind: 'cm-basic-buy',
+  },
 ].map(({ command_address, kind }) => ({ command_address: command_address.toLowerCase(), kind }));
 
 const multiply = [
