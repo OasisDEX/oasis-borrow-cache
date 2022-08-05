@@ -19,7 +19,7 @@ async function handleReserveDataUpdated(
   services: LocalServices,
 ): Promise<void> {
   const values = {
-    reserve: params.reserve.toString(),
+    reserve: params.reserve.toString().toLowerCase(),
     liquidityRate: params.liquidityRate.toString(),
     stableBorrowRate: params.stableBorrowRate.toString(),
     variableBorrowRate: params.variableBorrowRate.toString(),
