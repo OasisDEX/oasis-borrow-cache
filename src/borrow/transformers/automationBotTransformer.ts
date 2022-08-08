@@ -62,81 +62,12 @@ async function handleTriggerRemoved(
   );
 }
 
-async function handleTriggerExecuted(
-  params: Dictionary<any>,
-  log: PersistedLog,
-  services: LocalServices,
-) {
-  // Closed event exist for multiply vaults but not for borrow vaults.
-  // User can payback DAI and withdraw collateral, but it doesn't mean vault is closed.
-  // One can deposit collateral and generate again on existing vault. ~ŁW
-  const matchingVaultClosedEvent = await services.tx.oneOrNone(
-    `SELECT * FROM vault.multiply_events me WHERE
-       (kind = 'CLOSE_VAULT_TO_COLLATERAL' or kind = 'CLOSE_VAULT_TO_DAI') and tx_id = ${log.tx_id}
-      LIMIT 1;`,
-  );
-
-  const values = {
-    trigger_id: params.triggerId.toString(),
-    cdp_id: params.cdpId.toString(),
-    close_event_id: matchingVaultClosedEvent?.id,
-    log_index: log.log_index,
-    tx_id: log.tx_id,
-    block_id: log.block_id,
-  };
-  // we get the event where replaced trigger has been added - to get the group type
-  const executedTriggerAddedEvent = await services.tx.oneOrNone(
-    `SELECT * FROM automation_bot.trigger_added_events me WHERE
-       cdp_id = ${values.cdp_id} and trigger_id = ${values.trigger_id}`,
-  );
-
-  await services.tx.none(
-    `INSERT INTO automation_bot.trigger_executed_events(
-      trigger_id, cdp_id, vault_closed_event, log_index, tx_id, block_id
-  ) VALUES (
-      \${trigger_id}, \${cdp_id}, \${close_event_id}, \${log_index}, \${tx_id}, \${block_id}
-  );`,
-    values,
-  );
-
-  if (executedTriggerAddedEvent.group_id != null) {
-    // we get the event where the new (replacing) trigger has been added to get its trigger_id
-    const newTriggerAddedEvent = await services.tx.oneOrNone(
-      `SELECT * FROM automation_bot.trigger_added_events me WHERE
-       cdp_id = ${values.cdp_id} and tx_id = ${values.tx_id}`,
-    );
-
-    const triggerAddedEventsUpdateData: object = {
-      group_id: executedTriggerAddedEvent.group_id,
-      trigger_id: newTriggerAddedEvent.trigger_id,
-    };
-
-    const triggerAddedEventsUpdateCs = new services.pg.helpers.ColumnSet(
-      ['group_id', '?trigger_id', '?tx_id'],
-      {
-        table: {
-          schema: 'automation_bot',
-          table: 'trigger_added_events',
-        },
-      },
-    );
-    const triggerAddedEventsUpdateQuery =
-      services.pg.helpers.update(triggerAddedEventsUpdateData, triggerAddedEventsUpdateCs) +
-      ` WHERE trigger_id = ${newTriggerAddedEvent.trigger_id} and tx_id = ${values.tx_id}`;
-
-    await services.tx.none(triggerAddedEventsUpdateQuery);
-  }
-}
-
 const automationBotHandlers = {
   async TriggerAdded(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
     await handleTriggerAdded(event.params, log, services);
   },
   async TriggerRemoved(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
     await handleTriggerRemoved(event.params, log, services);
-  },
-  async TriggerExecuted(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
-    await handleTriggerExecuted(event.params, log, services);
   },
 };
 

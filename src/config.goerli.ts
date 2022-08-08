@@ -41,6 +41,7 @@ import {
   eventEnhancerTransformerEthPrice,
 } from './borrow/transformers/eventEnhancer';
 import { automationBotTransformer } from './borrow/transformers/automationBotTransformer';
+import { automationBotExecutedTransformer } from './borrow/transformers/automationBotExecutedTransformer';
 import { automationAggregatorBotTransformer } from './borrow/transformers/automationAggregatorBotTransformer';
 import { dsProxyTransformer } from './borrow/transformers/dsProxyTransformer';
 import { initializeCommandAliases, partialABI } from './utils';
@@ -310,6 +311,7 @@ export const config: UserProvidedSpockConfig = {
     flipTransformer(),
     flipNoteTransformer(),
     automationBotTransformer(automationBot, multiply),
+    automationBotExecutedTransformer(automationBot, { automationBot }),
     automationAggregatorBotTransformer(automationAggregatorBot, { automationBot }),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
     ...multiplyTransformer(multiply, {
