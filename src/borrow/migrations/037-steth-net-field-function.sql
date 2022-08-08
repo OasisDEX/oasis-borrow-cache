@@ -1,4 +1,4 @@
-TRUNCATE TABLE aave.reserve_data_updated
+TRUNCATE TABLE aave.reserve_data_updated;
 
 ALTER TABLE aave.reserve_data_updated ADD COLUMN reserve varchar
 (50);
