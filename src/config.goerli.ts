@@ -41,6 +41,7 @@ import {
   eventEnhancerTransformerEthPrice,
 } from './borrow/transformers/eventEnhancer';
 import { automationBotTransformer } from './borrow/transformers/automationBotTransformer';
+import { automationBotExecutedTransformer } from './borrow/transformers/automationBotExecutedTransformer';
 import { automationAggregatorBotTransformer } from './borrow/transformers/automationAggregatorBotTransformer';
 import { dsProxyTransformer } from './borrow/transformers/dsProxyTransformer';
 import { initializeCommandAliases, partialABI } from './utils';
@@ -63,7 +64,7 @@ const GOERLI_STARTING_BLOCKS = {
   MCD_CAT: 5273080,
   MCD_DOG: 5273080,
   AUTOMATION_BOT: 6707333,
-  AUTOMATION_AGGREGATOR_BOT: 7333522,
+  AUTOMATION_AGGREGATOR_BOT: 7368154,
   MULTIPLY_PROXY_ACTIONS: 6187206,
 };
 
@@ -208,14 +209,6 @@ const commandMapping = [
     command_address: '0x2eCC5086CE10194175607d0D082fC27c3416693d',
     kind: 'basic-sell',
   },
-  {
-    command_address: '0x15c595cE24576924b2302BBcAD552E3dAdFA4469',
-    kind: 'cm-basic-sell',
-  },
-  {
-    command_address: '0xcbAAAe60EeAB8B3DF33fA84f704C0c43CEC29F73',
-    kind: 'cm-basic-buy',
-  },
 ].map(({ command_address, kind }) => ({ command_address: command_address.toLowerCase(), kind }));
 
 const multiply = [
@@ -318,6 +311,7 @@ export const config: UserProvidedSpockConfig = {
     flipTransformer(),
     flipNoteTransformer(),
     automationBotTransformer(automationBot, multiply),
+    automationBotExecutedTransformer(automationBot, { automationBot, automationAggregatorBot }),
     automationAggregatorBotTransformer(automationAggregatorBot, { automationBot }),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
     ...multiplyTransformer(multiply, {

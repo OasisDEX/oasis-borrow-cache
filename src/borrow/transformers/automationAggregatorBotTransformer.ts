@@ -68,84 +68,9 @@ async function handleTriggerGroupAdded(
   );
 }
 
-async function handleTriggerGroupUpdated(
-  params: Dictionary<any>,
-  log: PersistedLog,
-  services: LocalServices,
-) {
-  const values = {
-    group_id: params.groupId.toNumber(),
-    cdp_id: params.cdpId.toString(),
-    new_trigger_id: params.newTriggerId.toNumber(),
-
-    log_index: log.log_index,
-    tx_id: log.tx_id,
-    block_id: log.block_id,
-  };
-
-  await services.tx.none(
-    `INSERT INTO automation_aggregator_bot.trigger_group_updated_events(
-        group_id, cdp_id, new_trigger_id,  log_index, tx_id, block_id
-      ) VALUES (
-          \${group_id}, \${cdp_id}, \${new_trigger_id}, \${log_index}, \${tx_id}, \${block_id}
-      );`,
-    values,
-  );
-
-  const triggerAddedEventsUpdateData: object = {
-    group_id: values.group_id,
-    trigger_id: values.new_trigger_id,
-  };
-
-  const triggerAddedEventsUpdateCs = new services.pg.helpers.ColumnSet(
-    ['group_id', '?trigger_id', '?tx_id'],
-    {
-      table: {
-        schema: 'automation_bot',
-        table: 'trigger_added_events',
-      },
-    },
-  );
-  const triggerAddedEventsUpdateQuery =
-    services.pg.helpers.update(triggerAddedEventsUpdateData, triggerAddedEventsUpdateCs) +
-    ` WHERE trigger_id = ${values.new_trigger_id} and tx_id = ${values.tx_id}`;
-
-  await services.tx.none(triggerAddedEventsUpdateQuery);
-}
-
-async function handleTriggerGroupRemoved(
-  params: Dictionary<any>,
-  log: PersistedLog,
-  services: LocalServices,
-) {
-  const values = {
-    group_id: params.groupId.toString(),
-    cdp_id: params.cdpId.toString(),
-
-    log_index: log.log_index,
-    tx_id: log.tx_id,
-    block_id: log.block_id,
-  };
-
-  await services.tx.none(
-    `INSERT INTO automation_aggregator_bot.trigger_group_removed_events(
-      group_id, cdp_id, log_index, tx_id, block_id
-    ) VALUES (
-        \${group_id},   \${cdp_id},  \${log_index}, \${tx_id}, \${block_id}
-    );`,
-    values,
-  );
-}
-
 const automationAggregatorBotHandlers = {
   async TriggerGroupAdded(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
     await handleTriggerGroupAdded(event.params, log, services);
-  },
-  async TriggerGroupRemoved(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
-    await handleTriggerGroupRemoved(event.params, log, services);
-  },
-  async TriggerGroupUpdated(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
-    await handleTriggerGroupUpdated(event.params, log, services);
   },
 };
 
