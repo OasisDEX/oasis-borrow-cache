@@ -52,15 +52,6 @@ async function handleTriggerExecuted(
        cdp_id = ${values.cdp_id} and trigger_id = ${values.trigger_id}`,
   );
 
-  await services.tx.none(
-    `INSERT INTO automation_bot.trigger_executed_events(
-      trigger_id, cdp_id, vault_closed_event, log_index, tx_id, block_id
-  ) VALUES (
-      \${trigger_id}, \${cdp_id}, \${close_event_id}, \${log_index}, \${tx_id}, \${block_id}
-  );`,
-    values,
-  );
-
   if (executedTriggerAddedEvent?.group_id != null) {
     // we get the event where the new (replacing) trigger has been added to get its trigger_id
     const newTriggerAddedEvent = await services.tx.oneOrNone(
