@@ -19,6 +19,7 @@ async function handleReserveDataUpdated(
   services: LocalServices,
 ): Promise<void> {
   const values = {
+    reserve: params.reserve.toString().toLowerCase(),
     liquidityRate: params.liquidityRate.toString(),
     stableBorrowRate: params.stableBorrowRate.toString(),
     variableBorrowRate: params.variableBorrowRate.toString(),
@@ -33,10 +34,10 @@ async function handleReserveDataUpdated(
   await services.tx.none(
     `INSERT INTO aave.reserve_data_updated(
           liquidity_rate, stable_borrow_rate, variable_borrow_rate, liquidity_index, variable_borrow_index,
-          log_index, tx_id, block_id
+          log_index, tx_id, block_id, reserve
         ) VALUES (
           \${liquidityRate}, \${stableBorrowRate}, \${variableBorrowRate}, \${liquidityIndex}, \${variableBorrowIndex},
-          \${log_index}, \${tx_id}, \${block_id}
+          \${log_index}, \${tx_id}, \${block_id}, \${reserve}
         );`,
     values,
   );
@@ -48,7 +49,8 @@ const landingPoolHandlers = {
   },
 };
 
-export const getAaveLendingPoolTransformerName = (address: string) => `aave-lending-pool-transformer-${address}`;
+export const getAaveLendingPoolTransformerName = (address: string) =>
+  `aave-lending-pool-transformer-${address}`;
 export const aaveLendingPoolTransformer: (
   addresses: (string | SimpleProcessorDefinition)[],
 ) => BlockTransformer[] = addresses => {
