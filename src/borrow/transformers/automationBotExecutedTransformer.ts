@@ -18,6 +18,10 @@ interface Dependencies {
     address: string;
     startingBlock: number;
   };
+  automationAggregatorBot: {
+    address: string;
+    startingBlock: number;
+  };
 }
 
 async function handleTriggerExecuted(
@@ -61,7 +65,7 @@ async function handleTriggerExecuted(
     // we get the event where the new (replacing) trigger has been added to get its trigger_id
     const newTriggerAddedEvent = await services.tx.oneOrNone(
       `SELECT * FROM automation_bot.trigger_added_events me WHERE
-       cdp_id = ${values.cdp_id} and tx_id = ${values.tx_id}`,
+       cdp_id = ${values.cdp_id} and tx_id = ${values.tx_id} and log_index=${values.log_index - 1}`,
     );
 
     const triggerAddedEventsUpdateData: object = {
@@ -78,6 +82,7 @@ async function handleTriggerExecuted(
         },
       },
     );
+
     const triggerAddedEventsUpdateQuery =
       services.pg.helpers.update(triggerAddedEventsUpdateData, triggerAddedEventsUpdateCs) +
       ` WHERE trigger_id = ${newTriggerAddedEvent.trigger_id} and tx_id = ${values.tx_id}`;
@@ -103,7 +108,10 @@ export const automationBotExecutedTransformer: (
   return {
     name: getAutomationBotExecutedTransformerName(deps.address),
     dependencies: [getExtractorName(deps.address)],
-    transformerDependencies: [`automationBotTransformer-${dependencies.automationBot.address}`],
+    transformerDependencies: [
+      `automationBotTransformer-${dependencies.automationBot.address}`,
+      `automationAggregatorBotTransformer-${dependencies.automationAggregatorBot.address}`,
+    ],
     transform: async (services, logs) => {
       await handleEvents(services, automationBotAbi, flatten(logs), automationBotExecutedHandlers);
     },
