@@ -56,7 +56,7 @@ async function handleTriggerExecuted(
     // we get the event where the new (replacing) trigger has been added to get its trigger_id
     const newTriggerAddedEvent = await services.tx.oneOrNone(
       `SELECT * FROM automation_bot.trigger_added_events me WHERE
-       cdp_id = ${values.cdp_id} and tx_id = ${values.tx_id} and log_index=${values.log_index - 1}`,
+       cdp_id = ${values.cdp_id} and tx_id = ${values.tx_id}`,
     );
 
     const triggerAddedEventsUpdateData: object = {
