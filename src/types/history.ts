@@ -137,6 +137,19 @@ interface MigrateEvent extends HistoryEventBase {
   kind: 'MIGRATE';
 }
 
+interface AddTrigger extends HistoryEventBase {
+  kind: 'ADD_TRIGGER';
+  trigger_id: string;
+  cdp_id: string;
+  command_address: string;
+  trigger_data: string;
+}
+interface RemoveTrigger extends HistoryEventBase {
+  kind: 'REMOVE_TRIGGER';
+  trigger_id: string;
+  cdp_id: string;
+}
+
 export type Event =
   | VaultOpenedEvent
   | WithdrawEvent
@@ -152,4 +165,6 @@ export type Event =
   | AuctionStartedEvent
   | WithdrawPaybackEvent
   | DepositGenerateEvent
-  | PaybackEvent;
+  | PaybackEvent
+  | AddTrigger
+  | RemoveTrigger;

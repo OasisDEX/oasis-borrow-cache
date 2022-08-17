@@ -59,3 +59,36 @@ export async function updateEventsWithEthPrice(
     `,
   );
 }
+
+export async function updateAutomationAddEventsWithEthPrice(
+  services: LocalServices,
+  eventsToPrice: EventToPrice[],
+): Promise<null> {
+  const updateValues = eventsToPrice
+    .map(({ price, id }) => ({ id, price: price || 0 }))
+    .map(({ id, price }) => `(${price},${id})`)
+    .join(',');
+  return services.tx.none(
+    `
+      UPDATE automation_bot.trigger_added_events SET eth_price = c.price
+      FROM (values${updateValues}) AS c(price, id) 
+      WHERE c.id = automation_bot.trigger_added_events.id;
+    `,
+  );
+}
+export async function updateAutomationRemoveEventsWithEthPrice(
+  services: LocalServices,
+  eventsToPrice: EventToPrice[],
+): Promise<null> {
+  const updateValues = eventsToPrice
+    .map(({ price, id }) => ({ id, price: price || 0 }))
+    .map(({ id, price }) => `(${price},${id})`)
+    .join(',');
+  return services.tx.none(
+    `
+      UPDATE automation_bot.trigger_removed_events SET eth_price = c.price
+      FROM (values${updateValues}) AS c(price, id) 
+      WHERE c.id = automation_bot.trigger_removed_events.id;
+    `,
+  );
+}
