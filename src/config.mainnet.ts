@@ -50,7 +50,6 @@ import { automationBotTransformer } from './borrow/transformers/automationBotTra
 import { redeemerTransformer } from './borrow/transformers/referralRedeemer';
 import { lidoTransformer } from './borrow/transformers/lidoTransformer';
 import { aaveLendingPoolTransformer } from './borrow/transformers/aaveTransformer';
-import { automationEventEnhancerGasPrice, automationEventEnhancerTransformerEthPrice } from './borrow/transformers/automationEventEnhancer';
 
 const mainnetAddresses = require('./addresses/mainnet.json');
 
@@ -224,15 +223,15 @@ const lido = [
   {
     address: '0x442af784a788a5bd6f42a01ebe9f287a871243fb',
     startingBlock: 11473216,
-  }
-]
+  },
+];
 
 const aaveLendingPool = [
   {
     address: '0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9',
     startingBlock: 11362579,
-  }
-]
+  },
+];
 
 export const config: UserProvidedSpockConfig = {
   startingBlock: GENESIS,
@@ -293,8 +292,6 @@ export const config: UserProvidedSpockConfig = {
       exchangeAddress: [...exchange],
     }),
     eventEnhancerGasPrice(vat, cdpManagers),
-    automationEventEnhancerGasPrice(automationBot, cdpManagers),
-    automationEventEnhancerTransformerEthPrice(automationBot, cdpManagers, oraclesTransformers),
     ...redeemerTransformer(redeemer),
     ...lidoTransformer(lido),
     ...aaveLendingPoolTransformer(aaveLendingPool),

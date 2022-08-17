@@ -18,31 +18,23 @@ import {
   updateAutomationAddEventsWithEthPrice,
   updateAutomationRemoveEventsWithEthPrice,
 } from '../../utils/pricesDb';
-import { getOpenCdpTransformerName } from './cdpManagerTransformer';
 import { Event } from 'src/types/history';
-import { getAutomationBotTransformerName } from './automationBotTransformer';
+import { getAutomationBotExecutedTransformerName } from './automationBotExecutedTransformer';
 
 export const automationEventEnhancerEthPriceTransformerName = `automation-event-enhancer-transformer-eth-price`;
 
 export const automationEventEnhancerTransformerEthPrice: (
-  automationBot: SimpleProcessorDefinition,
-  managers: SimpleProcessorDefinition[],
+  automationBotExecutedTransformer: SimpleProcessorDefinition,
   oraclesTransformers: string[],
-) => BlockTransformer = (
-  automationBot,
-  managers: SimpleProcessorDefinition[],
-  oraclesTransformers,
-) => {
+) => BlockTransformer = (automationBotExecutedTransformer, oraclesTransformers) => {
   return {
     name: automationEventEnhancerEthPriceTransformerName,
-    dependencies: [getExtractorName(automationBot.address)],
+    dependencies: [getExtractorName(automationBotExecutedTransformer.address)],
     transformerDependencies: [
-      getAutomationBotTransformerName(automationBot.address),
-      ...managers.map(getOpenCdpTransformerName),
+      getAutomationBotExecutedTransformerName(automationBotExecutedTransformer.address),
       ...oraclesTransformers,
-      // TODO: addautomationBotExecutedTransformer after aggregator is on mainnet
     ],
-    startingBlock: automationBot.startingBlock,
+    startingBlock: automationBotExecutedTransformer.startingBlock,
     transform: async (services, _logs) => {
       const logs = flatten(_logs);
       if (logs.length === 0) {
@@ -60,7 +52,7 @@ export const automationEventEnhancerTransformerEthPrice: (
         token: 'ETH',
       }));
       const removeEvents = (
-        await getAutomationAddEventsFromBlockRange(services, minBlock, maxBlock)
+        await getAutomationRemoveEventsFromBlockRange(services, minBlock, maxBlock)
       ).map(event => ({
         ...event,
         token: 'ETH',
@@ -82,17 +74,15 @@ export const automationEventEnhancerTransformerEthPrice: (
 export const automationEventEnhancerGasPriceName = 'automationEventEnhancerGasPrice';
 
 export const automationEventEnhancerGasPrice: (
-  automationBot: SimpleProcessorDefinition,
-  managers: SimpleProcessorDefinition[],
-) => BlockTransformer = (automationBot, managers: SimpleProcessorDefinition[]) => {
+  automationBotExecutedTransformer: SimpleProcessorDefinition,
+) => BlockTransformer = automationBotExecutedTransformer => {
   return {
     name: automationEventEnhancerGasPriceName,
-    dependencies: [getExtractorName(automationBot.address)],
+    dependencies: [getExtractorName(automationBotExecutedTransformer.address)],
     transformerDependencies: [
-      getAutomationBotTransformerName(automationBot.address),
-      // TODO: addautomationBotExecutedTransformer after aggregator is on mainnet
+      getAutomationBotExecutedTransformerName(automationBotExecutedTransformer.address),
     ],
-    startingBlock: automationBot.startingBlock,
+    startingBlock: automationBotExecutedTransformer.startingBlock,
     transform: async (services, _logs) => {
       const logs = flatten(_logs);
       if (logs.length === 0) {
