@@ -22,7 +22,6 @@ import { getOpenCdpTransformerName } from './cdpManagerTransformer';
 import { Event } from 'src/types/history';
 import { getAutomationBotTransformerName } from './automationBotTransformer';
 
-
 export const automationEventEnhancerEthPriceTransformerName = `automation-event-enhancer-transformer-eth-price`;
 
 export const automationEventEnhancerTransformerEthPrice: (
@@ -41,6 +40,7 @@ export const automationEventEnhancerTransformerEthPrice: (
       getAutomationBotTransformerName(automationBot.address),
       ...managers.map(getOpenCdpTransformerName),
       ...oraclesTransformers,
+      // TODO: addautomationBotExecutedTransformer after aggregator is on mainnet
     ],
     startingBlock: automationBot.startingBlock,
     transform: async (services, _logs) => {
@@ -90,7 +90,7 @@ export const automationEventEnhancerGasPrice: (
     dependencies: [getExtractorName(automationBot.address)],
     transformerDependencies: [
       getAutomationBotTransformerName(automationBot.address),
-      // add aggregator ?
+      // TODO: addautomationBotExecutedTransformer after aggregator is on mainnet
     ],
     startingBlock: automationBot.startingBlock,
     transform: async (services, _logs) => {
