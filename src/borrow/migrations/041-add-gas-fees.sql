@@ -22,7 +22,7 @@ CREATE VIEW api.trigger_events AS (
 	LEFT JOIN vulcan2x.block b
 	ON b.id = tae.block_id
     LEFT JOIN automation_aggregator_bot.trigger_group_added_events tga
-    ON tga.tx_id = tae.tx_id
+    ON tga.group_id = tae.group_id
 	UNION
 	SELECT  tre.id , tre.trigger_id , tre.cdp_id, tre.log_index , tx.hash , b."number", b."timestamp" ,'removed' AS event_type, tae.command_address, alias.kind, tae.trigger_data, tae.group_id, tre.gas_fee, tre.eth_price, tga.group_type  from automation_bot.trigger_removed_events tre
 	LEFT JOIN automation_bot.trigger_added_events  tae
@@ -34,7 +34,7 @@ CREATE VIEW api.trigger_events AS (
 	LEFT JOIN vulcan2x.block b
 	ON b.id = tre.block_id
     LEFT JOIN automation_aggregator_bot.trigger_group_added_events tga
-    ON tga.tx_id = tae.tx_id
+    ON tga.group_id = tae.group_id
 	UNION
 	SELECT  tee.id , tee.trigger_id , tee.cdp_id, tee.log_index , tx.hash , b."number", b."timestamp" ,'executed' AS event_type, tae.command_address,  alias.kind, tae.trigger_data, tae.group_id, tee.gas_fee, tee.eth_price ,tga.group_type from automation_bot.trigger_executed_events tee
 	LEFT JOIN automation_bot.trigger_added_events  tae
@@ -44,7 +44,7 @@ CREATE VIEW api.trigger_events AS (
 	LEFT JOIN vulcan2x."transaction" tx
 	ON tx.id = tee.tx_id
     LEFT JOIN automation_aggregator_bot.trigger_group_added_events tga
-    ON tga.tx_id = tae.tx_id
+    ON tga.group_id = tae.group_id
 	LEFT JOIN vulcan2x.block b
 	ON b.id = tee.block_id
 );
