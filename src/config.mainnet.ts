@@ -50,6 +50,7 @@ import { automationBotTransformer } from './borrow/transformers/automationBotTra
 import { redeemerTransformer } from './borrow/transformers/referralRedeemer';
 import { lidoTransformer } from './borrow/transformers/lidoTransformer';
 import { aaveLendingPoolTransformer } from './borrow/transformers/aaveTransformer';
+import { automationEventEnhancerGasPrice, automationEventEnhancerTransformerEthPrice } from './borrow/transformers/automationEventEnhancer';
 
 const mainnetAddresses = require('./addresses/mainnet.json');
 
@@ -292,6 +293,8 @@ export const config: UserProvidedSpockConfig = {
       exchangeAddress: [...exchange],
     }),
     eventEnhancerGasPrice(vat, cdpManagers),
+    automationEventEnhancerGasPrice(automationBot, cdpManagers),
+    automationEventEnhancerTransformerEthPrice(automationBot, cdpManagers, oraclesTransformers),
     ...redeemerTransformer(redeemer),
     ...lidoTransformer(lido),
     ...aaveLendingPoolTransformer(aaveLendingPool),
