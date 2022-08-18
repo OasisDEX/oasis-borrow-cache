@@ -53,6 +53,10 @@ import { multiplyHistoryTransformer } from './borrow/transformers/multiplyHistor
 import { redeemerTransformer } from './borrow/transformers/referralRedeemer';
 import { aaveLendingPoolTransformer } from './borrow/transformers/aaveTransformer';
 import { lidoTransformer } from './borrow/transformers/lidoTransformer';
+import {
+  automationEventEnhancerGasPrice,
+  automationEventEnhancerTransformerEthPrice,
+} from './borrow/transformers/automationEventEnhancer';
 
 const AutomationBotABI = require('../abis/automation-bot.json');
 
@@ -331,6 +335,8 @@ export const config: UserProvidedSpockConfig = {
       exchangeAddress: [...exchange],
     }),
     eventEnhancerGasPrice(vat, cdpManagers),
+    automationEventEnhancerGasPrice(automationBot),
+    automationEventEnhancerTransformerEthPrice(automationBot, oraclesTransformers),
     ...redeemerTransformer(redeemer),
     ...aaveLendingPoolTransformer(aaveLendingPool),
     ...lidoTransformer(lido),
