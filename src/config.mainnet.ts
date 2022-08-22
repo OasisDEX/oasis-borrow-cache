@@ -47,6 +47,8 @@ import {
 import { multiplyHistoryTransformer } from './borrow/transformers/multiplyHistoryTransformer';
 import { initializeCommandAliases } from './utils';
 import { automationBotTransformer } from './borrow/transformers/automationBotTransformer';
+import { automationBotExecutedTransformer } from './borrow/transformers/automationBotExecutedTransformer';
+import { automationAggregatorBotTransformer } from './borrow/transformers/automationAggregatorBotTransformer';
 import { redeemerTransformer } from './borrow/transformers/referralRedeemer';
 import { lidoTransformer } from './borrow/transformers/lidoTransformer';
 import { aaveLendingPoolTransformer } from './borrow/transformers/aaveTransformer';
@@ -130,6 +132,11 @@ const flipperNotes: AbiInfo[] = [
 const automationBot = {
   address: mainnetAddresses.AUTOMATION_BOT,
   startingBlock: 14583413,
+};
+
+const automationAggregatorBot = {
+  address: mainnetAddresses.AUTOMATION_AGGREGATOR_BOT,
+  startingBlock: 15389001,
 };
 
 const commandMapping = [
@@ -244,6 +251,7 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors(aaveLendingPool),
     ...makeRawLogExtractors([vat]),
     ...makeRawLogExtractors([automationBot]),
+    ...makeRawLogExtractors([automationAggregatorBot]),
     ...makeRawEventBasedOnTopicExtractor(flipper),
     ...makeRawEventBasedOnDSNoteTopic(flipperNotes),
     ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(
@@ -269,6 +277,8 @@ export const config: UserProvidedSpockConfig = {
     flipTransformer(),
     flipNoteTransformer(),
     automationBotTransformer(automationBot, multiply),
+    automationBotExecutedTransformer(automationBot, { automationBot, automationAggregatorBot }),
+    automationAggregatorBotTransformer(automationAggregatorBot, { automationBot }),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
     ...multiplyTransformer(multiply, {
       cdpManager: cdpManagers[0].address,
