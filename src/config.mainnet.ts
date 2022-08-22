@@ -133,10 +133,10 @@ const automationBot = {
   address: mainnetAddresses.AUTOMATION_BOT,
   startingBlock: 14583413,
 };
-// TODO: add block after deployment + address in mainnet.json
+
 const automationAggregatorBot = {
   address: mainnetAddresses.AUTOMATION_AGGREGATOR_BOT,
-  startingBlock: 0,
+  startingBlock: 15389001,
 };
 
 const commandMapping = [
