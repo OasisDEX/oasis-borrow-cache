@@ -275,3 +275,65 @@ export async function updateEventsWithGasFee(
     `,
   );
 }
+
+export function getAutomationRemoveEventsFromBlockRange(
+  services: LocalServices,
+  start: number,
+  end: number,
+): Promise<Event[]> {
+  const removeEvents = services.tx.manyOrNone(
+    `
+    SELECT r.*, t.hash, b.timestamp FROM automation_bot.trigger_removed_events r
+    JOIN vulcan2x.transaction t ON r.tx_id = t.id
+    JOIN vulcan2x.block b ON r.block_id = b.id
+    WHERE r.block_id >= ${start} AND r.block_id <= ${end}
+    `,
+  );
+
+  return removeEvents;
+}
+export function getAutomationAddEventsFromBlockRange(
+  services: LocalServices,
+  start: number,
+  end: number,
+): Promise<Event[]> {
+  const addEvents = services.tx.manyOrNone(
+    `
+    SELECT e.*, t.hash, b.timestamp FROM automation_bot.trigger_added_events e
+    JOIN vulcan2x.transaction t ON e.tx_id = t.id
+    JOIN vulcan2x.block b ON e.block_id = b.id
+    WHERE e.block_id >= ${start} AND e.block_id <= ${end}
+    `,
+  );
+
+  return addEvents;
+}
+export async function updateAutomationAddEventsWithGasFee(
+  services: LocalServices,
+  events: WithGasFee<Event>[],
+): Promise<null> {
+  const updateValues = events.map(({ id, gasFee }) => `(${gasFee.toString()},${id})`).join(',');
+
+  return services.tx.none(
+    `
+      UPDATE automation_bot.trigger_added_events SET gas_fee = c.gas_fee
+      FROM (values${updateValues}) AS c(gas_fee, id) 
+      WHERE c.id = automation_bot.trigger_added_events.id;
+    `,
+  );
+}
+
+export async function updateAutomationRemoveEventsWithGasFee(
+  services: LocalServices,
+  events: WithGasFee<Event>[],
+): Promise<null> {
+  const updateValues = events.map(({ id, gasFee }) => `(${gasFee.toString()},${id})`).join(',');
+
+  return services.tx.none(
+    `
+      UPDATE automation_bot.trigger_removed_events SET gas_fee = c.gas_fee
+      FROM (values${updateValues}) AS c(gas_fee, id) 
+      WHERE c.id = automation_bot.trigger_removed_events.id;
+    `,
+  );
+}
