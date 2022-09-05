@@ -194,6 +194,10 @@ const commandMapping = [
     kind: 'basic-buy',
   },
   {
+    command_address: '0xf19ae4c34e0e0dB13D074876A12339e86DC12f06',
+    kind: 'basic-buy',
+  },
+  {
     command_address: '0xd4f94e013c7F47B989Ea79C6527E065C027794c7',
     kind: 'basic-sell',
   },
@@ -211,6 +215,10 @@ const commandMapping = [
   },
   {
     command_address: '0x2eCC5086CE10194175607d0D082fC27c3416693d',
+    kind: 'basic-sell',
+  },
+  {
+    command_address: '0x940a17668197f71DcAefD77Bf8c43c001c77f5AC',
     kind: 'basic-sell',
   },
   {
