@@ -41,6 +41,8 @@ import {
   eventEnhancerTransformerEthPrice,
 } from './borrow/transformers/eventEnhancer';
 import { automationBotTransformer } from './borrow/transformers/automationBotTransformer';
+import { automationBotExecutedTransformer } from './borrow/transformers/automationBotExecutedTransformer';
+import { automationAggregatorBotTransformer } from './borrow/transformers/automationAggregatorBotTransformer';
 import { dsProxyTransformer } from './borrow/transformers/dsProxyTransformer';
 import { initializeCommandAliases, partialABI } from './utils';
 import { multiplyTransformer } from './borrow/transformers/multiply';
@@ -51,6 +53,10 @@ import { multiplyHistoryTransformer } from './borrow/transformers/multiplyHistor
 import { redeemerTransformer } from './borrow/transformers/referralRedeemer';
 import { aaveLendingPoolTransformer } from './borrow/transformers/aaveTransformer';
 import { lidoTransformer } from './borrow/transformers/lidoTransformer';
+import {
+  automationEventEnhancerGasPrice,
+  automationEventEnhancerTransformerEthPrice,
+} from './borrow/transformers/automationEventEnhancer';
 
 const AutomationBotABI = require('../abis/automation-bot.json');
 
@@ -62,6 +68,7 @@ const GOERLI_STARTING_BLOCKS = {
   MCD_CAT: 5273080,
   MCD_DOG: 5273080,
   AUTOMATION_BOT: 6707333,
+  AUTOMATION_AGGREGATOR_BOT: 7368154,
   MULTIPLY_PROXY_ACTIONS: 6187206,
 };
 
@@ -160,6 +167,11 @@ const automationBot = {
   startingBlock: GOERLI_STARTING_BLOCKS.AUTOMATION_BOT,
 };
 
+const automationAggregatorBot = {
+  address: goerliAddresses.AUTOMATION_AGGREGATOR_BOT,
+  startingBlock: GOERLI_STARTING_BLOCKS.AUTOMATION_AGGREGATOR_BOT,
+};
+
 const commandMapping = [
   {
     command_address: '0x31285A87fB70a62b5AaA43199e53221c197E1e3f',
@@ -182,6 +194,10 @@ const commandMapping = [
     kind: 'basic-buy',
   },
   {
+    command_address: '0xf19ae4c34e0e0dB13D074876A12339e86DC12f06',
+    kind: 'basic-buy',
+  },
+  {
     command_address: '0xd4f94e013c7F47B989Ea79C6527E065C027794c7',
     kind: 'basic-sell',
   },
@@ -200,6 +216,14 @@ const commandMapping = [
   {
     command_address: '0x2eCC5086CE10194175607d0D082fC27c3416693d',
     kind: 'basic-sell',
+  },
+  {
+    command_address: '0x940a17668197f71DcAefD77Bf8c43c001c77f5AC',
+    kind: 'basic-sell',
+  },
+  {
+    command_address: '0x02B7391cdd0c8A75ecFC278d387e3DCC3d796340',
+    kind: 'auto-take-profit',
   },
 ].map(({ command_address, kind }) => ({ command_address: command_address.toLowerCase(), kind }));
 
@@ -251,17 +275,17 @@ const oraclesTransformers = oracles.map(getOracleTransformerName);
 
 const aaveLendingPool = [
   {
-    address: "0x368EedF3f56ad10b9bC57eed4Dac65B26Bb667f6",
+    address: '0x368EedF3f56ad10b9bC57eed4Dac65B26Bb667f6',
     startingBlock: 7138747,
-  }
-]
+  },
+];
 
 const lido = [
   {
-    address: "0x24d8451bc07e7af4ba94f69acdd9ad3c6579d9fb",
-    startingBlock: 4533286 ,
-  }
-]
+    address: '0x24d8451bc07e7af4ba94f69acdd9ad3c6579d9fb',
+    startingBlock: 4533286,
+  },
+];
 
 export const config: UserProvidedSpockConfig = {
   startingBlock: GOERLI_STARTING_BLOCKS.GENESIS,
@@ -272,6 +296,7 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors(dogs),
     ...makeRawLogExtractors([vat]),
     ...makeRawLogExtractors([automationBot]),
+    ...makeRawLogExtractors([automationAggregatorBot]),
     ...makeRawLogExtractors(multiply),
     ...makeRawLogExtractors(exchange),
     ...makeRawLogExtractors(aaveLendingPool),
@@ -302,6 +327,8 @@ export const config: UserProvidedSpockConfig = {
     flipTransformer(),
     flipNoteTransformer(),
     automationBotTransformer(automationBot, multiply),
+    automationBotExecutedTransformer(automationBot, { automationBot, automationAggregatorBot }),
+    automationAggregatorBotTransformer(automationAggregatorBot, { automationBot }),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
     ...multiplyTransformer(multiply, {
       cdpManager: cdpManagers[0].address,
@@ -320,6 +347,8 @@ export const config: UserProvidedSpockConfig = {
       exchangeAddress: [...exchange],
     }),
     eventEnhancerGasPrice(vat, cdpManagers),
+    automationEventEnhancerGasPrice(automationBot),
+    automationEventEnhancerTransformerEthPrice(automationBot, oraclesTransformers),
     ...redeemerTransformer(redeemer),
     ...aaveLendingPoolTransformer(aaveLendingPool),
     ...lidoTransformer(lido),

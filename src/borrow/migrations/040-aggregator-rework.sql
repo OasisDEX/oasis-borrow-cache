@@ -1,0 +1,2 @@
+DROP TABLE automation_aggregator_bot.trigger_group_removed_events;
+DROP TABLE automation_aggregator_bot.trigger_group_updated_events;

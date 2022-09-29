@@ -47,9 +47,15 @@ import {
 import { multiplyHistoryTransformer } from './borrow/transformers/multiplyHistoryTransformer';
 import { initializeCommandAliases } from './utils';
 import { automationBotTransformer } from './borrow/transformers/automationBotTransformer';
+import { automationBotExecutedTransformer } from './borrow/transformers/automationBotExecutedTransformer';
+import { automationAggregatorBotTransformer } from './borrow/transformers/automationAggregatorBotTransformer';
 import { redeemerTransformer } from './borrow/transformers/referralRedeemer';
 import { lidoTransformer } from './borrow/transformers/lidoTransformer';
 import { aaveLendingPoolTransformer } from './borrow/transformers/aaveTransformer';
+import {
+  automationEventEnhancerGasPrice,
+  automationEventEnhancerTransformerEthPrice,
+} from './borrow/transformers/automationEventEnhancer';
 
 const mainnetAddresses = require('./addresses/mainnet.json');
 
@@ -132,6 +138,11 @@ const automationBot = {
   startingBlock: 14583413,
 };
 
+const automationAggregatorBot = {
+  address: mainnetAddresses.AUTOMATION_AGGREGATOR_BOT,
+  startingBlock: 15389001,
+};
+
 const commandMapping = [
   {
     command_address: '0xa553c3f4e65a1fc951b236142c1f69c1bca5bf2b',
@@ -146,6 +157,10 @@ const commandMapping = [
     kind: 'basic-buy',
   },
   {
+    command_address: '0x31285A87fB70a62b5AaA43199e53221c197E1e3f',
+    kind: 'basic-buy',
+  },
+  {
     command_address: '0xa6bd41b821972e83d30598c5683efbbe6ad70fb8',
     kind: 'basic-sell',
   },
@@ -155,6 +170,10 @@ const commandMapping = [
   },
   {
     command_address: '0x5588d89A3C68E5a87Cafe6b79EF8cAA667a702f1',
+    kind: 'basic-sell',
+  },
+  {
+    command_address: '0x7c0d6d8d6eae8bcb106afdb3a21df5c254c6c0b2',
     kind: 'basic-sell',
   },
 ].map(({ command_address, kind }) => ({ command_address: command_address.toLowerCase(), kind }));
@@ -223,15 +242,15 @@ const lido = [
   {
     address: '0x442af784a788a5bd6f42a01ebe9f287a871243fb',
     startingBlock: 11473216,
-  }
-]
+  },
+];
 
 const aaveLendingPool = [
   {
     address: '0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9',
     startingBlock: 11362579,
-  }
-]
+  },
+];
 
 export const config: UserProvidedSpockConfig = {
   startingBlock: GENESIS,
@@ -244,6 +263,7 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors(aaveLendingPool),
     ...makeRawLogExtractors([vat]),
     ...makeRawLogExtractors([automationBot]),
+    ...makeRawLogExtractors([automationAggregatorBot]),
     ...makeRawEventBasedOnTopicExtractor(flipper),
     ...makeRawEventBasedOnDSNoteTopic(flipperNotes),
     ...makeRawEventExtractorBasedOnTopicIgnoreConflicts(
@@ -269,6 +289,8 @@ export const config: UserProvidedSpockConfig = {
     flipTransformer(),
     flipNoteTransformer(),
     automationBotTransformer(automationBot, multiply),
+    automationBotExecutedTransformer(automationBot, { automationBot, automationAggregatorBot }),
+    automationAggregatorBotTransformer(automationAggregatorBot, { automationBot }),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
     ...multiplyTransformer(multiply, {
       cdpManager: cdpManagers[0].address,
@@ -292,6 +314,8 @@ export const config: UserProvidedSpockConfig = {
       exchangeAddress: [...exchange],
     }),
     eventEnhancerGasPrice(vat, cdpManagers),
+    automationEventEnhancerGasPrice(automationBot),
+    automationEventEnhancerTransformerEthPrice(automationBot, oraclesTransformers),
     ...redeemerTransformer(redeemer),
     ...lidoTransformer(lido),
     ...aaveLendingPoolTransformer(aaveLendingPool),
