@@ -1,3 +1,7 @@
+------------------------------
+-- create materialized view --
+------------------------------
+
 create materialized view aave.reserve_data_daily_averages as
 select avg(variable_borrow_rate)                         as variable_borrow_rate,
        reserve,
@@ -11,7 +15,11 @@ group by 2, 3;
 CREATE INDEX "reserve_data_daily_averages_reserve_idx" ON "aave"."reserve_data_daily_averages" ("reserve");
 CREATE INDEX "reserve_data_daily_averages_date_idx" ON "aave"."reserve_data_daily_averages" ("date");
 
-create or replace function api.aave_yield_rate(start_date date, end_date date, multiple decimal, reserve_param text)
+-------------------------------
+-- create new yield function --
+-------------------------------
+
+create or replace function api.aave_yield_rate(start_date date, end_date date, multiple decimal, reserve_address text)
     returns api.yield
     language plpgsql
 as
@@ -25,7 +33,8 @@ begin
                            * multiple - variable_borrow_rate * 100 / 1e27 * (multiple - 1)) as net_annualised_yield
     from lido.post_total_shares lpts
              join vulcan2x.block b on lpts.block_id = b.id
-             join aave.reserve_data_daily_averages br on br.date = date_trunc('day', b.timestamp at time zone 'utc') and br.reserve = reserve_param
+             join aave.reserve_data_daily_averages br
+                  on br.date = date_trunc('day', b.timestamp at time zone 'utc') and br.reserve = reserve_address
     where br.date >= start_date
       and br.date <= end_date
     into result;
