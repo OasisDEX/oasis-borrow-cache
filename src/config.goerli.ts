@@ -225,10 +225,6 @@ const commandMapping = [
     command_address: '0x02B7391cdd0c8A75ecFC278d387e3DCC3d796340',
     kind: 'auto-take-profit',
   },
-  {
-    command_address: '0xc3c42B67e4CBd6226b743352144D4B285c851F6e',
-    kind: 'auto-take-profit',
-  },
 ].map(({ command_address, kind }) => ({ command_address: command_address.toLowerCase(), kind }));
 
 const multiply = [
