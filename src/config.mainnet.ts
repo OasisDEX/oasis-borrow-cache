@@ -223,6 +223,10 @@ const exchange = [
     address: '0x12dcc776525c35836b10026929558208d1258b91',
     startingBlock: 13733602,
   },
+  {
+    address: '0xf22f17b1d2354b4f4f52e4d164e4eb5e1f0a6ba6',
+    startingBlock: 15774580,
+  },
 ];
 const oracles = getOraclesAddresses(mainnetAddresses).map(description => ({
   ...description,
