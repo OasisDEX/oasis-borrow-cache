@@ -127,6 +127,17 @@ event it needs to be multiplied by rate.
   ```
 - Remember to lowercase all addresses when saving them.
 
+## Sending messages to AWS SQS
+Fill in the required env variables :
+  - `AWS_ACCESS_KEY_ID=`
+  - `AWS_SECRET_ACCESS_KEY=`
+  - `AWS_REGION=`
+  - `AWS_SQS=local`
+
+To use the queue - import`sendQueueMessage` function and use it where desired - eg `oracleTransformer.ts`.
+
+If no `AWS_SQS` is provided or it is == `local` the messages will not be sent to the queue and will be displayed in the terminal - you can use the debug console to track them.
+
 ## Troubleshooting known issues
 
 ### Getting EHOSTUNREACH on some ip when running yarn start-etl
