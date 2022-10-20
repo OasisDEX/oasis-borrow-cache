@@ -1,5 +1,4 @@
 import * as AWS from 'aws-sdk';
-// var AWS = require('aws-sdk');
 
 function getSqs() {
   if (process.env.AWS_SQS !== 'local' || !process.env.AWS_SQS) {
