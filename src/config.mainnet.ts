@@ -176,6 +176,10 @@ const commandMapping = [
     command_address: '0x7c0d6d8d6eae8bcb106afdb3a21df5c254c6c0b2',
     kind: 'basic-sell',
   },
+  {
+    command_address: '0xC6ccab5d277d4780998362A418A86032548132B8',
+    kind: 'auto-take-profit',
+  },
 ].map(({ command_address, kind }) => ({ command_address: command_address.toLowerCase(), kind }));
 
 const addresses = {
@@ -222,6 +226,10 @@ const exchange = [
   {
     address: '0x12dcc776525c35836b10026929558208d1258b91',
     startingBlock: 13733602,
+  },
+  {
+    address: '0xf22f17b1d2354b4f4f52e4d164e4eb5e1f0a6ba6',
+    startingBlock: 15774580,
   },
 ];
 const oracles = getOraclesAddresses(mainnetAddresses).map(description => ({

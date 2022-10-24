@@ -1,4 +1,4 @@
-import { flatten } from 'lodash';
+import { flatten, max, min } from 'lodash';
 import { Dictionary } from 'ts-essentials';
 
 import { handleEvents, FullEventInfo } from '@oasisdex/spock-utils/dist/transformers/common';
@@ -17,6 +17,7 @@ async function handleReserveDataUpdated(
   params: Dictionary<any>,
   log: PersistedLog,
   services: LocalServices,
+  isRebuilding: boolean,
 ): Promise<void> {
   const values = {
     reserve: params.reserve.toString().toLowerCase(),
@@ -31,23 +32,29 @@ async function handleReserveDataUpdated(
     block_id: log.block_id,
   };
 
-  await services.tx.none(
-    `INSERT INTO aave.reserve_data_updated(
-          liquidity_rate, stable_borrow_rate, variable_borrow_rate, liquidity_index, variable_borrow_index,
-          log_index, tx_id, block_id, reserve
-        ) VALUES (
-          \${liquidityRate}, \${stableBorrowRate}, \${variableBorrowRate}, \${liquidityIndex}, \${variableBorrowIndex},
-          \${log_index}, \${tx_id}, \${block_id}, \${reserve}
-        );`,
+  const returned: { id: number } = await services.tx.one(
+    `INSERT INTO aave.reserve_data_updated(liquidity_rate, stable_borrow_rate, variable_borrow_rate,
+                                             liquidity_index, variable_borrow_index,
+                                             log_index, tx_id, block_id, reserve)
+       VALUES (\${liquidityRate}, \${stableBorrowRate}, \${variableBorrowRate}, \${liquidityIndex},
+               \${variableBorrowIndex},
+               \${log_index}, \${tx_id}, \${block_id}, \${reserve}) returning id;`,
     values,
   );
+
+  const shouldRefresh =
+    !isRebuilding && returned.id % 10 === 0; // refresh view takes around 12 seconds, so don't refresh when rebuilding from scratch // refresh every approx. 6 minutes
+
+  if (shouldRefresh) {
+    await services.tx.none(`refresh materialized view aave.reserve_data_daily_averages;`);
+  }
 }
 
-const landingPoolHandlers = {
+const landingPoolHandlers = (isRebuilding: boolean) => ({
   async ReserveDataUpdated(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
-    await handleReserveDataUpdated(event.params, log, services);
+    await handleReserveDataUpdated(event.params, log, services, isRebuilding);
   },
-};
+});
 
 export const getAaveLendingPoolTransformerName = (address: string) =>
   `aave-lending-pool-transformer-${address}`;
@@ -61,8 +68,24 @@ export const aaveLendingPoolTransformer: (
       name: getAaveLendingPoolTransformerName(deps.address),
       dependencies: [getExtractorName(deps.address)],
       startingBlock: deps.startingBlock,
-      transform: async (services, logs) => {
-        await handleEvents(services, lendingPoolAbi, flatten(logs), landingPoolHandlers);
+      transform: async (services, _logs) => {
+        const logs = flatten(_logs);
+        if (logs.length === 0) {
+          return;
+        }
+
+        const blocks = Array.from(new Set(logs.map(log => log.block_id)));
+        const minBlock: number = min(blocks);
+        const maxBlock: number = max(blocks);
+
+        const isRebuilding = minBlock !== maxBlock;
+
+        await handleEvents(
+          services,
+          lendingPoolAbi,
+          flatten(_logs),
+          landingPoolHandlers(isRebuilding),
+        );
       },
     };
   });
