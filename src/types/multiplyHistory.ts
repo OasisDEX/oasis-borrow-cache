@@ -166,7 +166,11 @@ export interface MPAAggregatedEvent {
   block_id: number;
 }
 
-const buyingCollateralEvents = ['OPEN_MULTIPLY_VAULT', 'OPEN_MULTIPLY_GUNI_VAULT', 'INCREASE_MULTIPLE'] as const;
+const buyingCollateralEvents = [
+  'OPEN_MULTIPLY_VAULT',
+  'OPEN_MULTIPLY_GUNI_VAULT',
+  'INCREASE_MULTIPLE',
+] as const;
 export function isBuyingCollateral(
   event: MultiplyEvent,
 ): event is FilterByKind<MultiplyEvent, typeof buyingCollateralEvents[number]> {
