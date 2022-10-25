@@ -42,8 +42,7 @@ async function handleReserveDataUpdated(
     values,
   );
 
-  const shouldRefresh =
-    !isRebuilding && returned.id % 10 === 0; // refresh view takes around 12 seconds, so don't refresh when rebuilding from scratch // refresh every approx. 6 minutes
+  const shouldRefresh = !isRebuilding && returned.id % 10 === 0; // refresh view takes around 12 seconds, so don't refresh when rebuilding from scratch // refresh every approx. 6 minutes
 
   if (shouldRefresh) {
     await services.tx.none(`refresh materialized view aave.reserve_data_daily_averages;`);

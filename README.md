@@ -149,4 +149,6 @@ Error: invalid response - 0
 ```
 
 #### Disabling IP6 just on your machine doesn't help?
-Call your internet provider to disable it. Alternatively try network shared from mobile or go to other place like office or cafe to try it.
+
+Call your internet provider to disable it. Alternatively try network shared from mobile or go to
+other place like office or cafe to try it.
