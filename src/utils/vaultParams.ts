@@ -5,7 +5,7 @@ export function getCollateralizationRatio(
   debt: BigNumber,
   collateral: BigNumber,
   osmPrice: BigNumber,
-  rate: BigNumber
+  rate: BigNumber,
 ): BigNumber {
   if (debt.eq(zero)) {
     return zero;

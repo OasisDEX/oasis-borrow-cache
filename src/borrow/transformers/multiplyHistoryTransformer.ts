@@ -111,7 +111,7 @@ export const multiplyHistoryTransformer: (
                   await parseMultiplyEvent(multiplyEvent, events, {
                     getTokenPrecision: address => getTokenPrecision(services, address),
                     getGasFee: hash => getGasFee(services, hash),
-                    getDaiTransfer: (txId) => getDaiTransfer(services, txId)
+                    getDaiTransfer: txId => getDaiTransfer(services, txId),
                   }),
                 ];
               }

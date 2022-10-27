@@ -180,6 +180,10 @@ const commandMapping = [
     command_address: '0xC6ccab5d277d4780998362A418A86032548132B8',
     kind: 'auto-take-profit',
   },
+  {
+    command_address: '0xcb1e2f1df93bb5640562dad05c15f7677bf17297',
+    kind: 'auto-take-profit',
+  },
 ].map(({ command_address, kind }) => ({ command_address: command_address.toLowerCase(), kind }));
 
 const addresses = {

@@ -53,7 +53,7 @@ export async function parseMultiplyEvent(
 
   const collateralChange = new BigNumber(lastEvent.collateral_amount);
 
-  const rate = new BigNumber(lastEvent.rate)
+  const rate = new BigNumber(lastEvent.rate);
   const oraclePrice = new BigNumber(lastEvent.oracle_price);
   const oazoFee = new BigNumber(multiplyEvent.oazo_fee).div(daiPrecision);
   const loanFee = new BigNumber(multiplyEvent.due).minus(multiplyEvent.borrowed).div(daiPrecision);
@@ -112,14 +112,9 @@ export async function parseMultiplyEvent(
       lastEvent.beforeDebt,
       lastEvent.beforeLockedCollateral,
       oraclePrice,
-      rate
+      rate,
     ),
-    multiple: getMultiple(
-      lastEvent.debt,
-      lastEvent.lockedCollateral,
-      oraclePrice,
-      rate
-    ),
+    multiple: getMultiple(lastEvent.debt, lastEvent.lockedCollateral, oraclePrice, rate),
     beforeLiquidationPrice: getLiquidationPrice(
       lastEvent.beforeDebt,
       lastEvent.beforeLockedCollateral,

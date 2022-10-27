@@ -22,7 +22,7 @@ async function handleClaim(
     user: params.user.toLowerCase(),
     week: params.week.toString(),
     amount: params.amount.toString(),
-    redeemer: log.address.toLocaleLowerCase(), 
+    redeemer: log.address.toLocaleLowerCase(),
 
     log_index: log.log_index,
     tx_id: log.tx_id,
