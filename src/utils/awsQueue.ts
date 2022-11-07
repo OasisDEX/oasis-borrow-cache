@@ -11,12 +11,14 @@ export enum MessageTypes {
 
 function getAWS() {
   if (process.env.AWS_SQS == 'production') {
-    AWS.config.update({
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-      region: process.env.AWS_REGION,
+    const aws = new AWS.SQS({ apiVersion: '2012-11-05' });
+    aws.config.getCredentials(function(err) {
+      if (err) console.log(err.stack);
+      else {
+        console.log('Access key:', AWS?.config?.credentials?.accessKeyId);
+      }
     });
-    return new AWS.SQS({ apiVersion: '2012-11-05' });
+    return aws;
   } else {
     const aws = {
       sendMessage: (
