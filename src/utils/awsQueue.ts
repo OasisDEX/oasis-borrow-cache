@@ -2,20 +2,17 @@ import * as AWS from 'aws-sdk';
 
 export enum MessageNames {
   FROB = 'Frob',
-  OSM = 'OSM'
+  OSM = 'OSM',
+  START = 'Start',
 }
 export enum MessageTypes {
   VAULT = 'VaultEvent',
   OSM = 'OsmEvent',
+  ETL = 'EtlStarted',
 }
 
 function getAWS() {
   if (process.env.AWS_SQS == 'production') {
-    AWS.config.update({
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-      region: process.env.AWS_REGION,
-    });
     return new AWS.SQS({ apiVersion: '2012-11-05' });
   } else {
     const aws = {
