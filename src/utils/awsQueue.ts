@@ -3,10 +3,12 @@ import * as AWS from 'aws-sdk';
 export enum MessageNames {
   FROB = 'Frob',
   OSM = 'OSM',
+  START = 'Start',
 }
 export enum MessageTypes {
   VAULT = 'VaultEvent',
   OSM = 'OsmEvent',
+  ETL = 'EtlStarted',
 }
 
 function getAWS() {
