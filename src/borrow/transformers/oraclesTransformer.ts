@@ -14,7 +14,7 @@ import { wad } from '../../utils/precision';
 import { normalizeAddressDefinition } from '../../utils';
 import { getCustomExtractorNameBasedOnTopicIgnoreConflicts } from '../customExtractors';
 import { providers } from 'ethers';
-import { aws } from '../../utils/awsQueue';
+import { MessageNames, MessageTypes, sendMessage } from '../../utils/awsQueue';
 
 const oracleAbi = require('../../../abis/oracle.json');
 const lpOracleAbi = require('../../../abis/lp-oracle.json');
@@ -105,34 +105,13 @@ const handlers = (token: string) => ({
       await getNextPriceFromStorage(services, log, block.number),
     ];
     await savePrices(services, log, token, price, nextPrice, block.timestamp);
-    aws.sendMessage(
-      {
-        MessageAttributes: {
-          Name: {
-            DataType: 'String',
-            StringValue: `TokenPrice`,
-          },
-          Type: {
-            DataType: 'String',
-            StringValue: `OsmEvent`,
-          },
-          Value: {
-            DataType: 'String',
-            StringValue: `${price}`,
-          },
-        },
-        MessageBody: `OSM-${token}-${price}-${nextPrice}`,
-        MessageDeduplicationId: `${token}x${block.number}`,
-        MessageGroupId: token,
-        QueueUrl: process.env.AWS_QUEUE_URL!,
-      },
-      function(err: any, data: any) {
-        if (err) {
-          console.log('Error', err);
-        } else {
-          console.log('Success', data.MessageId);
-        }
-      },
+    sendMessage(
+      MessageNames.OSM,
+      MessageTypes.OSM,
+      price.toString(),
+      `OSM-${token}-${price}-${nextPrice}`,
+      `${token}x${block.number}`,
+      token,
     );
   },
   async Value(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
@@ -144,34 +123,13 @@ const handlers = (token: string) => ({
       new BigNumber(event.params.nxtVal).div(wad),
     ];
     await savePrices(services, log, token, price, nextPrice, block.timestamp);
-    aws.sendMessage(
-      {
-        MessageAttributes: {
-          Name: {
-            DataType: 'String',
-            StringValue: `TokenPrice`,
-          },
-          Type: {
-            DataType: 'String',
-            StringValue: `OsmEvent`,
-          },
-          Value: {
-            DataType: 'String',
-            StringValue: `${price}`,
-          },
-        },
-        MessageBody: `OSM-${token}-${price}-${nextPrice}`,
-        MessageDeduplicationId: `${token}x${block.number}`,
-        MessageGroupId: token,
-        QueueUrl: process.env.AWS_QUEUE_URL!,
-      },
-      function(err: any, data: any) {
-        if (err) {
-          console.log('Error', err);
-        } else {
-          console.log('Success', data.MessageId);
-        }
-      },
+    sendMessage(
+      MessageNames.OSM,
+      MessageTypes.OSM,
+      price.toString(),
+      `OSM-${token}-${price}-${nextPrice}`,
+      `${token}x${block.number}`,
+      token,
     );
   },
 });
