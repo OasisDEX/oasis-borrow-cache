@@ -14,6 +14,7 @@ import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
 import { normalizeAddressDefinition } from '../../utils';
 import { BigNumber } from 'bignumber.js';
 import { wad, ray, rad } from '../../utils/precision';
+import { aws } from '../../utils/awsQueue';
 
 const vatAbi = require('../../../abis/vat.json');
 
@@ -211,7 +212,35 @@ export const vatCombineTransformer: (
 
           const dink = new BigNumber(frob.dink).div(wad);
           const dart = new BigNumber(frob.dart).div(wad);
-
+          aws.sendMessage(
+            {
+              MessageAttributes: {
+                Name: {
+                  DataType: 'String',
+                  StringValue: `Frob`,
+                },
+                Type: {
+                  DataType: 'String',
+                  StringValue: `VaultEvent`,
+                },
+                Value: {
+                  DataType: 'String',
+                  StringValue: `${frob.u}`,
+                },
+              },
+              MessageBody: `FROB-${frob.u}`,
+              MessageDeduplicationId: `${frob.u}x${frob.block_id}`,
+              MessageGroupId: frob.u,
+              QueueUrl: process.env.AWS_QUEUE_URL!,
+            },
+            function(err: any, data: any) {
+              if (err) {
+                console.log('Error', err);
+              } else {
+                console.log('Success', data.MessageId);
+              }
+            },
+          );
           return {
             kind: [
               !dink.isZero() && `${dink.gt(0) ? 'DEPOSIT' : 'WITHDRAW'}`,
