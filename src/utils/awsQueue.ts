@@ -2,7 +2,7 @@ import * as AWS from 'aws-sdk';
 
 export enum MessageNames {
   FROB = 'Frob',
-  OSM = 'OSM'
+  OSM = 'OSM',
 }
 export enum MessageTypes {
   VAULT = 'VaultEvent',
