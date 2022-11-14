@@ -4,6 +4,8 @@ export enum MessageNames {
   FROB = 'Frob',
   OSM = 'OSM',
   START = 'Start',
+  AUCTION_STARTED_V2 = 'AUCTION_STARTED_V2',
+  AUCTION_FINISHED_V2 = 'AUCTION_FINISHED_V2',
 }
 export enum MessageTypes {
   VAULT = 'VaultEvent',
@@ -35,6 +37,14 @@ function getAWS() {
 }
 const aws = getAWS();
 
+/**
+ * @param {MessageNames}  name - Message Name eg Frob.
+ * @param {MessageTypes} type - Message type eg VaultEvent.
+ * @param {string} value - Depends on message - eg urn address.
+ * @param {string} messageBody - The message to send. The minimum size is one character. The maximum size is 256 KB.
+ * @param {string} messageDeduplicationId - The token used for deduplication of sent messages.
+ * @param {string} messageGroupId - The tag that specifies that a message belongs to a specific message group.
+ */
 export function sendMessage(
   name: MessageNames,
   type: MessageTypes,
