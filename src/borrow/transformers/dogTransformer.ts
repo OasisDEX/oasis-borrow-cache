@@ -16,6 +16,7 @@ import BigNumber from 'bignumber.js';
 import { clipperTransformerName } from './clipperTransformer';
 import { rad, wad } from '../../utils/precision';
 import { cleanUpString } from '../../utils/cleanUpString';
+import { MessageNames, MessageTypes, sendMessage } from '../../utils/awsQueue';
 
 const dogAbi = require('../../../abis/dog.json');
 async function handleBark(
@@ -109,6 +110,16 @@ async function handleLiq2AuctionStarted(
             \${log_index}, \${tx_id}, \${block_id}
           );`,
     event,
+  );
+  sendMessage(
+    MessageNames.AUCTION_STARTED_V2,
+    MessageTypes.VAULT,
+    params.urn.toLowerCase(),
+    `${MessageNames.AUCTION_STARTED_V2}-${params.urn.toLowerCase()}`,
+    `${
+      MessageNames.AUCTION_STARTED_V2
+    }-${params.urn.toLowerCase()}-${timestamp.timestamp.toString()}`,
+    `${params.urn.toLowerCase()}`,
   );
 }
 

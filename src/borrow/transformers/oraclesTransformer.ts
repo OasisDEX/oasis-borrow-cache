@@ -15,6 +15,7 @@ import { normalizeAddressDefinition } from '../../utils';
 import { getCustomExtractorNameBasedOnTopicIgnoreConflicts } from '../customExtractors';
 import { providers } from 'ethers';
 import { MessageNames, MessageTypes, sendMessage } from '../../utils/awsQueue';
+import { eligibleTokens } from '../../types/discover';
 
 const oracleAbi = require('../../../abis/oracle.json');
 const lpOracleAbi = require('../../../abis/lp-oracle.json');
@@ -105,14 +106,16 @@ const handlers = (token: string) => ({
       await getNextPriceFromStorage(services, log, block.number),
     ];
     await savePrices(services, log, token, price, nextPrice, block.timestamp);
-    sendMessage(
-      MessageNames.OSM,
-      MessageTypes.OSM,
-      price.toString(),
-      `OSM-${token}-${price}-${nextPrice}`,
-      `${token}x${block.number}`,
-      token,
-    );
+    if (eligibleTokens.includes(token)) {
+      sendMessage(
+        MessageNames.OSM,
+        MessageTypes.OSM,
+        price.toString(),
+        `OSM-${token}-${price}-${nextPrice}`,
+        `${token}x${block.number}`,
+        token,
+      );
+    }
   },
   async Value(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
     const block = await services.tx.oneOrNone(
@@ -123,14 +126,16 @@ const handlers = (token: string) => ({
       new BigNumber(event.params.nxtVal).div(wad),
     ];
     await savePrices(services, log, token, price, nextPrice, block.timestamp);
-    sendMessage(
-      MessageNames.OSM,
-      MessageTypes.OSM,
-      price.toString(),
-      `OSM-${token}-${price}-${nextPrice}`,
-      `${token}x${block.number}`,
-      token,
-    );
+    if (eligibleTokens.includes(token)) {
+      sendMessage(
+        MessageNames.OSM,
+        MessageTypes.OSM,
+        price.toString(),
+        `OSM-${token}-${price}-${nextPrice}`,
+        `${token}x${block.number}`,
+        token,
+      );
+    }
   },
 });
 
