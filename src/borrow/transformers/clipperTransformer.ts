@@ -138,12 +138,12 @@ const handleAuctionTake = async (
     sendMessage(
       MessageNames.AUCTION_FINISHED_V2,
       MessageTypes.VAULT,
-      params.urn.toLowerCase(),
-      `${MessageNames.AUCTION_FINISHED_V2}-${params.urn.toLowerCase()}`,
+      bark.urn.toLowerCase(),
+      `${MessageNames.AUCTION_FINISHED_V2}-${bark.urn.toLowerCase()}`,
       `${
         MessageNames.AUCTION_FINISHED_V2
-      }-${params.urn.toLowerCase()}-${timestamp.timestamp.toString()}`,
-      `${params.urn.toLowerCase()}`,
+      }-${bark.urn.toLowerCase()}-${log.block_id.toString()}`,
+      `${bark.urn.toLowerCase()}`,
     );
   }
 };
