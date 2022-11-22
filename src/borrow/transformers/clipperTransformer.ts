@@ -142,7 +142,7 @@ const handleAuctionTake = async (
       `${MessageNames.AUCTION_FINISHED_V2}-${params.urn.toLowerCase()}`,
       `${
         MessageNames.AUCTION_FINISHED_V2
-      }-${params.urn.toLowerCase()}-${timestamp.timestamp.toString()}`,
+      }-${params.urn.toLowerCase()}-${params.block_id.toString()}`,
       `${params.urn.toLowerCase()}`,
     );
   }

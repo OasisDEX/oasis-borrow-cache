@@ -116,9 +116,7 @@ async function handleLiq2AuctionStarted(
     MessageTypes.VAULT,
     params.urn.toLowerCase(),
     `${MessageNames.AUCTION_STARTED_V2}-${params.urn.toLowerCase()}`,
-    `${
-      MessageNames.AUCTION_STARTED_V2
-    }-${params.urn.toLowerCase()}-${timestamp.timestamp.toString()}`,
+    `${MessageNames.AUCTION_STARTED_V2}-${params.urn.toLowerCase()}-${params.block_id.toString()}`,
     `${params.urn.toLowerCase()}`,
   );
 }
