@@ -40,7 +40,10 @@ import {
   eventEnhancerTransformer,
   eventEnhancerTransformerEthPrice,
 } from './borrow/transformers/eventEnhancer';
-import { automationBotTransformer } from './borrow/transformers/automationBotTransformer';
+import {
+  automationBotTransformer,
+  automationBotV2Transformer,
+} from './borrow/transformers/automationBotTransformer';
 import { automationBotExecutedTransformer } from './borrow/transformers/automationBotExecutedTransformer';
 import { automationAggregatorBotTransformer } from './borrow/transformers/automationAggregatorBotTransformer';
 import { dsProxyTransformer } from './borrow/transformers/dsProxyTransformer';
@@ -68,6 +71,7 @@ const GOERLI_STARTING_BLOCKS = {
   MCD_CAT: 5273080,
   MCD_DOG: 5273080,
   AUTOMATION_BOT: 6707333,
+  AUTOMATION_BOT_V2: 7962787,
   AUTOMATION_AGGREGATOR_BOT: 7368154,
   MULTIPLY_PROXY_ACTIONS: 6187206,
 };
@@ -165,6 +169,11 @@ const flipperNotes: AbiInfo[] = [
 const automationBot = {
   address: goerliAddresses.AUTOMATION_BOT,
   startingBlock: GOERLI_STARTING_BLOCKS.AUTOMATION_BOT,
+};
+
+const automationBotV2 = {
+  address: goerliAddresses.AUTOMATION_BOT_V2,
+  startingBlock: GOERLI_STARTING_BLOCKS.AUTOMATION_BOT_V2,
 };
 
 const automationAggregatorBot = {
@@ -327,6 +336,7 @@ export const config: UserProvidedSpockConfig = {
     flipTransformer(),
     flipNoteTransformer(),
     automationBotTransformer(automationBot, multiply),
+    automationBotV2Transformer(automationBotV2, multiply),
     automationBotExecutedTransformer(automationBot, { automationBot, automationAggregatorBot }),
     automationAggregatorBotTransformer(automationAggregatorBot, { automationBot }),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
