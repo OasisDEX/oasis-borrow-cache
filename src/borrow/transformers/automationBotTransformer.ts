@@ -12,6 +12,7 @@ import { normalizeAddressDefinition } from '../../utils';
 import { getMultiplyTransformerName } from './multiply';
 
 const automationBotAbi = require('../../../abis/automation-bot.json');
+const automationBotV2Abi = require('../../../abis/automation-bot-v2.json');
 
 async function handleTriggerAdded(
   params: Dictionary<any>,
@@ -20,10 +21,11 @@ async function handleTriggerAdded(
 ) {
   const values = {
     trigger_id: params.triggerId.toString(),
-    cdp_id: params.cdpId.toString(),
+    cdp_id: params.cdpId?params.cdpId.toString():"0",
     command_address: params.commandAddress.toLowerCase(),
+    continous: params.continous,
+    trigger_type: params.triggerType?params.triggerType.toString():undefined,
     trigger_data: params.triggerData.toString(),
-
     log_index: log.log_index,
     tx_id: log.tx_id,
     block_id: log.block_id,
@@ -31,9 +33,9 @@ async function handleTriggerAdded(
 
   await services.tx.none(
     `INSERT INTO automation_bot.trigger_added_events(
-      trigger_id, cdp_id, command_address, trigger_data, log_index, tx_id, block_id
+      trigger_id, cdp_id, command_address, continous, trigger_type, trigger_data, log_index, tx_id, block_id
     ) VALUES (
-        \${trigger_id}, \${cdp_id}, \${command_address}, \${trigger_data}, \${log_index}, \${tx_id}, \${block_id}
+        \${trigger_id}, \${cdp_id}, \${command_address}, \${continous}, \${trigger_type}, \${trigger_data}, \${log_index}, \${tx_id}, \${block_id}
     );`,
     values,
   );
@@ -46,7 +48,7 @@ async function handleTriggerRemoved(
 ) {
   const values = {
     trigger_id: params.triggerId.toString(),
-    cdp_id: params.cdpId.toString(),
+    cdp_id: params.cdpId?params.cdpId.toString():"0",
 
     log_index: log.log_index,
     tx_id: log.tx_id,
@@ -78,7 +80,7 @@ async function handleTriggerExecuted(
 
   const values = {
     trigger_id: params.triggerId.toString(),
-    cdp_id: params.cdpId.toString(),
+    cdp_id: params.cdpId?params.cdpId.toString():"0",
     close_event_id: matchingVaultClosedEvent?.id,
     log_index: log.log_index,
     tx_id: log.tx_id,
@@ -106,8 +108,24 @@ const automationBotHandlers = {
   },
 };
 
+const automationBotV2Handlers = {
+  async TriggerAdded(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
+    await handleTriggerAdded(event.params, log, services);
+  },
+  async TriggerRemoved(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
+    await handleTriggerRemoved(event.params, log, services);
+  },
+  async TriggerExecuted(services: LocalServices, { event, log }: FullEventInfo): Promise<void> {
+    await handleTriggerExecuted(event.params, log, services);
+  },
+};
+
 export const getAutomationBotTransformerName = (address: string) =>
   `automationBotTransformer-${address}`;
+
+export const getAutomationBotV2TransformerName = (address: string) =>
+  `automationBotF2Transformer-${address}`;
+
 export const automationBotTransformer: (
   address: string | SimpleProcessorDefinition,
   multiplyProxyActionsAddress: SimpleProcessorDefinition[],
@@ -122,6 +140,24 @@ export const automationBotTransformer: (
     ),
     transform: async (services, logs) => {
       await handleEvents(services, automationBotAbi, flatten(logs), automationBotHandlers);
+    },
+  };
+};
+
+export const automationBotV2Transformer: (
+  address: string | SimpleProcessorDefinition,
+  multiplyProxyActionsAddress: SimpleProcessorDefinition[],
+) => BlockTransformer = (address, multiplyProxyActionsAddress) => {
+  const deps = normalizeAddressDefinition(address);
+
+  return {
+    name: getAutomationBotV2TransformerName(deps.address),
+    dependencies: [getExtractorName(deps.address)],
+    transformerDependencies: multiplyProxyActionsAddress.map(mpa =>
+      getMultiplyTransformerName(mpa),
+    ),
+    transform: async (services, logs) => {
+      await handleEvents(services, automationBotV2Abi, flatten(logs), automationBotV2Handlers);
     },
   };
 };
