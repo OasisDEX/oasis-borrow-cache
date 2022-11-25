@@ -305,6 +305,7 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors(dogs),
     ...makeRawLogExtractors([vat]),
     ...makeRawLogExtractors([automationBot]),
+    ...makeRawLogExtractors([automationBotV2]),
     ...makeRawLogExtractors([automationAggregatorBot]),
     ...makeRawLogExtractors(multiply),
     ...makeRawLogExtractors(exchange),
