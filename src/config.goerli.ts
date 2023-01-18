@@ -44,7 +44,10 @@ import {
   automationBotTransformer,
   automationBotV2Transformer,
 } from './borrow/transformers/automationBotTransformer';
-import { automationBotExecutedTransformer } from './borrow/transformers/automationBotExecutedTransformer';
+import {
+  automationBotExecutedTransformerV1,
+  automationBotExecutedTransformerV2,
+} from './borrow/transformers/automationBotExecutedTransformer';
 import { automationAggregatorBotTransformer } from './borrow/transformers/automationAggregatorBotTransformer';
 import { dsProxyTransformer } from './borrow/transformers/dsProxyTransformer';
 import { initializeCommandAliases, partialABI } from './utils';
@@ -57,8 +60,10 @@ import { redeemerTransformer } from './borrow/transformers/referralRedeemer';
 import { aaveLendingPoolTransformer } from './borrow/transformers/aaveTransformer';
 import { lidoTransformer } from './borrow/transformers/lidoTransformer';
 import {
-  automationEventEnhancerGasPrice,
-  automationEventEnhancerTransformerEthPrice,
+  automationEventEnhancerGasPriceV1,
+  automationEventEnhancerGasPriceV2,
+  automationEventEnhancerTransformerEthPriceV1,
+  automationEventEnhancerTransformerEthPriceV2,
 } from './borrow/transformers/automationEventEnhancer';
 
 const AutomationBotABI = require('../abis/automation-bot.json');
@@ -338,7 +343,8 @@ export const config: UserProvidedSpockConfig = {
     flipNoteTransformer(),
     automationBotTransformer(automationBot, multiply),
     automationBotV2Transformer(automationBotV2, multiply),
-    automationBotExecutedTransformer(automationBot, { automationBot, automationAggregatorBot }),
+    automationBotExecutedTransformerV1(automationBot,{ automationBot, automationAggregatorBot }),
+    automationBotExecutedTransformerV2(automationBotV2,{  automationBotV2 }),
     automationAggregatorBotTransformer(automationAggregatorBot, { automationBot }),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
     ...multiplyTransformer(multiply, {
@@ -358,8 +364,10 @@ export const config: UserProvidedSpockConfig = {
       exchangeAddress: [...exchange],
     }),
     eventEnhancerGasPrice(vat, cdpManagers),
-    automationEventEnhancerGasPrice(automationBot),
-    automationEventEnhancerTransformerEthPrice(automationBot, oraclesTransformers),
+    automationEventEnhancerGasPriceV1(automationBot),
+    automationEventEnhancerTransformerEthPriceV1(automationBot, oraclesTransformers),
+    automationEventEnhancerGasPriceV2(automationBotV2),
+    automationEventEnhancerTransformerEthPriceV2(automationBotV2, oraclesTransformers),
     ...redeemerTransformer(redeemer),
     ...aaveLendingPoolTransformer(aaveLendingPool),
     ...lidoTransformer(lido),

@@ -10,6 +10,7 @@ import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
 import { normalizeAddressDefinition } from '../../utils';
 import { getMultiplyTransformerName } from './multiply';
+import { utils } from 'ethers';
 
 const automationBotAbi = require('../../../abis/automation-bot.json');
 const automationBotV2Abi = require('../../../abis/automation-bot-v2.json');
@@ -19,10 +20,20 @@ async function handleTriggerAdded(
   log: PersistedLog,
   services: LocalServices,
 ) {
+
+  // TODO could be moved to common as mapping of all v2 command addre
+  const automationV2CommandAddresses = ['0xec1bb74f5799811c0c1bff94ef76fb40abccbe4a']
+  const proxy_address = automationV2CommandAddresses.includes(params.commandAddress.toLowerCase())
+    ? utils.defaultAbiCoder.decode(
+      ['address', 'uint16', 'address', 'address', 'uint256', 'uint32'],
+      params.triggerData.toString(),
+    )[0].toLowerCase() : '0x0'
+
   const values = {
     trigger_id: params.triggerId.toString(),
     cdp_id: params.cdpId?params.cdpId.toString():"0",
     command_address: params.commandAddress.toLowerCase(),
+    proxy_address,
     continous: params.continous,
     trigger_type: params.triggerType?params.triggerType.toString():undefined,
     trigger_data: params.triggerData.toString(),
@@ -33,9 +44,9 @@ async function handleTriggerAdded(
 
   await services.tx.none(
     `INSERT INTO automation_bot.trigger_added_events(
-      trigger_id, cdp_id, command_address, continous, trigger_type, trigger_data, log_index, tx_id, block_id
+      trigger_id, cdp_id, command_address, proxy_address, continous, trigger_type, trigger_data, log_index, tx_id, block_id
     ) VALUES (
-        \${trigger_id}, \${cdp_id}, \${command_address}, \${continous}, \${trigger_type}, \${trigger_data}, \${log_index}, \${tx_id}, \${block_id}
+        \${trigger_id}, \${cdp_id}, \${command_address}, \${proxy_address}, \${continous}, \${trigger_type}, \${trigger_data}, \${log_index}, \${tx_id}, \${block_id}
     );`,
     values,
   );
@@ -124,7 +135,7 @@ export const getAutomationBotTransformerName = (address: string) =>
   `automationBotTransformer-${address}`;
 
 export const getAutomationBotV2TransformerName = (address: string) =>
-  `automationBotF2Transformer-${address}`;
+  `automationBotV2Transformer-${address}`;
 
 export const automationBotTransformer: (
   address: string | SimpleProcessorDefinition,
