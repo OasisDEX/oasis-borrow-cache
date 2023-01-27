@@ -195,7 +195,7 @@ const commandMapping = [
     kind: 'auto-take-profit',
   },
   {
-    command_address: '0xec1bb74f5799811c0c1bff94ef76fb40abccbe4a',
+    command_address: '0xe78acea26b79564c4d29d8c1f5bad3d4e0414676',
     kind: 'stop-loss',
   },
 ].map(({ command_address, kind }) => ({ command_address: command_address.toLowerCase(), kind }));

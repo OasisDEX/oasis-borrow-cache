@@ -10,7 +10,7 @@ import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
 import { normalizeAddressDefinition } from '../../utils';
 import { getMultiplyTransformerName } from './multiply';
-import { utils } from 'ethers';
+import { decodeTriggerDataAsJson } from '@oasisdex/automation';
 
 const automationBotAbi = require('../../../abis/automation-bot.json');
 const automationBotV2Abi = require('../../../abis/automation-bot-v2.json');
@@ -20,20 +20,14 @@ async function handleTriggerAdded(
   log: PersistedLog,
   services: LocalServices,
 ) {
-
-  // TODO could be moved to common as mapping of all v2 command addre
-  const automationV2CommandAddresses = ['0xec1bb74f5799811c0c1bff94ef76fb40abccbe4a']
-  const proxy_address = automationV2CommandAddresses.includes(params.commandAddress.toLowerCase())
-    ? utils.defaultAbiCoder.decode(
-      ['address', 'uint16', 'address', 'address', 'uint256', 'uint32'],
-      params.triggerData.toString(),
-    )[0].toLowerCase() : '0x0'
+  const chainId = process.env.VL_CHAIN_NAME === 'mainnet' ? 1 : 5;
+  const { positionAddress } = decodeTriggerDataAsJson(params.commandAddress.toLowerCase(), chainId, params.triggerData.toString())
 
   const values = {
     trigger_id: params.triggerId.toString(),
     cdp_id: params.cdpId?params.cdpId.toString():"0",
     command_address: params.commandAddress.toLowerCase(),
-    proxy_address,
+    proxy_address: positionAddress ? positionAddress.toLowerCase() : '0x0',
     continous: params.continous,
     trigger_type: params.triggerType?params.triggerType.toString():undefined,
     trigger_data: params.triggerData.toString(),
