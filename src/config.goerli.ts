@@ -239,6 +239,10 @@ const commandMapping = [
     command_address: '0x02B7391cdd0c8A75ecFC278d387e3DCC3d796340',
     kind: 'auto-take-profit',
   },
+  {
+    command_address: '0xe78acea26b79564c4d29d8c1f5bad3d4e0414676',
+    kind: 'aave-stop-loss',
+  },
 ].map(({ command_address, kind }) => ({ command_address: command_address.toLowerCase(), kind }));
 
 const multiply = [
