@@ -27,7 +27,7 @@ async function handleTriggerAdded(
     trigger_id: params.triggerId.toString(),
     cdp_id: params.cdpId?params.cdpId.toString():"0",
     command_address: params.commandAddress.toLowerCase(),
-    proxy_address: positionAddress ? positionAddress.toLowerCase() : '0x0',
+    proxy_address: positionAddress ? positionAddress.toLowerCase() : undefined,
     continous: params.continous,
     trigger_type: params.triggerType?params.triggerType.toString():undefined,
     trigger_data: params.triggerData.toString(),

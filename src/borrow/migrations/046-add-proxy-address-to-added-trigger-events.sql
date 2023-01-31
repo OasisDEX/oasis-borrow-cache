@@ -1,7 +1,7 @@
 DROP VIEW api.active_triggers;
 
 ALTER TABLE automation_bot.trigger_added_events
-    ADD COLUMN proxy_address character varying(66) not null default '0x0';
+    ADD COLUMN proxy_address character varying(66) default null;
 
 CREATE VIEW api.active_triggers as
     SELECT added.*
