@@ -19,19 +19,25 @@ import {
   updateAutomationRemoveEventsWithEthPrice,
 } from '../../utils/pricesDb';
 import { Event } from 'src/types/history';
-import { getAutomationBotExecutedTransformerName } from './automationBotExecutedTransformer';
+import {
+  automationBotExecutedTransformerName, automationBotV2ExecutedTransformerName,
+  getAutomationBotExecutedTransformerName,
+} from './automationBotExecutedTransformer';
 
 export const automationEventEnhancerEthPriceTransformerName = `automation-event-enhancer-transformer-eth-price`;
+export const automationV2EventEnhancerEthPriceTransformerName = `automation-v2-event-enhancer-transformer-eth-price`;
 
 export const automationEventEnhancerTransformerEthPrice: (
   automationBotExecutedTransformer: SimpleProcessorDefinition,
   oraclesTransformers: string[],
-) => BlockTransformer = (automationBotExecutedTransformer, oraclesTransformers) => {
+  name: string,
+  executedTransformerName: string,
+) => BlockTransformer = (automationBotExecutedTransformer, oraclesTransformers, name, executedTransformerName) => {
   return {
-    name: automationEventEnhancerEthPriceTransformerName,
+    name,
     dependencies: [getExtractorName(automationBotExecutedTransformer.address)],
     transformerDependencies: [
-      getAutomationBotExecutedTransformerName(automationBotExecutedTransformer.address),
+      getAutomationBotExecutedTransformerName(automationBotExecutedTransformer.address, executedTransformerName),
       ...oraclesTransformers,
     ],
     startingBlock: automationBotExecutedTransformer.startingBlock,
@@ -72,15 +78,18 @@ export const automationEventEnhancerTransformerEthPrice: (
 };
 
 export const automationEventEnhancerGasPriceName = 'automationEventEnhancerGasPrice';
+export const automationV2EventEnhancerGasPriceName = 'automationV2EventEnhancerGasPrice';
 
 export const automationEventEnhancerGasPrice: (
   automationBotExecutedTransformer: SimpleProcessorDefinition,
-) => BlockTransformer = automationBotExecutedTransformer => {
+  name: string,
+  executedTransformerName: string,
+) => BlockTransformer = (automationBotExecutedTransformer, name, executedTransformerName) => {
   return {
-    name: automationEventEnhancerGasPriceName,
+    name,
     dependencies: [getExtractorName(automationBotExecutedTransformer.address)],
     transformerDependencies: [
-      getAutomationBotExecutedTransformerName(automationBotExecutedTransformer.address),
+      getAutomationBotExecutedTransformerName(automationBotExecutedTransformer.address, executedTransformerName),
     ],
     startingBlock: automationBotExecutedTransformer.startingBlock,
     transform: async (services, _logs) => {
@@ -123,3 +132,48 @@ export const automationEventEnhancerGasPrice: (
     },
   };
 };
+
+
+export const automationEventEnhancerGasPriceV1 = (
+  automationBotExecutedTransformer: SimpleProcessorDefinition
+)  => {
+  return automationEventEnhancerGasPrice(
+    automationBotExecutedTransformer,
+    automationEventEnhancerGasPriceName,
+    automationBotExecutedTransformerName
+  )
+}
+
+export const automationEventEnhancerGasPriceV2 = (
+  automationBotExecutedTransformer: SimpleProcessorDefinition
+) => {
+  return automationEventEnhancerGasPrice(
+    automationBotExecutedTransformer,
+    automationV2EventEnhancerGasPriceName,
+    automationBotV2ExecutedTransformerName
+  )
+}
+
+export const automationEventEnhancerTransformerEthPriceV1 = (
+  automationBotExecutedTransformer: SimpleProcessorDefinition,
+  oraclesTransformers: string[],
+) => {
+  return automationEventEnhancerTransformerEthPrice(
+    automationBotExecutedTransformer,
+    oraclesTransformers,
+    automationEventEnhancerEthPriceTransformerName,
+    automationBotExecutedTransformerName
+  )
+}
+
+export const automationEventEnhancerTransformerEthPriceV2 = (
+  automationBotExecutedTransformer: SimpleProcessorDefinition,
+  oraclesTransformers: string[],
+) => {
+  return automationEventEnhancerTransformerEthPrice(
+    automationBotExecutedTransformer,
+    oraclesTransformers,
+    automationV2EventEnhancerEthPriceTransformerName,
+    automationBotV2ExecutedTransformerName
+  )
+}
