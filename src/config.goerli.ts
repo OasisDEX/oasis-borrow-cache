@@ -40,8 +40,14 @@ import {
   eventEnhancerTransformer,
   eventEnhancerTransformerEthPrice,
 } from './borrow/transformers/eventEnhancer';
-import { automationBotTransformer } from './borrow/transformers/automationBotTransformer';
-import { automationBotExecutedTransformer } from './borrow/transformers/automationBotExecutedTransformer';
+import {
+  automationBotTransformer,
+  automationBotV2Transformer,
+} from './borrow/transformers/automationBotTransformer';
+import {
+  automationBotExecutedTransformerV1,
+  automationBotExecutedTransformerV2,
+} from './borrow/transformers/automationBotExecutedTransformer';
 import { automationAggregatorBotTransformer } from './borrow/transformers/automationAggregatorBotTransformer';
 import { dsProxyTransformer } from './borrow/transformers/dsProxyTransformer';
 import { initializeCommandAliases, partialABI } from './utils';
@@ -54,8 +60,10 @@ import { redeemerTransformer } from './borrow/transformers/referralRedeemer';
 import { aaveLendingPoolTransformer } from './borrow/transformers/aaveTransformer';
 import { lidoTransformer } from './borrow/transformers/lidoTransformer';
 import {
-  automationEventEnhancerGasPrice,
-  automationEventEnhancerTransformerEthPrice,
+  automationEventEnhancerGasPriceV1,
+  automationEventEnhancerGasPriceV2,
+  automationEventEnhancerTransformerEthPriceV1,
+  automationEventEnhancerTransformerEthPriceV2,
 } from './borrow/transformers/automationEventEnhancer';
 
 const AutomationBotABI = require('../abis/automation-bot.json');
@@ -68,6 +76,7 @@ const GOERLI_STARTING_BLOCKS = {
   MCD_CAT: 5273080,
   MCD_DOG: 5273080,
   AUTOMATION_BOT: 6707333,
+  AUTOMATION_BOT_V2: 7962787,
   AUTOMATION_AGGREGATOR_BOT: 7368154,
   MULTIPLY_PROXY_ACTIONS: 6187206,
 };
@@ -167,6 +176,11 @@ const automationBot = {
   startingBlock: GOERLI_STARTING_BLOCKS.AUTOMATION_BOT,
 };
 
+const automationBotV2 = {
+  address: goerliAddresses.AUTOMATION_BOT_V2,
+  startingBlock: GOERLI_STARTING_BLOCKS.AUTOMATION_BOT_V2,
+};
+
 const automationAggregatorBot = {
   address: goerliAddresses.AUTOMATION_AGGREGATOR_BOT,
   startingBlock: GOERLI_STARTING_BLOCKS.AUTOMATION_AGGREGATOR_BOT,
@@ -224,6 +238,10 @@ const commandMapping = [
   {
     command_address: '0x02B7391cdd0c8A75ecFC278d387e3DCC3d796340',
     kind: 'auto-take-profit',
+  },
+  {
+    command_address: '0xe78acea26b79564c4d29d8c1f5bad3d4e0414676',
+    kind: 'aave-stop-loss',
   },
 ].map(({ command_address, kind }) => ({ command_address: command_address.toLowerCase(), kind }));
 
@@ -296,6 +314,7 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors(dogs),
     ...makeRawLogExtractors([vat]),
     ...makeRawLogExtractors([automationBot]),
+    ...makeRawLogExtractors([automationBotV2]),
     ...makeRawLogExtractors([automationAggregatorBot]),
     ...makeRawLogExtractors(multiply),
     ...makeRawLogExtractors(exchange),
@@ -327,7 +346,9 @@ export const config: UserProvidedSpockConfig = {
     flipTransformer(),
     flipNoteTransformer(),
     automationBotTransformer(automationBot, multiply),
-    automationBotExecutedTransformer(automationBot, { automationBot, automationAggregatorBot }),
+    automationBotV2Transformer(automationBotV2, multiply),
+    automationBotExecutedTransformerV1(automationBot,{ automationBot, automationAggregatorBot }),
+    automationBotExecutedTransformerV2(automationBotV2,{  automationBotV2 }),
     automationAggregatorBotTransformer(automationAggregatorBot, { automationBot }),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
     ...multiplyTransformer(multiply, {
@@ -347,8 +368,10 @@ export const config: UserProvidedSpockConfig = {
       exchangeAddress: [...exchange],
     }),
     eventEnhancerGasPrice(vat, cdpManagers),
-    automationEventEnhancerGasPrice(automationBot),
-    automationEventEnhancerTransformerEthPrice(automationBot, oraclesTransformers),
+    automationEventEnhancerGasPriceV1(automationBot),
+    automationEventEnhancerTransformerEthPriceV1(automationBot, oraclesTransformers),
+    automationEventEnhancerGasPriceV2(automationBotV2),
+    automationEventEnhancerTransformerEthPriceV2(automationBotV2, oraclesTransformers),
     ...redeemerTransformer(redeemer),
     ...aaveLendingPoolTransformer(aaveLendingPool),
     ...lidoTransformer(lido),
