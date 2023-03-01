@@ -61,6 +61,7 @@ import {
   automationEventEnhancerTransformerEthPriceV1,
   automationEventEnhancerTransformerEthPriceV2,
 } from './borrow/transformers/automationEventEnhancer';
+import { aavev3LendingPoolTransformer } from './borrow/transformers/aavev3Transformer';
 
 const mainnetAddresses = require('./addresses/mainnet.json');
 
@@ -282,6 +283,13 @@ const aaveLendingPool = [
   },
 ];
 
+const aavev3Pool = [
+  {
+    address: '0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2',
+    startingBlock: 16291127
+  }
+];
+
 export const config: UserProvidedSpockConfig = {
   startingBlock: GENESIS,
   extractors: [
@@ -291,6 +299,7 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors(redeemer),
     ...makeRawLogExtractors(lido),
     ...makeRawLogExtractors(aaveLendingPool),
+    ...makeRawLogExtractors(aavev3Pool),
     ...makeRawLogExtractors([vat]),
     ...makeRawLogExtractors([automationBot]),
     ...makeRawLogExtractors([automationBotV2]),
@@ -354,6 +363,7 @@ export const config: UserProvidedSpockConfig = {
     ...redeemerTransformer(redeemer),
     ...lidoTransformer(lido),
     ...aaveLendingPoolTransformer(aaveLendingPool),
+    ...aavev3LendingPoolTransformer(aavev3Pool),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),
