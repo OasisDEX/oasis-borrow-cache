@@ -65,6 +65,7 @@ import {
   automationEventEnhancerTransformerEthPriceV1,
   automationEventEnhancerTransformerEthPriceV2,
 } from './borrow/transformers/automationEventEnhancer';
+import { aavev3LendingPoolTransformer } from './borrow/transformers/aavev3Transformer';
 
 const AutomationBotABI = require('../abis/automation-bot.json');
 
@@ -298,6 +299,13 @@ const aaveLendingPool = [
   },
 ];
 
+const aavev3Pool = [
+  {
+    address: '0x7b5C526B7F8dfdff278b4a3e045083FBA4028790',
+    startingBlock: 8300001
+  }
+];
+
 const lido = [
   {
     address: '0x24d8451bc07e7af4ba94f69acdd9ad3c6579d9fb',
@@ -319,6 +327,7 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors(multiply),
     ...makeRawLogExtractors(exchange),
     ...makeRawLogExtractors(aaveLendingPool),
+    ...makeRawLogExtractors(aavev3Pool),
     ...makeRawLogExtractors(lido),
     ...makeRawEventBasedOnTopicExtractor(flipper),
     ...makeRawEventBasedOnDSNoteTopic(flipperNotes),
@@ -374,6 +383,7 @@ export const config: UserProvidedSpockConfig = {
     automationEventEnhancerTransformerEthPriceV2(automationBotV2, oraclesTransformers),
     ...redeemerTransformer(redeemer),
     ...aaveLendingPoolTransformer(aaveLendingPool),
+    ...aavev3LendingPoolTransformer(aavev3Pool),
     ...lidoTransformer(lido),
   ],
   migrations: {
