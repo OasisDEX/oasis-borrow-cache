@@ -9,7 +9,6 @@ import {
 import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
 import { normalizeAddressDefinition } from '../../utils';
-import { getMultiplyTransformerName } from './multiply';
 
 const automationBotAbi = require('../../../abis/automation-bot.json');
 
@@ -19,6 +18,13 @@ interface Dependencies {
     startingBlock: number;
   };
   automationAggregatorBot: {
+    address: string;
+    startingBlock: number;
+  };
+}
+
+interface DependenciesV2 {
+  automationBotV2: {
     address: string;
     startingBlock: number;
   };
@@ -88,23 +94,41 @@ const automationBotExecutedHandlers = {
   },
 };
 
-export const getAutomationBotExecutedTransformerName = (address: string) =>
-  `automationBotExecutedTransformer-${address}`;
-export const automationBotExecutedTransformer: (
+export const getAutomationBotExecutedTransformerName = (address: string, name: string) =>
+  `${name}-${address}`;
+
+export const automationBotExecutedTransformerName = 'automationBotExecutedTransformer'
+export const automationBotV2ExecutedTransformerName = 'automationBotV2ExecutedTransformer'
+
+export const getAutomationBotExecutedTransformer: (
   address: string | SimpleProcessorDefinition,
-  dependencies: Dependencies,
-) => BlockTransformer = (address, dependencies) => {
+  transformerDependencies: string[],
+  name: string
+) => BlockTransformer = (address, transformerDependencies, name) => {
   const deps = normalizeAddressDefinition(address);
 
   return {
-    name: getAutomationBotExecutedTransformerName(deps.address),
+    name: getAutomationBotExecutedTransformerName(deps.address, name),
     dependencies: [getExtractorName(deps.address)],
-    transformerDependencies: [
-      `automationBotTransformer-${dependencies.automationBot.address}`,
-      `automationAggregatorBotTransformer-${dependencies.automationAggregatorBot.address}`,
-    ],
+    transformerDependencies,
     transform: async (services, logs) => {
       await handleEvents(services, automationBotAbi, flatten(logs), automationBotExecutedHandlers);
     },
   };
 };
+
+
+export const automationBotExecutedTransformerV1 = (address: string | SimpleProcessorDefinition,dependencies: Dependencies ) => {
+  const transformerDependencies = [
+    `automationBotTransformer-${dependencies.automationBot.address}`,
+    `automationAggregatorBotTransformer-${dependencies.automationAggregatorBot.address}`,
+  ]
+  return getAutomationBotExecutedTransformer(address, transformerDependencies, automationBotExecutedTransformerName, )
+}
+
+export const automationBotExecutedTransformerV2 = (address: string | SimpleProcessorDefinition,dependencies: DependenciesV2 ) => {
+  const transformerDependencies = [
+    `automationBotV2Transformer-${dependencies.automationBotV2.address}`,
+  ]
+  return getAutomationBotExecutedTransformer(address, transformerDependencies, automationBotV2ExecutedTransformerName, )
+}

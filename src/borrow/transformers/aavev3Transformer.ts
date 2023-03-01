@@ -11,7 +11,7 @@ import { BlockTransformer } from '@oasisdex/spock-etl/dist/processors/types';
 import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
 import { normalizeAddressDefinition } from '../../utils';
 
-const lendingPoolAbi = require('../../../abis/lendingPool.json');
+const aavePool = require('../../../abis/aave-v3-pool.json');
 
 async function handleReserveDataUpdated(
   params: Dictionary<any>,
@@ -33,7 +33,7 @@ async function handleReserveDataUpdated(
   };
 
   const returned: { id: number } = await services.tx.one(
-    `INSERT INTO aave.reserve_data_updated(liquidity_rate, stable_borrow_rate, variable_borrow_rate,
+    `INSERT INTO aave_v3.reserve_data_updated(liquidity_rate, stable_borrow_rate, variable_borrow_rate,
                                              liquidity_index, variable_borrow_index,
                                              log_index, tx_id, block_id, reserve)
        VALUES (\${liquidityRate}, \${stableBorrowRate}, \${variableBorrowRate}, \${liquidityIndex},
@@ -45,7 +45,7 @@ async function handleReserveDataUpdated(
   const shouldRefresh = !isRebuilding && returned.id % 10 === 0; // refresh view takes around 12 seconds, so don't refresh when rebuilding from scratch // refresh every approx. 6 minutes
 
   if (shouldRefresh) {
-    await services.tx.none(`refresh materialized view aave.reserve_data_daily_averages;`);
+    await services.tx.none(`refresh materialized view aave_v3.reserve_data_daily_averages;`);
   }
 }
 
@@ -55,16 +55,16 @@ const landingPoolHandlers = (isRebuilding: boolean) => ({
   },
 });
 
-export const getAaveLendingPoolTransformerName = (address: string) =>
-  `aave-lending-pool-transformer-${address}`;
-export const aaveLendingPoolTransformer: (
+export const getAavev3LendingPoolTransformerName = (address: string) =>
+  `aavev3-lending-pool-transformer-${address}`;
+export const aavev3LendingPoolTransformer: (
   addresses: (string | SimpleProcessorDefinition)[],
 ) => BlockTransformer[] = addresses => {
   return addresses.map(_deps => {
     const deps = normalizeAddressDefinition(_deps);
 
     return {
-      name: getAaveLendingPoolTransformerName(deps.address),
+      name: getAavev3LendingPoolTransformerName(deps.address),
       dependencies: [getExtractorName(deps.address)],
       startingBlock: deps.startingBlock,
       transform: async (services, _logs) => {
@@ -81,7 +81,7 @@ export const aaveLendingPoolTransformer: (
 
         await handleEvents(
           services,
-          lendingPoolAbi,
+          aavePool,
           flatten(_logs),
           landingPoolHandlers(isRebuilding),
         );

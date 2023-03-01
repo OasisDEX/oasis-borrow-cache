@@ -46,16 +46,22 @@ import {
 } from './borrow/transformers/eventEnhancer';
 import { multiplyHistoryTransformer } from './borrow/transformers/multiplyHistoryTransformer';
 import { initializeCommandAliases } from './utils';
-import { automationBotTransformer } from './borrow/transformers/automationBotTransformer';
-import { automationBotExecutedTransformer } from './borrow/transformers/automationBotExecutedTransformer';
+import { automationBotTransformer, automationBotV2Transformer } from './borrow/transformers/automationBotTransformer';
+import {
+  automationBotExecutedTransformerV1,
+  automationBotExecutedTransformerV2,
+} from './borrow/transformers/automationBotExecutedTransformer';
 import { automationAggregatorBotTransformer } from './borrow/transformers/automationAggregatorBotTransformer';
 import { redeemerTransformer } from './borrow/transformers/referralRedeemer';
 import { lidoTransformer } from './borrow/transformers/lidoTransformer';
 import { aaveLendingPoolTransformer } from './borrow/transformers/aaveTransformer';
 import {
-  automationEventEnhancerGasPrice,
-  automationEventEnhancerTransformerEthPrice,
+  automationEventEnhancerGasPriceV1,
+  automationEventEnhancerGasPriceV2,
+  automationEventEnhancerTransformerEthPriceV1,
+  automationEventEnhancerTransformerEthPriceV2,
 } from './borrow/transformers/automationEventEnhancer';
+import { aavev3LendingPoolTransformer } from './borrow/transformers/aavev3Transformer';
 
 const mainnetAddresses = require('./addresses/mainnet.json');
 
@@ -138,6 +144,11 @@ const automationBot = {
   startingBlock: 14583413,
 };
 
+const automationBotV2 = {
+  address: mainnetAddresses.AUTOMATION_BOT_V2,
+  startingBlock: 16565182,
+};
+
 const automationAggregatorBot = {
   address: mainnetAddresses.AUTOMATION_AGGREGATOR_BOT,
   startingBlock: 15389001,
@@ -175,6 +186,22 @@ const commandMapping = [
   {
     command_address: '0x7c0d6d8d6eae8bcb106afdb3a21df5c254c6c0b2',
     kind: 'basic-sell',
+  },
+  {
+    command_address: '0xC6ccab5d277d4780998362A418A86032548132B8',
+    kind: 'auto-take-profit',
+  },
+  {
+    command_address: '0xcb1e2f1df93bb5640562dad05c15f7677bf17297',
+    kind: 'auto-take-profit',
+  },
+  {
+    command_address: '0xe78acea26b79564c4d29d8c1f5bad3d4e0414676',
+    kind: 'aave-stop-loss',
+  },
+  {
+    command_address: '0xcef8eb2d43dc1db1ab292cb92f38dd406ee5749f',
+    kind: 'aave-stop-loss',
   },
 ].map(({ command_address, kind }) => ({ command_address: command_address.toLowerCase(), kind }));
 
@@ -223,6 +250,10 @@ const exchange = [
     address: '0x12dcc776525c35836b10026929558208d1258b91',
     startingBlock: 13733602,
   },
+  {
+    address: '0xf22f17b1d2354b4f4f52e4d164e4eb5e1f0a6ba6',
+    startingBlock: 15774580,
+  },
 ];
 const oracles = getOraclesAddresses(mainnetAddresses).map(description => ({
   ...description,
@@ -252,6 +283,13 @@ const aaveLendingPool = [
   },
 ];
 
+const aavev3Pool = [
+  {
+    address: '0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2',
+    startingBlock: 16291127
+  }
+];
+
 export const config: UserProvidedSpockConfig = {
   startingBlock: GENESIS,
   extractors: [
@@ -261,8 +299,10 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors(redeemer),
     ...makeRawLogExtractors(lido),
     ...makeRawLogExtractors(aaveLendingPool),
+    ...makeRawLogExtractors(aavev3Pool),
     ...makeRawLogExtractors([vat]),
     ...makeRawLogExtractors([automationBot]),
+    ...makeRawLogExtractors([automationBotV2]),
     ...makeRawLogExtractors([automationAggregatorBot]),
     ...makeRawEventBasedOnTopicExtractor(flipper),
     ...makeRawEventBasedOnDSNoteTopic(flipperNotes),
@@ -289,7 +329,9 @@ export const config: UserProvidedSpockConfig = {
     flipTransformer(),
     flipNoteTransformer(),
     automationBotTransformer(automationBot, multiply),
-    automationBotExecutedTransformer(automationBot, { automationBot, automationAggregatorBot }),
+    automationBotV2Transformer(automationBotV2, multiply),
+    automationBotExecutedTransformerV1(automationBot,{ automationBot, automationAggregatorBot }),
+    automationBotExecutedTransformerV2(automationBotV2,{  automationBotV2 }),
     automationAggregatorBotTransformer(automationAggregatorBot, { automationBot }),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
     ...multiplyTransformer(multiply, {
@@ -314,11 +356,14 @@ export const config: UserProvidedSpockConfig = {
       exchangeAddress: [...exchange],
     }),
     eventEnhancerGasPrice(vat, cdpManagers),
-    automationEventEnhancerGasPrice(automationBot),
-    automationEventEnhancerTransformerEthPrice(automationBot, oraclesTransformers),
+    automationEventEnhancerGasPriceV1(automationBot),
+    automationEventEnhancerTransformerEthPriceV1(automationBot, oraclesTransformers),
+    automationEventEnhancerGasPriceV2(automationBotV2),
+    automationEventEnhancerTransformerEthPriceV2(automationBotV2, oraclesTransformers),
     ...redeemerTransformer(redeemer),
     ...lidoTransformer(lido),
     ...aaveLendingPoolTransformer(aaveLendingPool),
+    ...aavev3LendingPoolTransformer(aavev3Pool),
   ],
   migrations: {
     borrow: join(__dirname, './borrow/migrations'),

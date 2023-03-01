@@ -14,6 +14,8 @@ import { LocalServices } from '@oasisdex/spock-etl/dist/services/types';
 import { normalizeAddressDefinition } from '../../utils';
 import { BigNumber } from 'bignumber.js';
 import { wad, ray, rad } from '../../utils/precision';
+import { MessageNames, MessageTypes, sendMessage } from '../../utils/awsQueue';
+import { eligibleIlks } from '../../types/discover';
 
 const vatAbi = require('../../../abis/vat.json');
 
@@ -211,6 +213,17 @@ export const vatCombineTransformer: (
 
           const dink = new BigNumber(frob.dink).div(wad);
           const dart = new BigNumber(frob.dart).div(wad);
+
+          if (eligibleIlks.includes(frob.ilk)) {
+            sendMessage(
+              MessageNames.OSM,
+              MessageTypes.OSM,
+              frob.u,
+              `FROB-${frob.u}`,
+              `${frob.u}x${frob.block_id}`,
+              frob.u,
+            );
+          }
 
           return {
             kind: [
