@@ -224,6 +224,10 @@ const multiply = [
     address: '0x2a49Eae5CCa3f050eBEC729Cf90CC910fADAf7A2',
     startingBlock: 13461195,
   },
+  {
+    address: '0x22E4CeE555C44df56ac7B85033cdE54B7439817c',
+    startingBlock: 16775904,
+  }
 ];
 
 const guni = [
