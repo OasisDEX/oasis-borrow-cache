@@ -34,7 +34,7 @@ interface Price {
 }
 
 function isLPToken(token: string): boolean {
-  return token.startsWith('UNIV2') || token.startsWith('GUNIV3');
+  return token.startsWith('UNIV2') || token.startsWith('GUNIV3') || token.startsWith('CRVV1');
 }
 
 function storageHexToBigNumber(uint256: string) {
