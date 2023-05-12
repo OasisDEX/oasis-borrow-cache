@@ -146,7 +146,7 @@ const automationBot = {
 
 const automationBotV2 = {
   address: mainnetAddresses.AUTOMATION_BOT_V2,
-  startingBlock: 16565182,
+  startingBlock: 17229847,
 };
 
 const automationAggregatorBot = {
