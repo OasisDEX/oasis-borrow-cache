@@ -146,7 +146,7 @@ const automationBot = {
 
 const automationBotV2 = {
   address: mainnetAddresses.AUTOMATION_BOT_V2,
-  startingBlock: 16565182,
+  startingBlock: 17229847,
 };
 
 const automationAggregatorBot = {
@@ -196,11 +196,7 @@ const commandMapping = [
     kind: 'auto-take-profit',
   },
   {
-    command_address: '0xe78acea26b79564c4d29d8c1f5bad3d4e0414676',
-    kind: 'aave-stop-loss',
-  },
-  {
-    command_address: '0xcef8eb2d43dc1db1ab292cb92f38dd406ee5749f',
+    command_address: '0x65127d52aaeb356b45c6dcb3da36f4fc6ff738ef',
     kind: 'aave-stop-loss',
   },
 ].map(({ command_address, kind }) => ({ command_address: command_address.toLowerCase(), kind }));
