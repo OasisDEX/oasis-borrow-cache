@@ -276,6 +276,13 @@ const lido = [
   },
 ];
 
+const steth = [
+  {
+    address: '0xae7ab96520de3a18e5e111b5eaab095312d7fe84',
+    startingBlock: 17272708,
+  },
+];
+
 const aaveLendingPool = [
   {
     address: '0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9',
@@ -298,6 +305,7 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors(dogs),
     ...makeRawLogExtractors(redeemer),
     ...makeRawLogExtractors(lido),
+    ...makeRawLogExtractors(steth),
     ...makeRawLogExtractors(aaveLendingPool),
     ...makeRawLogExtractors(aavev3Pool),
     ...makeRawLogExtractors([vat]),
