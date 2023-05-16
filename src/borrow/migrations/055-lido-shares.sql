@@ -1,4 +1,4 @@
-create materialized view if not exists lido.shares as
+create or replace view lido.shares as
 select ltr.pretotalether * 1e27 / ltr.pretotalshares   as pre_share_rate,
        ltr.posttotalether * 1e27 / ltr.posttotalshares as post_share_rate,
        ltr.timeelapsed,
