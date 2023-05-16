@@ -67,7 +67,7 @@ begin
                            and br.date >= start_date
                          union
                          select (ltr.post_share_rate - ltr.pre_share_rate) * 365 * 24 * 60 * 60 /
-                                (ltr.post_share_rate * ltr.timeelapsed) * 100 * 0.9 as calculations,
+                                (ltr.pre_share_rate * ltr.timeelapsed) * 100 * 0.9 as calculations,
                                 br.date,
                                 br.variable_borrow_rate
                          from lido.shares ltr
