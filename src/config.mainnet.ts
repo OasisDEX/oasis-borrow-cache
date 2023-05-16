@@ -62,6 +62,7 @@ import {
   automationEventEnhancerTransformerEthPriceV2,
 } from './borrow/transformers/automationEventEnhancer';
 import { aavev3LendingPoolTransformer } from './borrow/transformers/aavev3Transformer';
+import { stethTransformer } from './borrow/transformers/stethTransformer';
 
 const mainnetAddresses = require('./addresses/mainnet.json');
 
@@ -374,6 +375,7 @@ export const config: UserProvidedSpockConfig = {
     automationEventEnhancerTransformerEthPriceV2(automationBotV2, oraclesTransformers),
     ...redeemerTransformer(redeemer),
     ...lidoTransformer(lido),
+    ...stethTransformer(steth),
     ...aaveLendingPoolTransformer(aaveLendingPool),
     ...aavev3LendingPoolTransformer(aavev3Pool),
   ],
