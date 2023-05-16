@@ -62,6 +62,7 @@ import {
   automationEventEnhancerTransformerEthPriceV2,
 } from './borrow/transformers/automationEventEnhancer';
 import { aavev3LendingPoolTransformer } from './borrow/transformers/aavev3Transformer';
+import { stethTransformer } from './borrow/transformers/stethTransformer';
 
 const mainnetAddresses = require('./addresses/mainnet.json');
 
@@ -276,6 +277,13 @@ const lido = [
   },
 ];
 
+const steth = [
+  {
+    address: '0xae7ab96520de3a18e5e111b5eaab095312d7fe84',
+    startingBlock: 17272708,
+  },
+];
+
 const aaveLendingPool = [
   {
     address: '0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9',
@@ -298,6 +306,7 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors(dogs),
     ...makeRawLogExtractors(redeemer),
     ...makeRawLogExtractors(lido),
+    ...makeRawLogExtractors(steth),
     ...makeRawLogExtractors(aaveLendingPool),
     ...makeRawLogExtractors(aavev3Pool),
     ...makeRawLogExtractors([vat]),
@@ -362,6 +371,7 @@ export const config: UserProvidedSpockConfig = {
     automationEventEnhancerTransformerEthPriceV2(automationBotV2, oraclesTransformers),
     ...redeemerTransformer(redeemer),
     ...lidoTransformer(lido),
+    ...stethTransformer(steth),
     ...aaveLendingPoolTransformer(aaveLendingPool),
     ...aavev3LendingPoolTransformer(aavev3Pool),
   ],
