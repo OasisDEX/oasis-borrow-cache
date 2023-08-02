@@ -41,12 +41,12 @@
   },
   "dependencies": {
     "@google-cloud/bigquery": "^3.0.0",
+    "@oasisdex/automation": "^1.5.0",
     "@oasisdex/spock-etl": "^0.1.5",
     "@oasisdex/spock-graphql-api": "^0.1.2",
     "@oasisdex/spock-test-utils": "^0.1.1",
     "@oasisdex/spock-utils": "^0.1.0",
     "@oasisdex/spock-validation": "^0.1.0",
-    "@oasisdex/automation": "1.5.0-alpha.8",
     "abi-decoder": "^1.2.0",
     "aws-sdk": "^2.1232.0",
     "bignumber.js": "^8.0.2",
