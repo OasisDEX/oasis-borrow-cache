@@ -201,7 +201,7 @@ const commandMapping = [
     kind: 'aave-stop-loss',
   },
   {
-    command_address: '0x52a9bc9a904b9ee6a4714ef883ccf14cb7283b0f',
+    command_address: '0xDC1c84Aac43F21f103e9bD0B091a1B5cc6433554',
     kind: 'aave-stop-loss',
   },
 ].map(({ command_address, kind }) => ({ command_address: command_address.toLowerCase(), kind }));
