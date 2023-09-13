@@ -11,16 +11,16 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AWS_REGION: eu-central-1
-      ECR_REPO_NAME: oazo-bcache-staging
-      GOERLI_ETL_SERVICE_NAME: oazo-bcache-etl-goerli-staging
-      GOERLI_API_SERVICE_NAME: oazo-bcache-api-goerli-staging
-      MAINNET_ETL_SERVICE_NAME: oazo-bcache-etl-mainnet-staging
-      MAINNET_API_SERVICE_NAME: oazo-bcache-api-mainnet-staging
-      CLUSTER_NAME: oazo-bcache-staging
+      ECR_REPO_NAME: cache-staging
+      GOERLI_ETL_SERVICE_NAME: cache-etl-goerli-staging
+      GOERLI_API_SERVICE_NAME: cache-api-goerli-staging
+      MAINNET_ETL_SERVICE_NAME: cache-etl-mainnet-staging
+      MAINNET_API_SERVICE_NAME: cache-api-mainnet-staging
+      CLUSTER_NAME: cache-staging
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1

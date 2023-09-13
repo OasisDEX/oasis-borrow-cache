@@ -62,6 +62,7 @@ import {
   automationEventEnhancerTransformerEthPriceV2,
 } from './borrow/transformers/automationEventEnhancer';
 import { aavev3LendingPoolTransformer } from './borrow/transformers/aavev3Transformer';
+import { stethTransformer } from './borrow/transformers/stethTransformer';
 
 const mainnetAddresses = require('./addresses/mainnet.json');
 
@@ -146,7 +147,7 @@ const automationBot = {
 
 const automationBotV2 = {
   address: mainnetAddresses.AUTOMATION_BOT_V2,
-  startingBlock: 16565182,
+  startingBlock: 17229847,
 };
 
 const automationAggregatorBot = {
@@ -196,11 +197,11 @@ const commandMapping = [
     kind: 'auto-take-profit',
   },
   {
-    command_address: '0xe78acea26b79564c4d29d8c1f5bad3d4e0414676',
+    command_address: '0x65127d52aaeb356b45c6dcb3da36f4fc6ff738ef',
     kind: 'aave-stop-loss',
   },
   {
-    command_address: '0xcef8eb2d43dc1db1ab292cb92f38dd406ee5749f',
+    command_address: '0xDC1c84Aac43F21f103e9bD0B091a1B5cc6433554',
     kind: 'aave-stop-loss',
   },
 ].map(({ command_address, kind }) => ({ command_address: command_address.toLowerCase(), kind }));
@@ -224,6 +225,10 @@ const multiply = [
     address: '0x2a49Eae5CCa3f050eBEC729Cf90CC910fADAf7A2',
     startingBlock: 13461195,
   },
+  {
+    address: '0x22E4CeE555C44df56ac7B85033cdE54B7439817c',
+    startingBlock: 16775904,
+  }
 ];
 
 const guni = [
@@ -276,6 +281,13 @@ const lido = [
   },
 ];
 
+const steth = [
+  {
+    address: '0xae7ab96520de3a18e5e111b5eaab095312d7fe84',
+    startingBlock: 17272708,
+  },
+];
+
 const aaveLendingPool = [
   {
     address: '0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9',
@@ -298,6 +310,7 @@ export const config: UserProvidedSpockConfig = {
     ...makeRawLogExtractors(dogs),
     ...makeRawLogExtractors(redeemer),
     ...makeRawLogExtractors(lido),
+    ...makeRawLogExtractors(steth),
     ...makeRawLogExtractors(aaveLendingPool),
     ...makeRawLogExtractors(aavev3Pool),
     ...makeRawLogExtractors([vat]),
@@ -362,6 +375,7 @@ export const config: UserProvidedSpockConfig = {
     automationEventEnhancerTransformerEthPriceV2(automationBotV2, oraclesTransformers),
     ...redeemerTransformer(redeemer),
     ...lidoTransformer(lido),
+    ...stethTransformer(steth),
     ...aaveLendingPoolTransformer(aaveLendingPool),
     ...aavev3LendingPoolTransformer(aavev3Pool),
   ],

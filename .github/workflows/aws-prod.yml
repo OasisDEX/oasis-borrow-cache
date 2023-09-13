@@ -11,14 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AWS_REGION: us-east-1
-      ECR_REPO_NAME: oazo-bcache-prod
-      ETL_SERVICE_NAME: oazo-bcache-etl-mainnet-prod
-      API_SERVICE_NAME: oazo-bcache-api-mainnet-prod
-      CLUSTER_NAME: oazo-bcache-prod
+      ECR_REPO_NAME: cache-prod
+      ETL_SERVICE_NAME: cache-etl-mainnet-prod
+      API_SERVICE_NAME: cache-api-mainnet-prod
+      CLUSTER_NAME: cache-prod
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
