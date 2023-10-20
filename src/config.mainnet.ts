@@ -204,6 +204,18 @@ const commandMapping = [
     command_address: '0xDC1c84Aac43F21f103e9bD0B091a1B5cc6433554',
     kind: 'aave-stop-loss',
   },
+  {
+    command_address: '0xc49e905346bC68BdfB46ED1E46E0804ffDC4458a',
+    kind: 'spark-stop-loss',
+  },
+  {
+    command_address: '0x9F47b484E921619028eF1c6F7fE73F9921B5AC6D',
+    kind: 'spark-stop-loss',
+  },
+  {
+    command_address: '0x2af43189E85CEA21aa8FA5d61139b771328d8D30',
+    kind: 'spark-stop-loss',
+  },
 ].map(({ command_address, kind }) => ({ command_address: command_address.toLowerCase(), kind }));
 
 const addresses = {
