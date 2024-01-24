@@ -8,7 +8,6 @@ import { Dictionary } from 'ts-essentials';
 import BigNumber from 'bignumber.js';
 import { rad, ray, wad } from '../../utils/precision';
 import { getCustomExtractorNameBasedOnTopicIgnoreConflicts } from '../customExtractors';
-import { MessageNames, MessageTypes, sendMessage } from '../../utils/awsQueue';
 
 const clipperAbi = require('../../../abis/clipper.json');
 
@@ -134,16 +133,6 @@ const handleAuctionTake = async (
                     \${log_index}, \${tx_id}, \${block_id}
                 );`,
       auctionFinishedEvent,
-    );
-    sendMessage(
-      MessageNames.AUCTION_FINISHED_V2,
-      MessageTypes.VAULT,
-      bark.urn.toLowerCase(),
-      `${MessageNames.AUCTION_FINISHED_V2}-${bark.urn.toLowerCase()}`,
-      `${
-        MessageNames.AUCTION_FINISHED_V2
-      }-${bark.urn.toLowerCase()}-${log.block_id.toString()}`,
-      `${bark.urn.toLowerCase()}`,
     );
   }
 };

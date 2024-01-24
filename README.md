@@ -127,50 +127,6 @@ event it needs to be multiplied by rate.
   ```
 - Remember to lowercase all addresses when saving them.
 
-## Sending messages to AWS SQS
-Fill in the required env variables :
-  - `AWS_ACCESS_KEY_ID=`
-  - `AWS_SECRET_ACCESS_KEY=`
-  - `AWS_REGION=`
-  - `AWS_SQS=local`
-
-To use the queue - import `aws` and use it where desired - eg `oracleTransformer.ts`.
-
-If no `AWS_SQS` is provided or it is == `local` the messages will not be sent to the queue and will be displayed in the terminal - you can use the debug console to track them.
-
-example :
-```
- aws.sendMessage(
-      {
-        MessageAttributes: {
-          Name: {
-            DataType: 'String',
-            StringValue: `TokenPrice`,
-          },
-          Type: {
-            DataType: 'String',
-            StringValue: `OsmEvent`,
-          },
-          Value: {
-            DataType: 'String',
-            StringValue: `${price}`,
-          },
-        },
-        MessageBody: `${token}-${price}-${nextPrice}`,
-        MessageDeduplicationId: `${token}x${block.number}`,
-        MessageGroupId: token,
-        QueueUrl: process.env.AWS_QUEUE_URL,
-      },
-      function(err: any, data: any) {
-        if (err) {
-          console.log('Error', err);
-        } else {
-          console.log('Success', data.MessageId);
-        }
-      },
-    );
-```
-
 ## Troubleshooting known issues
 
 ### Getting EHOSTUNREACH on some ip when running yarn start-etl
