@@ -216,6 +216,22 @@ const commandMapping = [
     command_address: '0x2af43189E85CEA21aa8FA5d61139b771328d8D30',
     kind: 'spark-stop-loss',
   },
+  {
+    command_address: '0x72241841022bc824B0b66e3D27D8937D36dA4FDF',
+    kind: 'dma-aave-basic-buy',
+  },
+  {
+    command_address: '0x31d767f6556CE3fC55d6245C9aEF3575aa64BABf',
+    kind: 'dma-aave-basic-sell',
+  },
+  {
+    command_address: '0xf7c7168b965215420E15cDE6F7e54570Ec171D67',
+    kind: 'dma-aave-basic-buy',
+  },
+  {
+    command_address: '0x4A13b02ef24B2906a33e48e8F0AaF343C5316327',
+    kind: 'dma-aave-basic-sell',
+  }
 ].map(({ command_address, kind }) => ({ command_address: command_address.toLowerCase(), kind }));
 
 const addresses = {
@@ -355,8 +371,8 @@ export const config: UserProvidedSpockConfig = {
     flipNoteTransformer(),
     automationBotTransformer(automationBot, multiply),
     automationBotV2Transformer(automationBotV2, multiply),
-    automationBotExecutedTransformerV1(automationBot,{ automationBot, automationAggregatorBot }),
-    automationBotExecutedTransformerV2(automationBotV2,{  automationBotV2 }),
+    automationBotExecutedTransformerV1(automationBot, { automationBot, automationAggregatorBot }),
+    automationBotExecutedTransformerV2(automationBotV2, { automationBotV2 }),
     automationAggregatorBotTransformer(automationAggregatorBot, { automationBot }),
     clipperTransformer(dogs.map(dep => getDogTransformerName(dep.address))),
     ...multiplyTransformer(multiply, {
