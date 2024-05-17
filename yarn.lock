@@ -455,10 +455,10 @@
     "@types/yargs" "^15.0.0"
     chalk "^4.0.0"
 
-"@oasisdex/automation@1.6.5":
-  version "1.6.5"
-  resolved "https://registry.yarnpkg.com/@oasisdex/automation/-/automation-1.6.5.tgz#ef75d4ef296012d6345c0dbe71e3c8fe8a131c78"
-  integrity sha512-W/z1OllFujfF/pocgrPS8wT4h32yuumFmXe+OxZuPcQEOsnxFDrAKfsCC2k20bLOYdL06J7G2smzFaZb6qCVHg==
+"@oasisdex/automation@1.6.5-morpho.6":
+  version "1.6.5-morpho.6"
+  resolved "https://registry.yarnpkg.com/@oasisdex/automation/-/automation-1.6.5-morpho.6.tgz#0946e14fc091c99bfe014c79b7a494801847b336"
+  integrity sha512-zMpuB/61QkXR5+zXaBJb2tKTJR5v+BsaNwEm8gWWpDT0xjhh/gBca3hoZvWnoJUHn4raD3DvYapYhBn1qxiZmQ==
   dependencies:
     ethers "^5.6.2"
 
