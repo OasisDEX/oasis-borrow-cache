@@ -9,6 +9,8 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     env:
       AWS_REGION: us-east-1
       ECR_REPO_NAME: cache-prod
