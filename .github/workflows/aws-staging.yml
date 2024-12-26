@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - dev
+      - old-dev
 
 name: Deploy to AWS Staging
 
