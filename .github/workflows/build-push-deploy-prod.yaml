@@ -55,12 +55,12 @@ jobs:
                      .
         docker push $ECR_REGISTRY/$ECR_REPO_NAME --all-tags
 
-    - name: Update ${{ env.ETL_SERVICE_NAME }} ECS service with latest Docker image
+    - name: Update Mainnet ETL ECS service with latest Docker image
       id: service-update-etl
       run: |
         aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.ETL_SERVICE_NAME }} --force-new-deployment --region $AWS_REGION
 
-    - name: Update ${{ env.API_SERVICE_NAME }} ECS service with latest Docker image
+    - name: Update Mainnet API ECS service with latest Docker image
       id: service-update-api
       run: |
         aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.API_SERVICE_NAME }} --force-new-deployment --region $AWS_REGION
