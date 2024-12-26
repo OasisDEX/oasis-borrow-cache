@@ -57,22 +57,22 @@ jobs:
                      .
         docker push $ECR_REGISTRY/$ECR_REPO_NAME --all-tags
 
-    - name: Update ${{ env.GOERLI_ETL_SERVICE_NAME }} ECS service with latest Docker image
+    - name: Update Goerli ETL ECS service with latest Docker image
       id: service-update-goerli-etl
       run: |
         aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.GOERLI_ETL_SERVICE_NAME }} --force-new-deployment --region $AWS_REGION
 
-    - name: Update ${{ env.GOERLI_API_SERVICE_NAME }} ECS service with latest Docker image
+    - name: Update Goerli API ECS service with latest Docker image
       id: service-update-goerli-api
       run: |
         aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.GOERLI_API_SERVICE_NAME }} --force-new-deployment --region $AWS_REGION
 
-    - name: Update ${{ env.MAINNET_ETL_SERVICE_NAME }} ECS service with latest Docker image
+    - name: Update Mainnet ETL ECS service with latest Docker image
       id: service-update-mainnet-etl
       run: |
         aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.MAINNET_ETL_SERVICE_NAME }} --force-new-deployment --region $AWS_REGION
 
-    - name: Update ${{ env.MAINNET_API_SERVICE_NAME }} ECS service with latest Docker image
+    - name: Update Mainnet API ECS service with latest Docker image
       id: service-update-mainnet-api
       run: |
         aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.MAINNET_API_SERVICE_NAME }} --force-new-deployment --region $AWS_REGION
