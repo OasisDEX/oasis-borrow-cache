@@ -1,14 +1,16 @@
 on:
-  push:
-    branches:
-      - old-dev
-
+    push:
+      branches:
+        - dev
+  
 name: Deploy to AWS Staging
 
 jobs:
   deploy:
     name: Deploy
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
     env:
       AWS_REGION: eu-central-1
       ECR_REPO_NAME: cache-staging
@@ -23,11 +25,10 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
+      uses: aws-actions/configure-aws-credentials@v4
       with:
-        aws-access-key-id: ${{ secrets.STAGING_AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.STAGING_AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ secrets.BUILD_DEPLOY_OIDC_ROLE_STAGING }}
+          aws-region: ${{ env.AWS_REGION }}
 
     - name: Login to Amazon ECR
       id: login-ecr
@@ -56,34 +57,22 @@ jobs:
                      .
         docker push $ECR_REGISTRY/$ECR_REPO_NAME --all-tags
 
-    - name: Update ${{ env.GOERLI_ETL_SERVICE_NAME }} ECS service with latest Docker image
+    - name: Update Goerli ETL ECS service with latest Docker image
       id: service-update-goerli-etl
       run: |
         aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.GOERLI_ETL_SERVICE_NAME }} --force-new-deployment --region $AWS_REGION
 
-    - name: Update ${{ env.GOERLI_API_SERVICE_NAME }} ECS service with latest Docker image
+    - name: Update Goerli API ECS service with latest Docker image
       id: service-update-goerli-api
       run: |
         aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.GOERLI_API_SERVICE_NAME }} --force-new-deployment --region $AWS_REGION
 
-    - name: Update ${{ env.MAINNET_ETL_SERVICE_NAME }} ECS service with latest Docker image
+    - name: Update Mainnet ETL ECS service with latest Docker image
       id: service-update-mainnet-etl
       run: |
         aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.MAINNET_ETL_SERVICE_NAME }} --force-new-deployment --region $AWS_REGION
 
-    - name: Update ${{ env.MAINNET_API_SERVICE_NAME }} ECS service with latest Docker image
+    - name: Update Mainnet API ECS service with latest Docker image
       id: service-update-mainnet-api
       run: |
         aws ecs update-service --cluster $CLUSTER_NAME  --service ${{ env.MAINNET_API_SERVICE_NAME }} --force-new-deployment --region $AWS_REGION
-
-    - name: Wait for goerli services to become stable
-      uses: oryanmoshe/ecs-wait-action@v1.3
-      with:
-        ecs-cluster: ${{ env.CLUSTER_NAME }}
-        ecs-services: '["${{ env.GOERLI_ETL_SERVICE_NAME }}", "${{ env.GOERLI_API_SERVICE_NAME }}"]'
-
-    - name: Wait for mainnet services to become stable
-      uses: oryanmoshe/ecs-wait-action@v1.3
-      with:
-        ecs-cluster: ${{ env.CLUSTER_NAME }}
-        ecs-services: '["${{ env.MAINNET_ETL_SERVICE_NAME }}", "${{ env.MAINNET_API_SERVICE_NAME }}"]'
